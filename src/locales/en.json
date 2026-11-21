@@ -1,6 +1,6 @@
 {
   "mission.title": "Mission Control",
-  "mission.workspaceRequired": "Available to the owner of an eligible personal workspace.",
+  "mission.workspaceRequired": "Open Mission Control from a personal installation you own and manage.",
   "mission.name": "Mission name (optional)",
   "mission.defaultName": "TypeScript package comparison",
   "mission.source": "Registry source",
@@ -37,7 +37,7 @@
   "mission.version": "Plan v{n}",
   "mission.eligible": "Declared permissive license and bundled types",
   "mission.approval": "Plan awaiting approval",
-  "mission.approvalBody": "Read public npm release records for {names}. Save and verify one Markdown report in this workspace. Limit of {n} tool calls.",
+  "mission.approvalBody": "Read public npm release records for {names}. Save one Markdown report as a mission attachment and verify its contents. Limit of {n} tool calls.",
   "mission.execution": "Execution",
   "mission.progress": "{done} of {total} steps",
   "mission.after": "After {names}",
