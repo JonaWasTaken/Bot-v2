@@ -53,8 +53,8 @@ export function OwnServerLink({ onBack, onConnected, connect = null, start = nul
   const [address, setAddress] = useState(start?.address ?? "");
   const [code, setCode] = useState("");
   const [movedCode, setMovedCode] = useState(false);
-  const [probe, setProbe] = useState<ServerProbe | null>(null);
-  const [probing, setProbing] = useState(false);
+  const [checked, setChecked] = useState<{ address: string; code: string; result: ServerProbe } | null>(null);
+  const probe = checked?.address === address && checked.code === code ? checked.result : null;
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const codeField = useRef<HTMLInputElement>(null);
@@ -64,14 +64,14 @@ export function OwnServerLink({ onBack, onConnected, connect = null, start = nul
   const linkHasCode = parsed.ok && !code.trim() && (parsed.code !== null || parsed.credential !== null);
   const showCode = movedCode || (address.trim() !== "" && !linkHasCode && !(parsed.ok === false && parsed.problem === "codeOnly"));
   useEffect(() => {
-    if (!canProbe || !address.trim()) { setProbe(null); setProbing(false); return; }
+    setChecked(null);
+    if (!canProbe || !address.trim()) return;
     let current = true;
-    setProbing(true);
+    const finish = (result: ServerProbe) => { if (current) setChecked({ address, code, result }); };
     const timer = window.setTimeout(() => {
       void workspaces!.probe!(address, code)
-        .then((found) => { if (current) setProbe(found); })
-        .catch(() => { if (current) setProbe({ outcome: "problem", problem: "unreachable", host: hostOf(address, code) }); })
-        .finally(() => { if (current) setProbing(false); });
+        .then(finish)
+        .catch(() => finish({ outcome: "problem", problem: "unreachable", host: hostOf(address, code) }));
     }, 400);
     return () => { current = false; window.clearTimeout(timer); };
   }, [address, code, canProbe, workspaces]);
@@ -128,7 +128,7 @@ export function OwnServerLink({ onBack, onConnected, connect = null, start = nul
       <span className="flex flex-col gap-1 text-[12px] font-normal text-ink-secondary">{t("connect.noCode")}<CommandLine command={PAIR_COMMAND} /></span>
     </label>}
     {shownProblem && <p role="alert" data-connect-problem className="text-[13px] text-danger">{shownProblem}</p>}
-    {canProbe && probing && !found && !shownProblem && <p data-connect-checking className="inline-flex items-center gap-1.5 text-[13px] text-ink-secondary">
+    {canProbe && address.trim() !== "" && !probe && !shownProblem && <p data-connect-checking className="inline-flex items-center gap-1.5 text-[13px] text-ink-secondary">
       <Loader2 size={13} className="animate-spin" aria-hidden="true" />{t("connect.checking")}
     </p>}
     <div><button type="submit" data-own-server-connect disabled={busy || !address.trim() || (canProbe && !found)} className="ui-button ui-button-primary inline-flex items-center gap-2">

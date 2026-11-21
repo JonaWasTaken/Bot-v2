@@ -85,9 +85,18 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
           return replyMemoryError(res, error);
         }
       }
-      const file = url.searchParams.get("path") ?? "";
+      // Older servers only accept a query path. A conditional delete puts its path in the body so they fail closed.
+      const legacyPath = url.searchParams.get("path");
+      let file = legacyPath ?? "";
+      let expectedHash: string | undefined;
+      if (legacyPath === null) {
+        const target = z.object({ path: z.string(), expectedHash: z.string().regex(/^[a-f0-9]{64}$/) }).safeParse(await readBody(req));
+        if (!target.success) return json(res, 400, { error: "A file path and its current hash are required." });
+        file = target.data.path;
+        expectedHash = target.data.expectedHash;
+      }
       try {
-        const entry = guarded(() => journalMemoryDelete(id, file, { actor: "person", via: "ui" }));
+        const entry = guarded(() => journalMemoryDelete(id, file, { actor: "person", via: "ui", expectedHash }));
         return json(res, 200, { ok: true, path: file, entry: entry ? journalEntryForClient(id, entry) : null, overview: memoryOverview(id) });
       } catch (error) {
         return replyMemoryError(res, error);

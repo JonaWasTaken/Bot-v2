@@ -1,0 +1,27 @@
+revision,model,trial,task,settlement,exact_answer,duration_ms,ledger_input,ledger_output,reply
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,1,general,settled,False,21774,,,"The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40:
+10:40 + 35 minutes = **11:15**."
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,1,source-reconciliation,settled,True,20693,,,Beta 222 A1 B2
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,1,code-review,settled,False,22401,,,"The replacement operator is `===` to ensure strict equality without coercion.
+**Corrected line:** `return records.find(r => r.id === wanted);`"
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,2,general,settled,False,24047,,,The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40 brings the finishing time to **11:15**.
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,2,source-reconciliation,settled,True,22954,,,Beta 222 A1 B2
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,2,code-review,settled,False,21168,,,"Replace the assignment operator `=` with the strict equality operator `===`:
+**Answer**: `===`"
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,3,general,settled,False,19508,,,The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40 brings the finishing time to **11:15**.
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,3,source-reconciliation,settled,True,40306,,,Beta 222 A1 B2
+e5490f70de6b683465fb5b7a7ff43e7aa931c1f9,qwen3:8b,3,code-review,settled,False,50729,,,"Replace the `=` with `===` to ensure strict equality without coercion or modification:
+`r.id === wanted`"
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,1,general,settled,False,22080,993,441,The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40 brings the finishing time to **11:15**.
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,1,source-reconciliation,settled,True,24082,1064,350,Beta 222 A1 B2
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,1,code-review,settled,False,22870,1005,357,"The replacement operator is `===`.
+**Corrected line:** `return records.find(r => r.id === wanted);`
+This compares `r.id` and `wanted` without assignment or coercion."
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,2,general,settled,False,23962,993,341,The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40 brings the finishing time to **11:15**.
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,2,source-reconciliation,settled,True,26005,1064,697,Beta 222 A1 B2
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,2,code-review,settled,False,24615,1005,438,"The replacement operator is `===`.
+Corrected line: `return records.find(r => r.id === wanted);`
+(Uses strict equality to avoid coercion and ensures the record is not modified.)"
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,3,general,settled,False,40396,993,246,The meeting starts at 10:40 and lasts 35 minutes. Adding 35 minutes to 10:40 brings the finishing time to **11:15**.
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,3,source-reconciliation,settled,True,78796,1064,743,BETA 222 A1 B2
+a766671c1a9fb51a76381b20166f8fb90310ef31,qwen3:8b,3,code-review,settled,False,31390,1005,262,Use === instead of = to perform a strict equality check without modifying the record's ID.

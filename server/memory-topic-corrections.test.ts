@@ -29,10 +29,11 @@ it("reserves named topics while preferring their actual matching passage", () =>
   const passage = (label: string, snippet: string): RecallPassage => ({ source: "memory", label, snippet });
   const unrelated = [1, 2, 3, 4].map(n => passage(`memory/${n}.md`, "matching words"));
   const named = passage("memory/tapa.md", "topic opening");
-  expect(selectMemoryPassages(unrelated, [named])).toContainEqual(named);
+  const firstLayer = { topics: [], matches: unrelated };
+  expect(selectMemoryPassages([firstLayer, { topics: [named], matches: [] }])[0]).toEqual(named);
   const answer = passage(named.label, "the answer deep in the topic");
-  expect(selectMemoryPassages([...unrelated, answer], [named])[0]).toEqual(answer);
-  expect(selectMemoryPassages(unrelated, [named])).toHaveLength(4);
+  expect(selectMemoryPassages([firstLayer, { topics: [named], matches: [answer] }])[0]).toEqual(answer);
+  expect(selectMemoryPassages([firstLayer, { topics: [named], matches: [] }])).toHaveLength(4);
 });
 
 it("bounds topic model calls and rotates deferred topics into the next tidy", async () => {

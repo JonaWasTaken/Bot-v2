@@ -42,7 +42,11 @@ beforeEach(() => {
     const path = url.searchParams.get("path") ?? (init?.body ? JSON.parse(String(init.body)).path : "MEMORY.md");
     if (url.pathname.endsWith("/mine")) return reply(200, { topics: Object.keys(files).filter((file) => file.startsWith("memory/")).map((file) => ({ path: file })) });
     if (method === "PUT") files[path] = JSON.parse(String(init!.body)).text;
-    if (method === "DELETE") delete files[path];
+    if (method === "DELETE") {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      if (body.expectedHash !== `h${files[path]?.length}`) return reply(409, { error: "Changed" });
+      delete files[path];
+    }
     const text = files[path] ?? "";
     return reply(200, { path, text, hash: `h${text.length}`, exists: path in files, overview: {} });
   }));
@@ -69,6 +73,21 @@ it("on a Team Cloud shows what the bot remembers about the person, from their ow
   await settle();
   expect(files["memory/food.md"]).toBe("");
   expect(host.textContent).not.toContain("durian");
+});
+
+it("refreshes a changed whole-file note before the person can forget its new text", async () => {
+  files["memory/food.md"] = "Old preference";
+  await act(async () => root.render(createElement(MemoryPage, { bot, derived: {} as never })));
+  await settle();
+  const forget = () => host.querySelector<HTMLButtonElement>("[data-memory-note] button")!;
+  files["memory/food.md"] = "A newer preference";
+  await act(async () => forget().click());
+  await settle();
+  expect(host.textContent).toContain("A newer preference");
+  expect(files["memory/food.md"]).toBe("A newer preference");
+  await act(async () => forget().click());
+  await settle();
+  expect(files["memory/food.md"]).toBeUndefined();
 });
 
 it("counts those notes on the Library tab", async () => {
