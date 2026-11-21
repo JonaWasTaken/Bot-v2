@@ -966,6 +966,7 @@ export type ServerFrame =
   | { kind: "notify"; notification: NotificationLogEntry }
   | { kind: "notifications.read"; threadId: string; ids: string[] }
   | { kind: "group.deleted"; groupId: string }
+  | { kind: "mission.changed"; botId: string }
   | { kind: "routine"; routine: Routine }
   | { kind: "routine.deleted"; routineId: string }
   | { kind: "routine.run"; run: RoutineRun }

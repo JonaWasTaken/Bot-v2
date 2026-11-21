@@ -243,7 +243,8 @@ export class Runtime {
     const { level, source } = this.level({ own: req.levels.own, chief: req.levels.chief, origin: (root ?? req).origin.kind, chiefLineage,
       driverKind: req.driverKind });
     const node: Assignment = {
-      id: randomUUID(), rootId: parent ? parent.rootId : "", ...(parent ? { parentId: parent.id } : {}), depth: parent ? parent.depth + 1 : 0,
+      id: req.mission?.id ?? randomUUID(), rootId: parent ? parent.rootId : "", ...(parent ? { parentId: parent.id } : {}), depth: parent ? parent.depth + 1 : 0,
+      ...(req.mission ? { mission: req.mission.record } : {}), ...(req.missionStep ? { missionStep: req.missionStep } : {}),
       origin: root ? root.origin : req.origin, requester: req.requester, assignee: target, mode,
       reply: req.reply ?? (mode === "notify" ? "none" : "resume"), brief, ...(req.doneWhen ? { doneWhen: req.doneWhen } : {}),
       status: "queued", level, levelSource: source, executions: 0, restarts: 0, createdAt: now, lastActivityAt: now, result: "",

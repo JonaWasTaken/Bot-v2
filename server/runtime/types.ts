@@ -1,6 +1,7 @@
 // The job runtime's public types: one record for every hand-off between bots, one lifecycle, one wake lane.
 import type { ApprovalMode } from "../../shared/approval-mode.ts";
 import type { HostFault } from "../host-fault.ts";
+import type { MissionRecord } from "../missions/plan.ts";
 
 /** Where the work ultimately started. Immutable down the whole tree. */
 export type OriginKind = "person" | "routine" | "outside";
@@ -79,6 +80,9 @@ export type Level = ApprovalMode;
 export type LevelSource = "own" | "chief" | "engine_cap";
 
 export interface Assignment {
+  mission?: MissionRecord;
+  missionStep?: string;
+  missionCalls?: number;
   id: string;
   rootId: string;
   parentId?: string;
@@ -211,6 +215,8 @@ export interface InboxItem {
 }
 
 export interface EnqueueRequest {
+  mission?: { id: string; record: MissionRecord };
+  missionStep?: string;
   /** The requesting conversation's own running assignment; absent when a new root opens. */
   parentId?: string;
   origin: Origin;

@@ -1,6 +1,14 @@
 // Purity is the contract: no IO, no store reads, no adapter calls. Callers gather state, call admit(), and apply the decision.
 
 import type { FollowUp } from "../shared/follow-up.ts";
+import { parseToolScope } from "../shared/tool-scope.ts";
+
+export function checkedBotToolScope(bot: { toolScope?: unknown } | null | undefined) {
+  if (!bot) throw Object.assign(new Error("no such bot"), { status: 404 });
+  const parsed = parseToolScope(bot.toolScope);
+  if (!parsed.ok) throw Object.assign(new Error("This bot's tool selection is invalid. Open Access settings and save a valid selection before starting a turn."), { status: 409, code: "tool_scope" });
+  return parsed.scope;
+}
 
 export type AdmissionSurface =
   | "direct-busy" // 1:1 send to a thread whose turn is live: steer-first

@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { APPROVAL_MODES } from "../../shared/approval-mode.ts";
 import { timeBlocking } from "../perf/loop-stalls.ts";
+import { missionSchema } from "../missions/plan.ts";
 import { TERMINAL, type Assignment, type AssignmentEvent, type EventKind, type InboxItem, type Owner } from "./types.ts";
 
 const evidenceSchema = z.object({
@@ -19,6 +20,7 @@ const evidenceSchema = z.object({
 });
 
 const assignmentSchema = z.object({
+  mission: missionSchema.optional(), missionStep: z.string().optional(), missionCalls: z.number().int().nonnegative().optional(),
   id: z.string().min(1),
   rootId: z.string().min(1),
   parentId: z.string().min(1).optional(),
@@ -94,7 +96,7 @@ export interface RuntimeStore {
   root(id: string): Assignment | undefined;
   /** `openSince`: only rows not finished before that time. */
   all(filter?: { rootId?: string; nonTerminal?: boolean; ownerThreadId?: string; assignee?: { botId: string; threadId: string };
-    assigneeThreadId?: string; roots?: boolean; openSince?: number }): Assignment[];
+    assigneeThreadId?: string; roots?: boolean; openSince?: number; missions?: true; botId?: string }): Assignment[];
   insert(a: Assignment, event: { kind: EventKind; detail?: string; at?: number }): void;
   update(a: Assignment, event?: { kind: EventKind; detail?: string; at?: number }): void;
   /** Nested calls join the outer transaction (a savepoint inside it). */
@@ -127,6 +129,7 @@ const SCHEMA = `
     json TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS assignments_root ON assignments(root_id);
+  CREATE INDEX IF NOT EXISTS mission_roots ON assignments(assignee_bot_id, created_at) WHERE parent_id IS NULL AND assignee_thread_id GLOB 'mission/*';
   CREATE INDEX IF NOT EXISTS assignments_parent ON assignments(parent_id);
   CREATE INDEX IF NOT EXISTS assignments_status ON assignments(status);
   CREATE INDEX IF NOT EXISTS assignments_requester_thread ON assignments(requester_thread_id);
@@ -251,7 +254,7 @@ export function openRuntimeStore(path: string): RuntimeStore {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
     deliver: db.prepare("UPDATE inbox SET delivered_at = ? WHERE id = ? AND delivered_at IS NULL"),
     prunable: db.prepare(`SELECT id FROM assignments r WHERE r.parent_id IS NULL AND r.status IN (${terminalList})
-      AND r.finished_at IS NOT NULL AND r.finished_at < ?
+      AND r.finished_at IS NOT NULL AND r.finished_at < ? AND r.assignee_thread_id NOT GLOB 'mission/*'
       AND NOT EXISTS (SELECT 1 FROM assignments c WHERE c.root_id = r.id AND c.status NOT IN (${terminalList}))`),
     pruneEvents: db.prepare("DELETE FROM assignment_events WHERE assignment_id IN (SELECT id FROM assignments WHERE root_id = ?)"),
     pruneInbox: db.prepare("DELETE FROM inbox WHERE assignment_id IN (SELECT id FROM assignments WHERE root_id = ?)"),
@@ -322,6 +325,8 @@ export function openRuntimeStore(path: string): RuntimeStore {
         params.push(filter.assignee.botId, filter.assignee.threadId);
       }
       if (filter.assigneeThreadId !== undefined) { where.push("assignee_thread_id = ?"); params.push(filter.assigneeThreadId); }
+      if (filter.missions) where.push("parent_id IS NULL AND assignee_thread_id GLOB 'mission/*'");
+      if (filter.botId) { where.push("assignee_bot_id = ?"); params.push(filter.botId); }
       if (filter.roots) where.push("parent_id IS NULL");
       if (filter.openSince !== undefined) { where.push("(finished_at IS NULL OR finished_at >= ?)"); params.push(filter.openSince); }
       const sql = `SELECT id, json FROM assignments${where.length ? ` WHERE ${where.join(" AND ")}` : ""} ORDER BY created_at, rowid`;
