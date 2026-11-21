@@ -200,15 +200,20 @@ export function MemorySection({ bot, active = true, onToggle }: { bot: Bot; acti
   };
 
   const remove = async (file: MemoryFileInfo) => {
-    if (!window.confirm(t("memory.confirmDelete", { name: file.name }))) return;
+    if (saving) return;
+    setSaving(true);
     setError(null);
     try {
-      const { overview: next } = await deleteMemoryDoc(bot.id, file.path);
+      const revision = editing?.path === file.path ? editing : await fetchMemoryDoc(bot.id, file.path);
+      if (!window.confirm(t("memory.confirmDelete", { name: file.name }))) return;
+      const { overview: next } = await deleteMemoryDoc(bot.id, file.path, revision.hash);
       setOverview(next);
       setJournal(await fetchMemoryJournal(bot.id));
       if (editing?.path === file.path) setEditing(null);
     } catch (e) {
       setError(errorText(e));
+    } finally {
+      setSaving(false);
     }
   };
 

@@ -90,8 +90,8 @@ export async function saveMemoryDoc(botId: string, path: string, text: string, e
   return { ok: true, doc: { path: saved.path, text: saved.text, hash: saved.hash, exists: saved.exists }, overview: saved.overview };
 }
 
-export function deleteMemoryDoc(botId: string, path: string, mine = false): Promise<{ overview: MemoryOverview }> {
-  return api(`${memoryRoute(botId, mine)}/file?path=${encodeURIComponent(path)}`, { method: "DELETE" });
+export function deleteMemoryDoc(botId: string, path: string, expectedHash: string, mine = false): Promise<{ overview: MemoryOverview }> {
+  return api(`${memoryRoute(botId, mine)}/file`, { method: "DELETE", body: JSON.stringify({ path, expectedHash }) });
 }
 
 export async function fetchMemoryJournal(botId: string, limit = 50): Promise<MemoryJournalRow[]> {

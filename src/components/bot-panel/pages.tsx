@@ -14,7 +14,7 @@ import type { Routine } from "@/lib/routines";
 import type { SkillImportSummary } from "../../../shared/skill-import";
 import { shortPath } from "@/lib/short-path";
 import { skillImportLines } from "@/lib/skill-import";
-import { type Bot } from "@/state/store";
+import { ApiError, type Bot } from "@/state/store";
 import { useDesktopCapabilities } from "../DesktopCapabilities";
 import { connectAppFromBot } from "../AppGrantPrompt";
 import { ServiceIcon } from "../ServiceIcon";
@@ -212,7 +212,14 @@ export function MemoryPage({ bot }: PageContext) {
     if (!doc) return;
     if (note.line !== null) void write(doc, withoutMemoryNote(doc.text, note.line));
     else void change(async () => {
-      await deleteMemoryDoc(bot.id, doc.path, memory.mine);
+      try {
+        await deleteMemoryDoc(bot.id, doc.path, doc.hash, memory.mine);
+      } catch (cause) {
+        if (!(cause instanceof ApiError && cause.status === 409)) throw cause;
+        await memory.reload();
+        setError(t("memory.conflict.title", { name: bot.name }));
+        return false;
+      }
       await memory.reload();
       return true;
     });

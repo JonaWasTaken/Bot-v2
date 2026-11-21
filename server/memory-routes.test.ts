@@ -132,6 +132,25 @@ describe("memory routes through an isolated HTTP fixture", () => {
     expect(existsSync(join(workspace(), "MEMORY.md"))).toBe(true);
   });
 
+  it.each(["memory/delete-review.md", "memory/log/delete-review.md"])(
+    "preserves a newer revision of %s until the caller reviews it",
+    async (path) => {
+      const route = `/api/bots/${botId}/memory/file`;
+      const original = await api("PUT", route, { path, text: "old" });
+      const updated = await api("PUT", route, { path, text: "new" });
+      expect((await api("DELETE", route, { path })).status).toBe(400);
+      const stale = await api("DELETE", route, { path, expectedHash: original.body.hash });
+      expect(stale.status).toBe(409);
+      expect(readFileSync(join(workspace(), path), "utf8")).toBe("new");
+      const journal = await api("GET", `/api/bots/${botId}/memory/journal`);
+      expect(journal.body.entries.some((entry: { path: string; kind: string }) => entry.path === path && entry.kind === "deleted")).toBe(false);
+      const removed = await api("DELETE", route, { path, expectedHash: updated.body.hash });
+      expect(removed.status).toBe(200);
+      expect(removed.body.entry).toMatchObject({ path, kind: "deleted" });
+      expect(existsSync(join(workspace(), path))).toBe(false);
+    },
+  );
+
   it("keeps the old whole-file PUT working, journaled as the person's", async () => {
     const legacy = await api("PUT", `/api/bots/${botId}/memory`, { text: "- legacy note\n" });
     expect(legacy.status).toBe(200);

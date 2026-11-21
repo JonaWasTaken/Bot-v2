@@ -344,8 +344,8 @@ export function journalMemoryWrite(
   return { doc: { path, text: result.after, hash: result.hash, exists: true }, entry };
 }
 
-export function journalMemoryDelete(botId: string, path: string, opts: Omit<JournaledWriteOptions, "expectedHash">): MemoryJournalEntry | null {
-  const result = deleteMemoryDoc(botId, path);
+export function journalMemoryDelete(botId: string, path: string, opts: JournaledWriteOptions): MemoryJournalEntry | null {
+  const result = deleteMemoryDoc(botId, path, opts.expectedHash);
   return recordMemoryChange(botId, { path, actor: opts.actor, via: opts.via, threadId: opts.threadId, before: result.before, after: null });
 }
 
