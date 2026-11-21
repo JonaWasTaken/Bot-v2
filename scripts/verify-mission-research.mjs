@@ -96,10 +96,11 @@ try {
   await api("PATCH", "/api/bots/" + bot.id, { toolScope, approvalMode: "ask" });
   const botPath = "/api/bots/" + bot.id;
   if (values.project) {
+    const original = (await api("GET", "/api/bots")).bots.find(b => b.id === bot.id);
     project = (await api("POST", botPath + "/projects", { name: "Validation tools" })).project;
     emptyProject = (await api("POST", botPath + "/projects", { name: "Later", emoji: "📚" })).project;
     conversation = (await api("POST", botPath + "/tasks", { title: "Package decision", projectId: project.id })).task;
-    await api("POST", botPath + "/tasks/" + bot.threadId, {});
+    await api("POST", botPath + "/tasks/" + original.threadId, {});
   }
   if (values.baseline) {
     const start = performance.now();
