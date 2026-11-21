@@ -136,6 +136,13 @@ it("attributes an interruption to its original user, including roots stored befo
 });
 
 describe("outwardActions", () => {
+  it("checks provider actions when a pre-marker handoff notice contains an outbound verb in the teammate's name", () => {
+    const notices = [row({ name: "Sent to Send receipts", ok: true }), row({ name: "Send receipts replied", ok: true })];
+    expect(restartEffects(notices, true, true)).toEqual([]);
+    expect(restartEffects([...notices, row({ name: "GMAIL_SEND_EMAIL", ok: true })], true, true)).toEqual(["GMAIL_SEND_EMAIL"]);
+    expect(restartEffects([...notices, call("Send message", true)], true, true)).toEqual(["Send message"]);
+  });
+
   it("only resumes a legacy connected-app batch when every action name survives the stored preview", () => {
     const reads = Array.from({ length: 39 }, (_, index) => ({ tool_slug: "GMAIL_FETCH_EMAILS", arguments: { query: `label:${index}`, max_results: 1 } }));
     const truncated = toolDetailPreview({ tools: [...reads, { arguments: { to: "test@example.test", body: "once" }, tool_slug: "GMAIL_SEND_EMAIL" }] })!;

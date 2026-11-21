@@ -6,7 +6,7 @@ import { hostFaultOf, retryCannotFix } from "../host-fault.ts";
 import { composeEnvelope } from "./envelope.ts";
 import { assignmentLevel } from "./level.ts";
 import type { RuntimeStore } from "./store.ts";
-import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, INTERRUPTED_OUTWARD, isTerminal, loopStop, nextGuard, outboundDispatchLabel, outwardDetail, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
+import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, INTERRUPTED_OUTWARD, isTerminal, loopStop, nextGuard, outboundDispatchLabel, outwardDetail, outwardInterrupted, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
 import { DEFAULT_LIMITS, type Answerer, type Assignment, type Assignee, type Clock, type EndResult, type EnqueueRequest, type EnqueueResult, type EnvelopeNames,
   type EventKind, type InboxItem, type InboxKind, type Level, type Limits, type LiveEdge, type Origin, type Outcome, type Owner,
   type Reply, type Requester, type RunInput, type RunResult, type StatusView, type TurnRunner } from "./types.ts";
@@ -121,22 +121,23 @@ export class Runtime {
         if (n.status !== "running") continue;
         const carried = n.carrying ?? [];
         const handedOut = childrenSince(this.store, n).length > 0;
-        const effects = n.outboundDispatch || handedOut ? [] : this.safe("outward", () => this.runner.outward?.(n)) ?? [];
+        const inspect = n.outboundDispatch === undefined || (n.outboundDispatch === null && !handedOut);
+        const effects = inspect ? this.safe("outward", () => this.runner.outward?.(n, handedOut)) ?? [] : [];
         const outward = Array.isArray(effects) ? effects.filter(label => typeof label === "string" && label.trim()) : [];
         const dispatched = n.outboundDispatch ?? ("dispatched" in effects ? effects.dispatched : undefined);
         if (dispatched) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward dispatch" });
           this.settle(n, "failed", "interrupted", `${INTERRUPTED_OUTWARD} started a connected-app request (${dispatched}). It may have taken effect. Check the app before asking to continue.`);
-        } else if (handedOut) {
-          n.status = "waiting"; n.restart = "cut"; n.lastActivityAt = now;
-          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "waiting: cut after handing out work" });
-          this.touch(n);
         } else if ("unapproved" in effects) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outbound approval expired" });
           this.settle(n, "failed", "interrupted", `OpenMausBot restarted while waiting for your approval for ${effects.unapproved}. That request was never sent. Ask again to request a fresh approval.`);
         } else if (outward.length > 0) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward action done" });
           this.settle(n, "failed", "interrupted", outwardDetail(outward));
+        } else if (handedOut) {
+          n.status = "waiting"; n.restart = "cut"; n.lastActivityAt = now;
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "waiting: cut after handing out work" });
+          this.touch(n);
         } else if (n.restart === "rerun") {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: cut twice" });
           this.settle(n, "failed", "interrupted", CUT_TWICE);
@@ -690,7 +691,7 @@ export class Runtime {
         const n = this.store.get(snapshot.id);
         if (!n || isTerminal(n)) continue;
         if (!ownsConversation(n, owner)) {
-          if (n.parentId && path(this.store, n).some(a => a.outcome === "interrupted" && a.outboundDispatch && ownsConversation(a, owner))) {
+          if (n.parentId && path(this.store, n).some(a => outwardInterrupted(a) && ownsConversation(a, owner))) {
             this.cancelTree(n, STOPPED_WITH_REQUEST, "cancelled", "stopped");
           }
           continue;

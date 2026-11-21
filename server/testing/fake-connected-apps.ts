@@ -117,17 +117,18 @@ export async function startFakeConnectedApps(beforeToolReply?: () => Promise<voi
         return res.end(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { tools: [{ name: "COMPOSIO_MULTI_EXECUTE_TOOL", description: "Run app tools", inputSchema: { type: "object" } }] } }));
       }
       if (body.method === "tools/call") {
-        const item = body.params?.name === "COMPOSIO_MULTI_EXECUTE_TOOL" ? body.params.arguments?.tools?.[0] ?? {} : { tool_slug: body.params?.name, arguments: body.params?.arguments };
-        const slug = String(item.tool_slug ?? "");
-        fake.calls.push({ tool: slug, arguments: item.arguments, item });
-        let response: { successful: boolean; data: unknown; error: string | null };
-        try {
-          response = { successful: true, data: answer(slug, item.arguments), error: null };
-        } catch (error) {
-          if (!(error instanceof ToolFailure)) throw error;
-          response = { successful: false, data: null, error: error.message };
-        }
-        const text = JSON.stringify({ successful: true, data: { results: [{ tool_slug: slug, response }] }, error: null });
+        const items = body.params?.name === "COMPOSIO_MULTI_EXECUTE_TOOL" ? body.params.arguments?.tools ?? [] : [{ tool_slug: body.params?.name, arguments: body.params?.arguments }];
+        const results = items.map(item => {
+          const slug = String(item.tool_slug ?? "");
+          fake.calls.push({ tool: slug, arguments: item.arguments, item });
+          try {
+            return { tool_slug: slug, response: { successful: true, data: answer(slug, item.arguments), error: null } };
+          } catch (error) {
+            if (!(error instanceof ToolFailure)) throw error;
+            return { tool_slug: slug, response: { successful: false, data: null, error: error.message } };
+          }
+        });
+        const text = JSON.stringify({ successful: true, data: { results }, error: null });
         await beforeToolReply?.();
         return res.end(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { content: [{ type: "text", text }] } }));
       }

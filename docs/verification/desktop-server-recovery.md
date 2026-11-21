@@ -85,6 +85,30 @@ misreported the marked requester when a child acknowledged or needed no reply.
 The [review fixture counts](evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl)
 record the measured outcomes.
 
+To test an upgrade, build the OSS server at `f0bf6f7cd` in a separate checkout
+with `pnpm build:server`. After building the server under test in this checkout,
+run the upgrade fixture against the old bundle.
+
+```sh
+node scripts/verify-server-recovery.mjs --upgrade-from /path/to/old/checkout/dist-server
+```
+
+The first utility process writes the assignments and conversation with the old
+server. The supervisor replaces that process with the new server on the same
+fixture data after a crash. The seven receipts cover a status-only child, a
+notification, a substantive reply, a bounded batch with a hidden send, a live
+child stopped after the crash, and two safe handoffs with a substantive result
+(one read or no connector call). Each receipt records the child and requester
+IDs, outcomes, executions, receiver counts and pinned wait result. The bundle
+hashes are in `bundles.json` beside the receipts.
+
+With `348c044f8` as the replacement, a recorded send followed by a handoff
+could leave the requester completed or waiting. In the bounded case it ran
+twice despite the old server having recorded a successful batch. The corrected
+replacement keeps each such requester interrupted after one execution and one
+delivery. Recovery on an upgrade can only recognize evidence the old server
+persisted. [Windows upgrade receipts](evidence/desktop-server-recovery/windows-legacy-handoffs-2026-11-21.jsonl)
+
 `pnpm exec vitest run server/chat-followups-restart.test.ts` exercises a queued
 channel request across a server crash. It checks that the follow-up runs
 successfully and that the earlier interruption stays attached to the earlier

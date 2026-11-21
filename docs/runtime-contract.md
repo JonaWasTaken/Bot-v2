@@ -76,9 +76,9 @@ Downtime is nobody's budget: every window but the wait on the person restarts at
 | `queued` | Dispatches normally. |
 | `running`, no children started since its turn began, nothing known outward | One rerun in place, `restarts` 1, the turn opens with a note to check what it already did. A rerun cut again ends `failed(interrupted)` and is reported. |
 | `running`, no children started since its turn began, the host says it already acted outward (sent, posted, pushed, paid) | No rerun: `failed(interrupted)` at once, `outcomeDetail` "Interrupted by an OpenMausBot restart after it already <what it did>; not resumed, so nothing is done twice.", event `restart_reconciled` "failed: outward action done". Reported like any failed turn (a root into its own conversation); a requester's restart note lists it as cut after an outward action. |
-| `running`, an outbound connected-app dispatch is recorded | Ends `failed(interrupted)` even when the turn already handed work to a teammate. The receipt names the request whose outcome is uncertain. Issued children keep their own outcomes and can finish or be stopped. |
+| `running`, the dispatch marker or the pre-marker transcript shows a possible connected-app dispatch | Ends `failed(interrupted)` even when the turn already handed work to a teammate. The receipt names the request whose outcome is uncertain. Issued children keep their own outcomes and can finish or be stopped. |
 | `running`, no new children, a connected-app send is still awaiting approval | The dead approval expires and the turn ends `failed(interrupted)`. The receipt says the held request was never sent. A fresh request goes through the current permissions and sending policy. |
-| `running`, children started since its turn began, no recorded dispatch | The requester waits for the work it handed out. Its continuation identifies the interrupted turn and includes the results. |
+| `running`, children started since its turn began, the current marker is empty or the pre-marker transcript has no outward evidence | The requester waits for the work it handed out. Its continuation identifies the interrupted turn and includes the results. |
 | `needs_input` | Stays parked; `park` is called again, and shows only what never got shown: a card already in place, its chip and its notification are not posted again. |
 | `waiting`, `resume` | Unchanged; the resume goes ahead. |
 
@@ -86,7 +86,7 @@ A requester waiting on a cut turn hears what the restart did in its next turn (`
 
 For connected apps, the relay records the first authorized outbound tool slug on the running assignment immediately before forwarding the request. The write commits before the service can receive the call. A crash between that commit and transmission can therefore require a check even when the app received nothing. A new execution starts with an empty marker. Read-only calls and requests refused before dispatch leave it empty.
 
-The host also reads the cut turn's own activity and approval cards through `outward(a)` (§8). Older assignments identify connected-app batches by their native or provider-facing names. A legacy batch can resume when every action name is visible and read-only. If the bounded preview omitted an action name, the batch may have been dispatched. A truncated argument inside a known read has no bearing on that decision.
+The host also reads the cut turn's own activity and approval cards through `outward` (§8). For an older assignment with children, it checks the requester's activity before a child's reply can settle or resume the requester. Older assignments identify connected-app batches by their native or provider-facing names. A legacy batch can resume when every action name is visible and read-only. If the bounded preview omitted an action name, the batch may have been dispatched. A truncated argument inside a known read has no bearing on that decision.
 
 A root's interruption receipt identifies the user message that started it. When a queued request has already taken its place, the old interruption remains visible in the conversation history. Waiting on the new request returns that request's outcome.
 

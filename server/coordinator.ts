@@ -165,8 +165,8 @@ export interface CoordinatorHost {
    * so it resolves from `source`, the requester's node, whose parents lead up the chain. */
   levelOf(target: RoomAddress, source?: HandoffView): { level: Level; chief?: Level; driverKind?: string };
   chiefOf(address: RoomAddress): boolean;
-  /** Outward actions from this turn's transcript. Older executions need their connected-app batches checked here. */
-  outward?(node: HandoffView, checkLegacyBatches: boolean): RestartEffects;
+  /** Outward actions from this turn's transcript. A pre-marker handoff needs its own activity checked before a child can resume it. */
+  outward?(node: HandoffView, checkLegacyBatches: boolean, handedOut?: boolean): RestartEffects;
   /** The node's bot lives in a place that cannot be reached now: its queued work waits without a clock (runtime `away`). */
   away?(node: HandoffView): boolean;
   /** Whether `joiner`'s requester may read the answer `first` gives its own (the same people see both conversations),

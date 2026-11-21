@@ -2,13 +2,14 @@
 // Run after pnpm build:server. Evidence remains; fixture homes are removed.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { randomBytes, randomUUID } from "node:crypto";
-import { appendFileSync, cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { parseArgs } from "node:util";
 import { createServerSupervisor } from "../electron/server-supervisor.mjs";
 import { pollServerIdentity } from "../electron/server-boot-probe.mjs";
 import { acquireDataDirLease } from "../electron/data-dir-lease.mjs";
@@ -47,6 +48,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
   const [scenario, output, runtime] = process.argv.slice(process.argv.indexOf(flag) + 1);
   const home = join(output, scenario, "home");
   const handoff = scenario.startsWith("handoff-");
+  const legacy = existsSync(join(output, "previous/index.js"));
   app.setPath("home", home);
   app.setPath("userData", join(home, "profile"));
   app.setPath("sessionData", join(home, "profile"));
@@ -135,7 +137,8 @@ if (process.versions.electron && process.argv.includes(flag)) {
       requestAppTool(slug, outbound ? { to: "fixture@example.test", body: "receipt" } : { user_id: "me" });
     }
     const start = async () => {
-      const proc = utilityProcess.fork(join(output, "server/index.js"), [], {
+      const bundle = legacy && children.length === 0 ? "previous" : "server";
+      const proc = utilityProcess.fork(join(output, bundle, "index.js"), [], {
         cwd: home, stdio: ["ignore", "pipe", "pipe"],
         env: {
           ...fixtureEnv(home, runtime),
@@ -159,7 +162,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
       })));
       supervisor.watch(proc);
       proc.once("spawn", () => {
-        record("spawn", { pid: proc.pid, generation: children.length });
+        record("spawn", { pid: proc.pid, generation: children.length, bundle });
         proc.postMessage({ type: "openmausbot:desktop-mutation-token", token, companionToken: token });
       });
       proc.on("message", (message) => {
@@ -202,7 +205,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
     };
 
     if (handoff) {
-      const receipt = await verifyRecoveryHandoff({ scenario, home, dataDir, fetcher, control, apps, until, record,
+      const receipt = await verifyRecoveryHandoff({ scenario, legacy, home, dataDir, fetcher, control, apps, until, record,
         replace: async () => {
           process.kill(initialPid, "SIGKILL");
           await exits.get(initial.proc);
@@ -350,6 +353,10 @@ if (process.versions.electron && process.argv.includes(flag)) {
     app.quit();
   }).catch((error) => { console.error(error); app.quit(); });
 } else {
+  const { values: { "upgrade-from": previous } } = parseArgs({ options: { "upgrade-from": { type: "string" } } });
+  const scenarios = previous
+    ? ["handoff-bounded", "handoff-status", "handoff-notify", "handoff-substantive", "handoff-continue", "handoff-read", "handoff-cancel"]
+    : ["recover", "in-flight", "pending-approval", "continue", "handoff-status", "handoff-notify", "handoff-continue", "handoff-cancel", "quit", "exhausted"];
   // macOS's default temp path leaves no room for the server's Unix sockets.
   const output = mkdtempSync(join(process.platform === "darwin" ? "/tmp" : tmpdir(), "omb-server-recovery-"));
   const electron = createRequire(import.meta.url)("electron");
@@ -359,7 +366,12 @@ if (process.versions.electron && process.argv.includes(flag)) {
   console.log(JSON.stringify({ evidence: output }));
   const cleanup = { recursive: true, force: true, maxRetries: 5, retryDelay: 250 };
   try {
-    for (const scenario of ["recover", "in-flight", "pending-approval", "continue", "handoff-status", "handoff-notify", "handoff-continue", "handoff-cancel", "quit", "exhausted"]) {
+    if (previous) {
+      cpSync(previous, join(output, "previous"), { recursive: true });
+      const digest = (bundle) => createHash("sha256").update(readFileSync(join(output, bundle, "index.js"))).digest("hex");
+      writeFileSync(join(output, "bundles.json"), JSON.stringify({ previous: digest("previous"), replacement: digest("server") }) + "\n");
+    }
+    for (const scenario of scenarios) {
       const home = join(output, scenario, "home");
       mkdirSync(home, { recursive: true });
       const child = spawn(electron, [fileURLToPath(import.meta.url), flag, scenario, output, process.execPath], {
@@ -377,6 +389,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
       }
     }
   } finally {
+    if (previous) rmSync(join(output, "previous"), cleanup);
     rmSync(join(output, "server"), cleanup);
     rmSync(join(output, "ui"), cleanup);
   }

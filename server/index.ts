@@ -4027,13 +4027,13 @@ const botLink = createBotLinkHost({ roomLine: (threadId, key, params) => serverL
     levelOf: (target, source) => delegatedLevel.levelOf(target, source),
     chiefOf: address => chiefLevel(store.bot(address.botId)),
     // A person's cut root never reruns after a follow-up in its thread: that would hand the person's words to a model again, or redo an older request.
-    outward: (node, legacy) => {
-      const followup = node.parentId || node.groupId ? undefined : followupAtBoot(node.threadId);
+    outward: (node, legacy, handedOut) => {
+      const followup = node.parentId || node.groupId || handedOut ? undefined : followupAtBoot(node.threadId);
       if (followup) {
         followupEndedRoots.set(node.id, followup === "pending" ? "turn interrupted — OpenMausBot restarted" : undefined);
         return [followup === "pending" ? "queued follow-up waiting" : "queued follow-up dispatched"];
       }
-      return restartEffects(turnRows(node), legacy);
+      return restartEffects(turnRows(node), legacy, handedOut);
     },
     shareAnswer: createShareAnswer({ askedFrom: (node) => (node.parentId ? coordinator.node(node.parentId)?.threadId : undefined), audienceOf: teamHost.audienceOf, pinned: (botId, threadId) => store.taskByThread(botId, threadId)?.cwd, botFolder: (botId) => store.bot(botId)?.cwd, privateFolders: TASK_WORKSPACES_DIR }),
     joined: (node) => { store.appendMessage(node.threadId, { role: "bot", kind: "activity", tool: { name: `notice: ${serverLine(threadLanguage(node.threadId), "server.teammates.sameRequest")}`, ok: true } }); },

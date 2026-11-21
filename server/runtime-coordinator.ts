@@ -631,7 +631,7 @@ export class RuntimeCoordinator implements Coordinator {
         host.changed(groups, threads);
       },
       names: (a, parent) => host.names(view(a, parent), parent && this.project(parent)),
-      outward: a => host.outward ? host.outward(this.project(a), a.outboundDispatch === undefined) : [],
+      outward: (a, handedOut) => host.outward?.(this.project(a), a.outboundDispatch === undefined, handedOut) ?? [],
       away: a => host.away ? host.away(this.project(a)) : false,
     };
   }

@@ -335,7 +335,7 @@ export interface TurnRunner {
   /** Display names for the envelope of a turn (ids are the fallback). */
   names(a: Assignment, parent?: Assignment): EnvelopeNames;
   /** Transcript evidence for a cut turn, either observed actions or a possible dispatch from an older connected-app batch. */
-  outward?(a: Assignment): RestartEffects;
+  outward?(a: Assignment, handedOut?: boolean): RestartEffects;
   /** The assignee lives in a place that cannot be reached now (a computer that is off or asleep). Queued work for it is
    * held by no window: neither the queue bound nor the tree's stall window runs while this is true. */
   away?(a: Assignment): boolean;
