@@ -184,6 +184,21 @@ describe("recall across memory layers (a Team Cloud)", () => {
     rmSync(WORKSPACES_DIR, { recursive: true, force: true });
   });
 
+  it.each(["travel", "itinerary"])("keeps same-path answers from both readable layers when asking about %s", (term) => {
+    const mine = `${BOT}--member-p_mine`;
+    const theirs = `${BOT}--member-p_theirs`;
+    writeMemoryTopic(mine, "travel.md", "---\naliases: [itinerary]\n---\n- My departure terminal is Birch.\n");
+    writeMemoryTopic(BOT, "travel.md", "- The team departure terminal is Cedar.\n");
+    writeMemoryTopic(theirs, "travel.md", "- Their departure terminal is Maple.\n");
+    const recall = (memoryIds: string[]) => buildRecall({
+      botId: BOT, memoryIds, message: `Which departure terminal is on the ${term} plan?`, threadIds: [], label: () => "", author: () => "",
+    });
+    const combined = recall([mine, BOT]);
+    expect(combined?.notes).toBe(2);
+    expect(combined?.text.match(/Birch|Cedar|Maple/g)).toEqual(["Birch", "Cedar"]);
+    expect(recall([BOT])?.text.match(/Birch|Cedar|Maple/g)).toEqual(["Cedar"]);
+  });
+
   it("reads the layers it is given and no other: the turn's own and the team's, never another member's", () => {
     const TEAM = BOT, MINE = `${BOT}--member-p_mine`, THEIRS = `${BOT}--member-p_theirs`;
     writeMemoryTopic(TEAM, "office.md", "---\naliases: [plant]\n---\n- The office plant is Fernando\n");
