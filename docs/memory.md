@@ -41,8 +41,9 @@ that helpfully "remembers" a key it read from a `.env` does not get to keep it.
 
 ## What loads, and the budget
 
-At the start of every turn the **first 200 lines or 24 KB of `MEMORY.md`,
-whichever cuts first**, are placed into the bot's system prompt. Nothing past
+At the start of every turn, the harness filters expired and superseded notes
+from `MEMORY.md`. It places the **first 200 lines or 24 KB of remaining text,
+whichever cuts first**, into the bot's system prompt. Nothing past
 that line loads, and the bot is only told that the file was cut off. Topic files
 and daily logs are never loaded automatically; the bot reads a topic file with
 its file tools when it decides it needs it, and logs are for you.
@@ -413,8 +414,8 @@ bot follows when it writes are:
 - **Superseded, not deleted.** When a fact is replaced, the old bullet is
   struck through and dated rather than removed —
   `- ~~the office is in Pune~~ · superseded 2026-09-10` — so the file itself
-  shows what changed. Struck lines still count against the budget; trim them
-  when the file fills up.
+  shows what changed. The conversation prompt and current-note search use the
+  replacement. Historical lines still count toward the file’s storage budget.
 - **Daily logs** under `memory/log/YYYY-MM-DD.md` are the bot's diary of what
   it did; they are never loaded into a conversation and are meant for you to
   read in the panel or in Obsidian.

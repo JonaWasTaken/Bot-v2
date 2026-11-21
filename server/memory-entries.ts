@@ -54,9 +54,10 @@ export function parseMemoryEntries(text: string): MemoryEntryLine[] {
       if (!open) end = next + 1;
     }
     const rest = m[3];
-    const struck = rest.startsWith("~~");
+    const fact = rest.replace(TRAILING_MARKS, "");
+    const struck = fact.startsWith("~~") && fact.endsWith("~~");
     const until = UNTIL_MARK.exec(rest)?.[1] ?? null;
-    const body = rest.replace(TRAILING_MARKS, "").replace(/^~~/, "").replace(/~~$/, "").trim();
+    const body = (struck ? fact.slice(2, -2) : fact).trim();
     out.push({ line, end, raw, prefix: m[1], body, date: m[2], until, struck });
     line = end;
   }
@@ -96,12 +97,15 @@ export function notebookIdentities(text: string): Set<string> {
   return new Set(text.split("\n").map(lineFactIdentity).filter(Boolean));
 }
 
+const SUPERSEDED_HANDWRITTEN = /^(?:- )?~~.*~~ · superseded \d{4}-\d{2}-\d{2}\r?$/;
+
 export function withoutSuperseded(text: string): string {
+  if (!text.includes("~~")) return text;
   const dropped = new Set<number>();
   for (const entry of parseMemoryEntries(text)) {
     if (entry.struck) for (let line = entry.line; line < entry.end; line++) dropped.add(line);
   }
-  return text.split("\n").filter((_, index) => !dropped.has(index)).join("\n");
+  return text.split("\n").filter((line, index) => !dropped.has(index) && !SUPERSEDED_HANDWRITTEN.test(line)).join("\n");
 }
 
 /** Case, width, curly quotes and spacing aside, so a passage matches however the note was typed. */

@@ -168,7 +168,7 @@ export function loadMemory(botId: string, opts: { now?: Date } = {}): { text: st
   if (!raw.trim() || isMemorySeed(raw)) return null;
   let truncated = false;
   const visible = withoutExpired(raw, memoryDate(opts.now));
-  let text = visible.text;
+  let text = withoutSuperseded(visible.text);
   const lines = text.split("\n");
   if (memoryLineCount(text) > MEMORY_MAX_LINES) {
     text = lines.slice(0, MEMORY_MAX_LINES).join("\n");

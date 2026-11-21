@@ -120,6 +120,28 @@ describe("memory with until dates and topics, on disk", () => {
     rmSync(WORKSPACES_DIR, { recursive: true, force: true });
   });
 
+  it.each([
+    ["dated", "- 2026-09-01 · Depot: Amberford"],
+    ["handwritten bullet", "- Depot: Amberford"],
+    ["handwritten paragraph", "Depot: Amberford"],
+  ])("only recalls the current location after correcting a %s note", (_kind, note) => {
+    writeMemoryFile(BOT, `${note}\n- 2026-09-01 · ~~Rough~~ sketches are useful\n`);
+    expect(updateMemory(BOT, { action: "supersede", oldText: "Depot: Amberford", text: "Depot: Silverford" }).ok).toBe(true);
+    const file = join(WORKSPACES_DIR, BOT, "MEMORY.md");
+    const saved = readFileSync(file, "utf8");
+    expect(saved).toContain("Amberford");
+    writeMemoryTopic(BOT, "depots.md", saved);
+
+    const prompt = memorySystemPrompt(BOT);
+    expect(prompt).toContain("Silverford");
+    expect(prompt).toContain("~~Rough~~ sketches are useful");
+    expect(prompt).not.toContain("Amberford");
+    expect(searchMemoryFiles(BOT, "Silverford")).toHaveLength(2);
+    expect(searchMemoryFiles(BOT, "Amberford")).toEqual([]);
+    expect(searchMemoryFiles(BOT, "watermelon")).toEqual([]);
+    expect(readFileSync(file, "utf8")).toBe(saved);
+  });
+
   it("hides expired Windows-edited notes and their details without rewriting the file", () => {
     ensureWorkspace(BOT);
     const file = join(WORKSPACES_DIR, BOT, "MEMORY.md");
