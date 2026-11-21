@@ -18,6 +18,8 @@
 
 **Risk** Starting a dependent task too soon can publish a partial project result.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/coordinator.test.ts`.
 
 **Manual verification** Inspect synthetic task rows and dispatch times in a three-worker desktop conversation.
@@ -30,27 +32,29 @@
 | APEX-27-04 | Represent a failed prerequisite on its dependent | Fail an input-producing child before it yields a document. | Its dependent records an unavailable input and starts zero provider turns. |
 | APEX-27-05 | Restore a partially completed dependency graph | Restart after the first of three child results is accepted. | The finished child stays finished and only outstanding eligible work dispatches. |
 
-## Handoff inbox
+## Concurrent handoff inputs
 
-**Current state** Handoff inboxes derive recipient filenames from sender and assignment identity and account for Windows path semantics. Existing case “is exact where file names are, and ignores case and slash direction on Windows”.
+**Current state** Recipient filenames derive from sender and assignment identity. The file handoff path also controls aggregate limits when deliveries overlap.
 
-**Sources** [server/host/handoff-inbox.ts](../../../../server/host/handoff-inbox.ts) · [server/host/handoff-inbox.test.ts](../../../../server/host/handoff-inbox.test.ts) · [server/host/handoff-files.ts](../../../../server/host/handoff-files.ts)
+**Sources** [server/host/handoff-inbox.ts](../../../../server/host/handoff-inbox.ts) · [server/host/handoff-inbox.test.ts](../../../../server/host/handoff-inbox.test.ts) · [server/host/handoff-files.ts](../../../../server/host/handoff-files.ts) · [server/host/handoff-files.test.ts](../../../../server/host/handoff-files.test.ts)
 
 **Dependencies** APEX-23-11
 
-**Risk** Colliding names in the recipient inbox can substitute the wrong prerequisite.
+**Risk** Parallel workers can overwrite one another's inputs or charge the same delivery twice.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/handoff-inbox.test.ts`.
+**Risk level** High
 
-**Manual verification** Inspect the recipient's disposable inbox and compare embedded assignment IDs and hashes.
+**Automated verification** Deliver overlapping fixture inputs with gated copy completion. Compare recipient paths, bytes and accounting while varying ordering and platform names.
+
+**Manual verification** Open both worker inboxes after the parallel dispatch and follow the parent result chips back to their actual files.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-27-06 | Distinguish inputs from two same-named workers | Deliver two files named notes.txt under distinct assignments. | Each resolvable copy keeps its originating assignment and bytes. |
-| APEX-27-07 | Keep a reused input stable across dependent steps | Pass the first step's file to two children after the producer edits its working copy. | Both dependents receive the accepted revision hash. |
-| APEX-27-08 | Require inbox paths to belong to the assigned receiver | Attempt to reference a benign fixture file from a similarly prefixed sibling inbox. | The resolver excludes the sibling and leaves the selected inbox unchanged. |
-| APEX-27-09 | Handle Windows reserved filenames in handoffs | Deliver a synthetic document with a device-like display name. | The stored name is usable on Windows and the display name remains traceable. |
-| APEX-27-10 | Keep deterministic copy names across a resumed assignment | Retry the same input delivery after reopening the receiver's workspace. | Both attempts resolve to the same accepted logical input without shadow copies. |
+| APEX-27-06 | Separate concurrent handoffs with the same output name | Complete two specialists' report.csv handoffs at the same instant with different fixture bytes. | Two assignment-scoped copies retain their own hashes and receipt IDs. |
+| APEX-27-07 | Share an immutable prerequisite between parallel branches | Send one accepted snapshot to two workers while its original source changes. | Both workers read the accepted revision and neither reads the producer's later edits. |
+| APEX-27-08 | Prevent prefix collisions across simultaneous inbox writes | Have two fixture receiver names sharing a path prefix accept similarly named inputs in parallel. | Each recorded path belongs to its full intended inbox and neither receives the other file. |
+| APEX-27-09 | Resolve platform-reserved names under concurrent delivery | Deliver two inputs with device-like names on a Windows fixture. | Both accepted paths are usable, distinct and traceable to the correct original label. |
+| APEX-27-10 | Make retried parallel copies idempotent per assignment | Restart between a successful first copy and the second worker's pending copy, then replay both receipts. | Each intended receiver ends with one complete logical input and an accurate byte charge. |
 
 ## Working status
 
@@ -61,6 +65,8 @@
 **Dependencies** APEX-01-13
 
 **Risk** A waiting parent can appear complete or hide which dependency is outstanding.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/handoff-status.test.ts`.
 
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-13
 
 **Risk** A cycle can strand an entire project tree.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/crossed-handoffs.e2e.test.ts`.
 

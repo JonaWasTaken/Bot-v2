@@ -18,6 +18,8 @@
 
 **Risk** A translated schedule can show a different day or time than the scheduler uses.
 
+**Risk level** High
+
 **Automated verification** Run `corepack pnpm exec vitest run server/routine-cron-text.test.ts server/routine-cron.e2e.test.ts` with fixed instants and explicit fixture time zones. Compare generated occurrence instants with formatted text.
 
 **Manual verification** Read the desktop schedule text next to its generated fixture occurrences in the named time zone.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** An early wake can busy-loop while a late wake can miss a due event.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-due.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Bulk catch-up can flood chats after a long offline interval.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-catch-up.test.ts`.
 
 **Manual verification** Suspend a fixture scheduler for the specified interval and compare missed and dispatched occurrence keys.
@@ -84,10 +90,14 @@
 
 **Risk** A disconnected or denied mailbox can appear indistinguishable from an empty inbox.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/routine-checks.test.ts`.
 
 **Manual verification** Run scheduled checks against synthetic account adapters and inspect source reports, cursors and one visible result.
-**GitHub** Unfiled in the fork. Related upstream report [#6895](https://github.com/milind-soni/OpenMausBot/issues/6895).
+**GitHub** Unfiled
+
+**Related GitHub** [#6895](https://github.com/milind-soni/OpenMausBot/issues/6895)
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |

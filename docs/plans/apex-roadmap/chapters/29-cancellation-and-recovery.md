@@ -18,6 +18,8 @@
 
 **Risk** A transport disconnect can be mistaken for a person's explicit Stop.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cancelled-turn.e2e.test.ts`.
 
 **Manual verification** Interrupt the fixture child at controlled points and inspect parent status, receipts and active processes.
@@ -36,9 +38,11 @@
 
 **Sources** [server/automatic-recovery.ts](../../../../server/automatic-recovery.ts) · [server/automatic-recovery.test.ts](../../../../server/automatic-recovery.test.ts)
 
-**Dependencies** APEX-02-16
+**Dependencies** APEX-02-11, APEX-13-11
 
 **Risk** Moving interrupted work to a backup can drop required files or tools.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/automatic-recovery.test.ts`.
 
@@ -52,46 +56,50 @@
 | APEX-29-09 | Keep a failed backup from looping back to its predecessor | Fail two fixture engines in sequence during one child assignment. | The same assignment never retries either failed engine indefinitely. |
 | APEX-29-10 | Report an exhausted backup list to the parent | Make all configured alternatives ineligible for different stated reasons. | The parent receives one blocked outcome with the relevant reasons. |
 
-## Delivery ticks
+## Parallel dispatch pacing
 
-**Current state** Handoff processing changes tick rate as work moves, parks or becomes idle and accepts an immediate wake signal. Existing case “ticks every 250 ms only while work is moving, rarely while it is parked, and hourly with none”.
+**Current state** The scheduler uses different tick intervals for active, parked and idle handoffs and accepts immediate wakeups. The coordinator exposes work waiting on teammates and people.
 
-**Sources** [server/handoff-ticks.ts](../../../../server/handoff-ticks.ts) · [server/handoff-ticks.test.ts](../../../../server/handoff-ticks.test.ts) · [server/handoff-wake.e2e.test.ts](../../../../server/handoff-wake.e2e.test.ts)
-
-**Dependencies** APEX-01-13
-
-**Risk** A stale scheduler timer can either spin continuously or miss a ready child.
-
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/handoff-ticks.test.ts`.
-
-**Manual verification** Inspect fake-clock tick timestamps beside the fixture's active, parked and empty assignment counts.
-
-| ID | Objective | Implementation plan | Acceptance |
-| --- | --- | --- | --- |
-| APEX-29-11 | Use fast ticks only while handoff work moves | Switch a fixture from active to parked to empty. | Measured intervals match all three configured pacing classes. |
-| APEX-29-12 | Wake idle handoff processing on a new write | Add an assignment just after an empty-state tick. | The first processing attempt occurs before the normal next idle tick. |
-| APEX-29-13 | Continue after one scheduler callback throws | Throw inside a single controlled tick and then add eligible work. | Later ticks still process the work and the first fault is observable. |
-| APEX-29-14 | Coalesce simultaneous kicks during wake | Release 20 ready notifications in the same fake-clock turn. | At most one immediate processing batch starts and every eligible assignment is considered. |
-| APEX-29-15 | Stop scheduler work on teardown | Dispose the fixture tick controller with one delayed callback pending. | No further tick or assignment mutation occurs after disposal. |
-
-## Wake parent
-
-**Current state** The wake fixture advances the clock after suspension and times queued dispatch among thirteen synthetic bots.
-
-**Sources** [server/handoff-ticks.ts](../../../../server/handoff-ticks.ts) · [server/handoff-wake.e2e.test.ts](../../../../server/handoff-wake.e2e.test.ts)
+**Sources** [server/handoff-ticks.ts](../../../../server/handoff-ticks.ts) · [server/handoff-ticks.test.ts](../../../../server/handoff-ticks.test.ts) · [server/coordinator.ts](../../../../server/coordinator.ts) · [server/runtime-coordinator.test.ts](../../../../server/runtime-coordinator.test.ts)
 
 **Dependencies** APEX-01-13
 
-**Risk** Sleep/resume can delay ready workers or redeliver inputs to a completed parent.
+**Risk** Repeated scheduler kicks can start parallel work twice or leave eligible siblings waiting behind a parked branch.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/handoff-wake.e2e.test.ts`.
+**Risk level** High
 
-**Manual verification** Wake a suspended fixture with several synthetic teammates and inspect the post-wake event timeline.
+**Automated verification** Drive multiple workers from a common fake clock. Record tick count, eligible task IDs, dispatch times and assignment generations alongside each tick transition.
+
+**Manual verification** Open the fixture project tree while one worker is parked and another becomes eligible. Inspect both task IDs and the observed dispatch timing.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-29-16 | Dispatch new work promptly after a simulated overnight sleep | Advance the fixture clock nine hours then add one assignment. | One child starts within the documented busy tick allowance. |
-| APEX-29-17 | Retain a waiting parent across machine sleep | Suspend after dispatch and release the child's result on wake. | One parent resumes with the original child result. |
-| APEX-29-18 | Avoid replaying assignments settled before sleep | Complete a child before clock suspension then wake the scheduler. | No new provider turn starts for that completed assignment. |
-| APEX-29-19 | Keep unrelated busy work alive through wake | Hold a second project open while the first wakes a pending child. | Only the target child gains a new dispatch and the sibling retains its turn. |
-| APEX-29-20 | Measure wake lag as team size grows | Repeat with 1, 12 and 50 disposable teammates under the same clock. | Each size reports dispatch lag, eligibility count and duplicate-start count. |
+| APEX-29-11 | Dispatch two independent ready siblings in the same scheduling window | Release two synthetic prerequisites simultaneously while a third sibling stays parked. | Both eligible siblings begin within one active tick and the parked sibling issues zero calls. |
+| APEX-29-12 | Coalesce parallel completion wakeups | Settle 20 children in one fake-clock turn while their parent is parked. | One immediate processing batch considers all 20 completions and resumes the parent once. |
+| APEX-29-13 | Keep an idle tree from slowing an active peer | Put one project into hourly idle ticks then queue new work in another project. | The new project starts within its active allowance without waiting for the old idle timer. |
+| APEX-29-14 | Retain runnable siblings after one scheduler callback throws | Throw during one child's bookkeeping while two unrelated tasks are ready. | Subsequent ticks start both eligible tasks once and report which callback failed. |
+| APEX-29-15 | Measure fairness across unequal parallel branches | Hold ten long workers and inject one short eligible assignment on a separate free worker. | Its queued-to-start time is recorded and it starts before any held worker releases. |
+
+## Parallel work across suspend and resume
+
+**Current state** The wake fixture advances its synthetic clock after suspension and observes queued work among thirteen bots. The handoff tree supplies distinct root and worker IDs.
+
+**Sources** [server/handoff-ticks.ts](../../../../server/handoff-ticks.ts) · [server/handoff-wake.e2e.test.ts](../../../../server/handoff-wake.e2e.test.ts) · [server/runtime/tree.ts](../../../../server/runtime/tree.ts) · [evals/runners/coordination-world.ts](../../../../evals/runners/coordination-world.ts)
+
+**Dependencies** APEX-01-13
+
+**Risk** Resuming several assignments together can duplicate a completed input, drop a wait or incorrectly serialize unrelated projects.
+
+**Risk level** High
+
+**Automated verification** Expand the wake e2e with two roots and gated siblings. Freeze each root's assignment tree and record concurrency intervals, completions and resumed parent count.
+
+**Manual verification** Inspect the fixture team after waking it, checking active intervals for parallel work and accepted inputs for each parent.
+
+| ID | Objective | Implementation plan | Acceptance |
+| --- | --- | --- | --- |
+| APEX-29-16 | Resume independent projects concurrently after simulated sleep | Suspend two roots with ready work on distinct available workers and advance the clock nine hours. | Their run intervals overlap and each has one start per ready child. |
+| APEX-29-17 | Hold a fan-in parent until its final required worker finishes | Suspend with two of three parallel inputs accepted and release the last one only after wake. | The parent starts once after input three and preserves the original first two hashes. |
+| APEX-29-18 | Exclude already completed branches from resume dispatch | Finish one sibling before sleeping while its neighbor still runs. | Wake adds zero turns for the completed sibling and does not erase the other worker's active assignment. |
+| APEX-29-19 | Partition results when two resumed roots share a worker | Give the shared worker similarly named assignments from two projects. | Each accepted result links to the correct project and neither parent consumes the other's input. |
+| APEX-29-20 | Quantify dispatch lag under parallel wake load | Compare 1, 12 and 50 ready teammates under the same fixture clock and per-worker budget. | Each load level reports median and worst eligible dispatch lag plus zero duplicate assignments. |

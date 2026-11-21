@@ -18,6 +18,8 @@
 
 **Risk** A path-filtered green check can omit an entire release-critical journey.
 
+**Risk level** High
+
 **Automated verification** Run `corepack pnpm exec vitest run scripts/ci-workflow.test.ts` for matrix construction. Evaluate the row against copied check results, and run the identified runtime fixture in each specified environment when a cell needs behavioral proof.
 
 **Manual verification** Read the synthetic CI matrix beside the candidate revision, required platforms and executed job list.
@@ -30,27 +32,29 @@
 | APEX-50-04 | Record environment-sensitive failures reproducibly | Repeat the sprint's weekly data-chart fixture in UTC and Europe/Copenhagen using identical source. | The report preserves both outcomes with timezone, runtime and expected versus actual intervals. |
 | APEX-50-05 | Keep baseline regressions distinct from existing failures | Run the same failing fixture against pinned baseline and candidate commits. | Each failure is classified by paired evidence and neither arm's exclusions are hidden. |
 
-## Packaged boot
+## Windows packaged backend isolation
 
-**Current state** The package smoke launches the extracted server and drives the shipped CLI and MCP surfaces in an isolated home.
+**Current state** The Windows workflow builds NSIS and the packaged-server smoke launches an extracted backend outside repository dependency lookup. The original sprint recorded one installed Windows renderer-ready marker.
 
-**Sources** [scripts/bundle-server.mjs](../../../../scripts/bundle-server.mjs) · [scripts/smoke-packaged-server.mjs](../../../../scripts/smoke-packaged-server.mjs) · [server/enterprise.ts](../../../../server/enterprise.ts)
+**Sources** [.github/workflows/package-win.yml](../../../../.github/workflows/package-win.yml) · [electron-builder.yml](../../../../electron-builder.yml) · [electron/main.mjs](../../../../electron/main.mjs) · [scripts/bundle-server.mjs](../../../../scripts/bundle-server.mjs) · [scripts/smoke-packaged-server.mjs](../../../../scripts/smoke-packaged-server.mjs)
 
 **Dependencies** APEX-01-03
 
-**Risk** A built package can depend on development paths or fail to reach its normal entry point.
+**Risk** A Windows installer can appear healthy while running a development backend, missing a native module or binding the wrong profile.
 
-**Automated verification** Build the OSS server bundle and run `corepack pnpm test:packaged-server` in the disposable package tree with the row’s fixture variation.
+**Risk level** High
 
-**Manual verification** Use an extracted OSS candidate in a disposable home and inspect CLI, MCP and renderer readiness records.
+**Automated verification** Build the OSS NSIS candidate in a disposable Windows x64 runner, stage and install it, then run the packaged-server checks and compare process paths, package hashes and readiness fields.
+
+**Manual verification** From Start launch the installed fixture executable and inspect its actual child path, health marker, fresh profile and one ordinary local chat.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-50-06 | Verify artifact identity before packaged smoke | Hash the candidate server bundle and map it to the tested revision. | Every smoke record contains the same revision and tested artifact digest. |
-| APEX-50-07 | Boot without a repository dependency tree | Extract the backend into a clean fixture directory and invoke its shipped entry point. | Health and a normal CLI read succeed without resolving development dependencies. |
-| APEX-50-08 | Exercise packaged local trust on a disposable write | Run one authorized fixture mutation and one ineligible identity control. | Only the authorized synthetic effect appears and both request outcomes are recorded. |
-| APEX-50-09 | Keep packaged backup and restore interoperable | Back up a fixture profile with a known note and reopen its restored copy with the package. | Note bytes and task IDs agree and the restored copy can settle a new synthetic turn. |
-| APEX-50-10 | Detect edition drift between source and installed payload | Read the edition and feature list from source and extracted OSS builds of the same candidate and feed a deliberately mismatched fixture response to the comparison. | The two genuine OSS reads agree on an empty optional-feature set and the control mismatch prevents a passing package attestation. |
+| APEX-50-06 | Verify the server binary belongs to the installed Windows package | Hide the source checkout from runtime lookup and launch through the candidate's Start entry. | The serving child resolves inside the installed product tree and its build identity matches the NSIS artifact. |
+| APEX-50-07 | Load native modules from the Windows package payload | Open a known fixture dataset and render a chart with developer modules absent. | Both operations complete using the staged Windows native dependencies and return their expected data. |
+| APEX-50-08 | Keep a second Windows test profile separate | Launch two supported isolated profiles alternately with distinct fixture chat markers. | Each installed-app launch reads its intended data root and no profile reports the other's marker. |
+| APEX-50-09 | Restore a Windows backup into a clean installed profile | Back up a fixture note and conversation through the installed backend, then restore to a different temporary profile. | The restored client reads the exact note hash and original task ID and settles a new synthetic chat. |
+| APEX-50-10 | Check edition identity from the installed executable | Compare OSS source, extracted server and installed renderer health for the exact Windows candidate. | All three identify the tested version and OSS feature set; a mismatched control fails packaging acceptance. |
 
 ## Promotion decision
 
@@ -62,9 +66,17 @@
 
 **Risk** A release decision based on a partial run can promote an untested desktop.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/release-ci.test.ts`.
 
 **Manual verification** Review a dry-run release decision for the exact commit and fixture evidence without promoting any build.
+
+**APEX-50-12 Risk level** Medium
+
+**APEX-50-12 Risk** Misclassifying a missing runner delays triage while both measured outcomes already prevent release.
+
+**APEX-50-14 Risk** A release could ship with a known cross-member disclosure or unrecoverable user-data loss.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -83,6 +95,8 @@
 **Dependencies** APEX-01-01
 
 **Risk** Release notes can announce an unverified capability or omit a known shipping limitation.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/release-notes-feed.test.mjs`.
 

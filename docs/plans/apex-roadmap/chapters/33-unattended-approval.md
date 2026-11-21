@@ -18,6 +18,8 @@
 
 **Risk** Unattended work can spend repeatedly without progress.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/unattended-turns.test.ts`.
 
 **Manual verification** Inspect synthetic provider requests, limits and the final routine card under a stepped clock.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-21-01
 
 **Risk** A scheduled action can run without the person's required answer.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-unattended-approval.e2e.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Ownership inferred from shared activity could elevate an unattended routine.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-routine-level.test.ts`.
 
 **Manual verification** Read grant source, speaker history and action outcomes in the synthetic cloud-policy fixture.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** An unanswered sign-in card can suppress all future scheduled occurrences.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-unanswered-wait.e2e.test.ts`.
 

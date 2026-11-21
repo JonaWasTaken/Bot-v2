@@ -18,6 +18,8 @@
 
 **Risk** Broad forgetting can erase unrelated notes with similar words.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-forget.test.ts`.
 
 **Manual verification** Review the fixture notebook diff and ask for the retained control fact after forgetting.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** A correction can leave a superseded multiline fact active.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-entries.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Undo on stale content can discard someone else's newer edit.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-journal.test.ts`.
 
 **Manual verification** Compare journal entries and file hashes before a stale Undo and after a reviewed retry.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-10
 
 **Risk** A stale delete may remove newly supplied facts.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-routes.test.ts`.
 

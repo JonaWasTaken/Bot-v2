@@ -18,6 +18,8 @@
 
 **Risk** A green archive build can coexist with a nonfunctional installed Windows desktop.
 
+**Risk level** High
+
 **Automated verification** On a disposable Windows runner, build with `corepack pnpm package:win`, install NSIS and assert the installed renderer marker. Run the referenced workflow test for recipe parity.
 
 **Manual verification** In a disposable Windows x64 VM launch the installed executable, inspect its bridge, use chat, and preserve the smoke markers.
@@ -32,13 +34,15 @@
 
 ## Linux package
 
-**Current state** The Linux smoke provides isolated X11 and Wayland/XWayland variants and reads the packaged renderer marker.
+**Current state** The Ubuntu 24.04 workflow builds DEB, RPM and AppImage from staged CUA, checks packaged smoke logs and prepares six versioned and stable artifact names with SHA-256 digests.
 
 **Sources** [scripts/smoke-linux-package.mjs](../../../../scripts/smoke-linux-package.mjs) · [scripts/verify-linux-package.mjs](../../../../scripts/verify-linux-package.mjs) · [.github/workflows/package-linux.yml](../../../../.github/workflows/package-linux.yml) · [scripts/run-linux-package-smoke.mjs](../../../../scripts/run-linux-package-smoke.mjs)
 
 **Dependencies** APEX-01-03
 
-**Risk** Linux package smoke on one display backend may conceal a failure on another.
+**Risk** An incomplete build lane can hand off a mislabeled Linux package or conceal a display backend that failed its smoke.
+
+**Risk level** High
 
 **Automated verification** Build the package on a disposable Linux runner, run `node scripts/verify-linux-package.mjs` on its release directory and exercise `scripts/smoke-linux-package.mjs` with the packaged fixture.
 
@@ -48,9 +52,9 @@
 | --- | --- | --- | --- |
 | APEX-49-06 | Verify packaged X11 readiness with an empty desktop | Use the Xvfb fixture with no top-level windows and start the packaged renderer through its normal entry point. | The X11 diagnostic distinguishes an empty display from an unavailable renderer and the installed preload and health probes still pass. |
 | APEX-49-07 | Verify the packaged Wayland backend handshake | Run the supported Wayland plus XWayland smoke and inspect the fixture CUA invocation log and health report. | The invocation carries the expected Wayland enable flag, the portal/libei fixture probe passes, and the renderer-ready marker belongs to that package. |
-| APEX-49-08 | Recover from a packaged Linux child crash | Terminate only the synthetic backend after the renderer is ready. | The package restores a usable connection and exposes the recovered server identity. |
-| APEX-49-09 | Verify the package carries its required browser component | Start the browser panel from the clean packaged fixture with system browser discovery controlled. | The declared bundled browser opens a loopback page and reports its expected revision. |
-| APEX-49-10 | Retain profile identity after Linux relaunch | Close and reopen the same synthetic installed profile. | Original task and place IDs survive with no second background server. |
+| APEX-49-08 | Keep Linux package failures diagnosable after CI cleanup | Inject one fixture renderer launch failure after package verification and collect the failure-only diagnostic artifact under the workflow's configured glob. | The retained archive includes the failing launch marker and fixture log from that run. The candidate is ineligible for handoff. |
+| APEX-49-09 | Verify the bundled browser from the installed Linux build | Run the package-linux browser check under the supported Ubuntu sandbox using the installed DEB resource path and a loopback target. | The browser reports the reviewed bundle from that package. Removing it makes the build gate fail before handoff. |
+| APEX-49-10 | Reconcile the Linux build's stable and versioned file names | Generate the DEB, RPM and AppImage with the release workflow's stable aliases and compare the six-entry SHA-256 manifest with those bytes. | Each of the three stable artifacts has its matching versioned digest and the accepted bundle identifies the checked-out commit. |
 
 ## Mac package
 
@@ -61,6 +65,8 @@
 **Dependencies** APEX-01-03
 
 **Risk** A Mac package can be valid for one architecture while advertising support for both.
+
+**Risk level** High
 
 **Automated verification** Run `corepack pnpm exec vitest run scripts/cua-mac-arches.test.mjs` and run the row on a disposable Mac of each required architecture with the matching packaged binary.
 
@@ -74,24 +80,26 @@
 | APEX-49-14 | Verify staged app signatures without publishing | Inspect the candidate's required signatures on a disposable Mac runner using the intended release-signing evidence. | The report ties signature verification results to the exact app hash and identifies any unavailable signing evidence. |
 | APEX-49-15 | Exercise the installed app from a relocated Applications path | Copy the fixture app through its supported install flow and reopen an existing profile. | Helper resolution stays within the installed bundle and the profile opens without a missing executable. |
 
-## Update handoff
+## Windows update and repair handoff
 
-**Current state** The updater coordinator distinguishes automatic and manual check failures, staged versions and installer handoff outcomes. Existing case “elevated-install wording survives terminal handoff and its staged card”.
+**Current state** The updater distinguishes staged packages, automatic checks and explicit install outcomes. The Windows release workflow creates an NSIS installer on a native runner.
 
-**Sources** [electron/updater-coordinator.mjs](../../../../electron/updater-coordinator.mjs) · [electron/updater-coordinator.node-test.mjs](../../../../electron/updater-coordinator.node-test.mjs) · [electron/updater-test-fixture.mjs](../../../../electron/updater-test-fixture.mjs)
+**Sources** [electron/updater-coordinator.mjs](../../../../electron/updater-coordinator.mjs) · [electron/updater-coordinator.node-test.mjs](../../../../electron/updater-coordinator.node-test.mjs) · [electron/updater-test-fixture.mjs](../../../../electron/updater-test-fixture.mjs) · [.github/workflows/package-win.yml](../../../../.github/workflows/package-win.yml) · [electron-builder.yml](../../../../electron-builder.yml)
 
 **Dependencies** APEX-01-17
 
-**Risk** An updater can mark a candidate installed before the replacement desktop starts.
+**Risk** Treating a staged update as installed can leave the Windows user on a broken or unexpected version.
 
-**Automated verification** Extend the fixture and run `node --test electron/updater-coordinator.node-test.mjs`.
+**Risk level** High
 
-**Manual verification** Use the updater fixture with a synthetic local feed and compare states on both sides of the handoff.
+**Automated verification** Use the updater coordinator fixtures and a local-only update feed on a disposable Windows x64 runner. Collect the staged installer hash, attempt record and actual replacement executable version.
+
+**Manual verification** Stage two synthetic Windows versions. Observe the installed desktop before, during and after the installer handoff; reopen an existing synthetic profile afterward.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-49-16 | Preserve the staged version through an update handoff | Stage a local test update then simulate the installer taking over. | The presented version and expected artifact digest match the staged package. |
-| APEX-49-17 | Reject a corrupt local update before install | Supply a disposable update whose bytes differ from its declared digest. | No installation starts and the previous fixture app remains usable. |
-| APEX-49-18 | Make a failed manual check visible | Fail a user-triggered local-feed request and allow the next one. | The initial error is visible and the later successful check clears it. |
-| APEX-49-19 | Keep automatic failures quiet until their configured threshold | Fail consecutive background fixture checks under the documented policy. | Notices follow the threshold and retries create no duplicate staged cards. |
-| APEX-49-20 | Confirm update completion with the replacement app | Launch the updated disposable profile with a preserved synthetic thread and a fresh readiness marker. | The new version opens that thread and the old update stops appearing as pending. |
+| APEX-49-16 | Bind the Windows staged card to the intended NSIS installer | Stage a fixture update and inspect its expected hash before invoking install. | The displayed version, staged installer digest and requested install target all agree. |
+| APEX-49-17 | Reject corrupt Windows update bytes before launch | Change one byte in the local test installer after its metadata has been accepted. | The installer process never starts and the previous desktop still opens its fixture chat. |
+| APEX-49-18 | Keep a cancelled Windows install recoverable | Simulate the documented Windows installer refusal or cancellation after the desktop requests handoff. | The old version remains launchable and the update UI reports the correct interrupted state. |
+| APEX-49-19 | Detect an old Windows executable after an apparent update | Return a completed handoff while deliberately starting the original fixture executable. | The version/ready check detects the old build and cannot mark the update successful. |
+| APEX-49-20 | Preserve the same Windows workspace after a successful update | Upgrade the disposable installed profile across two synthetic versions and reopen a stored note. | The new executable reports its expected version and opens the original task ID and unchanged note bytes. |

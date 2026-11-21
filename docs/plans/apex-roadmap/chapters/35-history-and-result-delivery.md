@@ -18,6 +18,8 @@
 
 **Risk** Retention can evict active runs or let one noisy routine displace every other history.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-run-history.test.ts`.
 
 **Manual verification** Open fixture histories for a noisy and a quiet routine before and after retention runs.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** A localized run card can make deferred or cancelled work appear completed.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-run-card.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A routine result can surface in the wrong personal conversation.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-results.e2e.test.ts`.
 
 **Manual verification** Open the fixture chats receiving scheduled reports and count reports and unread transitions.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-03-01
 
 **Risk** Live run updates can expose full chat content to a status-only subscriber.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-run-broadcast.e2e.test.ts`.
 

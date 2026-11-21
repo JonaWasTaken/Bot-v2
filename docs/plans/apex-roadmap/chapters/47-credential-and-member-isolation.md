@@ -18,6 +18,8 @@
 
 **Risk** Treating a temporarily locked credential store as empty can destroy valid credentials.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run electron/secure-credentials.test.mjs`.
 
 **Manual verification** Use a synthetic credential backend and compare its read/write calls with the desktop sign-in state.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-17
 
 **Risk** A settings change can persist a partial empty credential view over the real saved record.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run electron/secure-credential-state.test.mjs`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Confusing service, owner and member identities can expose workspace data.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/request-auth.test.ts`.
 
 **Manual verification** Use fixture identities and supported routes only, then compare responses and audit decisions.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-17-01
 
 **Risk** A saved personal credential can silently be used on behalf of another member.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-team-member-secrets.e2e.test.ts`.
 

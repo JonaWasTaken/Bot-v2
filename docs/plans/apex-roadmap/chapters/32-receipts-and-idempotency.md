@@ -18,6 +18,8 @@
 
 **Risk** Duplicate trigger delivery can start a consequential routine twice.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/webhook-idempotency.test.ts`.
 
 **Manual verification** Repeat synthetic event deliveries and compare receipt keys, run IDs and inert effects.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** A retried Send can duplicate a message or apply it in another mode.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/send-idempotency.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Ledger corruption or ambiguous ordering can make an occurrence disappear or repeat.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-ledger.test.ts`.
 
 **Manual verification** Reopen the fixture ledger and compare decoded states and sequence numbers to its intact record lines.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** Coalesced progress may be lost on shutdown or resurrect a removed run.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-progress-save.test.ts`.
 

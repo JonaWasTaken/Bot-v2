@@ -18,6 +18,8 @@
 
 **Risk** Repeated MCP startup probes can delay every turn or mark all bots unavailable.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/mcp-health.test.ts`.
 
 **Manual verification** Inspect fixture MCP health rows and launch counters while switching between two bots.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** An incompatible initialize envelope can make otherwise compatible tools disappear.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/mcp-strict-handshake.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A schema advertised to the model may differ from the bounds actually enforced.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/agents-schema.test.ts`.
 
 **Manual verification** Compare the fixture tool catalog with invocation results at each selected boundary.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** Output handling can hide a successful effect or disclose sensitive fields in a preview.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/agents-result.test.ts`.
 

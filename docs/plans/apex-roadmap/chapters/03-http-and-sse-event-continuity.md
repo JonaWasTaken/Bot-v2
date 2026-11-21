@@ -18,6 +18,8 @@
 
 **Risk** A reconnect gap can silently omit a settled answer.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/sse-replay.test.ts`.
 
 **Manual verification** Disconnect the fixture desktop, publish the row's sequence, then compare replay IDs with the server log.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-03
 
 **Risk** A screen stream can starve durable conversation events on a slow socket.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/sse-fanout.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A stale subscription can paint the previous workspace into a newly selected window.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/live-events.test.ts`.
 
 **Manual verification** Switch synthetic servers while looking at the chat and the filtered EventSource log.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** Rebuilt history can misrepresent a previous tool effect as a new one.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/replay-tool-history.e2e.test.ts`.
 

@@ -18,6 +18,8 @@
 
 **Risk** A shipped binary can be absent from the notice inventory or attributed to the wrong revision.
 
+**Risk level** High
+
 **Automated verification** In a disposable copy, run `scripts/generate-cua-sbom.mjs` with its required reviewed CUA graphs, metadata and license inputs. Diff the generated inventory and notices and run `corepack pnpm exec vitest run scripts/cua-linux-release.test.mjs` for archive integrity.
 
 **Manual verification** Compare the pinned CUA source, synthetic package inventory and generated notices in an offline review directory.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-01
 
 **Risk** A vendor binary that matches a filename can still differ from its reviewed source or patch.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/build-windows-browser-vendor.test.mjs`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Development dependencies can mask missing native modules in the redistributed desktop package.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/packaged-native-modules.test.mjs`.
 
 **Manual verification** Open the extracted OSS package manifest and match its native module tree to the frozen lockfile.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-17
 
 **Risk** A universal source binary can be overwritten while staging a single-architecture package.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/mac-thin.test.mjs`.
 

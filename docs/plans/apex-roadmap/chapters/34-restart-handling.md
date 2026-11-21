@@ -10,7 +10,7 @@
 
 ## Supervisor
 
-**Current state** The Electron supervisor clears readiness and backs off on crashes. The sprint recovery smoke still disagrees with the runtime's continuation state. Existing case “crash clears readiness immediately, backs off, and exhausts a bounded budget”.
+**Current state** The Electron supervisor clears readiness and backs off on crashes. The sprint recorded a continuation-state mismatch. Draft PR #5 subsequently counted accepted and in-flight sends across two interruption boundaries. Existing case “crash clears readiness immediately, backs off, and exhausts a bounded budget”.
 
 **Sources** [electron/server-supervisor.mjs](../../../../electron/server-supervisor.mjs) · [electron/server-supervisor.node-test.mjs](../../../../electron/server-supervisor.node-test.mjs) · [scripts/verify-server-recovery.mjs](../../../../scripts/verify-server-recovery.mjs) · [server/runtime/tree.ts](../../../../server/runtime/tree.ts) · [server/resume-recovery.ts](../../../../server/resume-recovery.ts)
 
@@ -18,9 +18,19 @@
 
 **Risk** A restarted server can repeat a completed side effect before the desktop knows its outcome.
 
+**Risk level** Critical
+
 **Automated verification** Run `node --test electron/server-supervisor.node-test.mjs` and extend `node scripts/verify-server-recovery.mjs` with fault gates and an independent per-invocation counter. For the counted-effect case compare the sink receipts, recovered run and terminal desktop transcript.
 
 **Manual verification** In isolated Electron kill only the fixture child at the prescribed boundary and compare counted effects with the recovered transcript.
+
+**APEX-34-01 Related GitHub** [Fork draft PR #5](https://github.com/JonaWasTaken/Bot-v2/pull/5)
+
+**APEX-34-01 Current state** The recovery draft counts sends after service acceptance and during an in-flight reply. It also expires an unsent approval and records zero deliveries when the fresh card is denied. The three-boundary matrix still needs its own repetitions, including one successful authorized retry after a confirmed pre-transmission interruption.
+
+**APEX-34-02 Risk level** High
+
+**APEX-34-02 Risk** Stale readiness can route a new conversation attempt into a dead process and lose its acknowledged start.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -39,6 +49,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** Restart logic can retry a policy refusal or obscure the original failure.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-recovery.test.ts`.
 
@@ -62,6 +74,8 @@
 
 **Risk** Replaying an already accepted provider request can duplicate its consequences.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/resume-recovery.test.ts`.
 
 **Manual verification** Compare synthetic provider acceptance, streamed evidence and the recovery choice on each failure boundary.
@@ -83,6 +97,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** Restart storms can schedule startup routines more often than intended.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/routine-restarts.test.ts`.
 

@@ -18,6 +18,8 @@
 
 **Risk** A malformed model decision can schedule work the person never requested.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/group-goal-run.test.ts`.
 
 **Manual verification** Drive a scripted goal from desktop and compare its visible state with the parsed coordinator decision.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-13
 
 **Risk** A busy wait or lost slot can consume the full planning budget twice.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/one-on-one-goals.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A permanently busy worker can occupy a planner indefinitely.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/group-goal-wait-cap.e2e.test.ts`.
 
 **Manual verification** Reproduce the named wait with scripted lead and worker chats and inspect the resulting handoff tree.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-11
 
 **Risk** A compact goal card can imply completion while dependencies are pending.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/GoalRunCard.test.ts`.
 

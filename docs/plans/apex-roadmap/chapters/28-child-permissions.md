@@ -18,6 +18,8 @@
 
 **Risk** A worker can inherit the wrong conversation's permission level.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/delegated-level.test.ts`.
 
 **Manual verification** Read effective levels and approval cards from the synthetic Chief and two subordinate chats.
@@ -30,68 +32,74 @@
 | APEX-28-04 | Handle a missing permission source at resume | Remove the original source conversation before a held child resumes. | No additional authority is inferred and the unresolved source is recorded. |
 | APEX-28-05 | Separate sibling grants in concurrent projects | Use one specialist in two projects with different effective levels. | Each call checks the grant of its own root conversation. |
 
-## Shared files
+## Coding assignments and source bundles
 
-**Current state** The file handoff path enforces per-message, per-assignment and daily budgets and can deduplicate passed files. Existing case “stores a passed file once however often it is passed, and keeps it on the assignment”.
+**Current state** Passed files belong to an assignment, with per-message and per-assignment budgets. The checker fixture already proves byte-exact attachment delivery.
 
-**Sources** [server/host/handoff-files.ts](../../../../server/host/handoff-files.ts) · [server/host/handoff-files.test.ts](../../../../server/host/handoff-files.test.ts) · [server/handoff-files.e2e.test.ts](../../../../server/handoff-files.e2e.test.ts)
+**Sources** [server/host/handoff-files.ts](../../../../server/host/handoff-files.ts) · [server/host/handoff-files.test.ts](../../../../server/host/handoff-files.test.ts) · [server/handoff-files.e2e.test.ts](../../../../server/handoff-files.e2e.test.ts) · [server/checked-handoff.e2e.test.ts](../../../../server/checked-handoff.e2e.test.ts)
 
 **Dependencies** APEX-23-11
 
-**Risk** A child may receive an unrelated or oversized file while the owner thinks only one document was shared.
+**Risk** A coding worker may patch the wrong revision when a source bundle is incomplete or two module names collide.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/handoff-files.test.ts`.
+**Risk level** High
 
-**Manual verification** Inspect the recipient's fixture directory and assignment receipt before opening the attachment.
+**Automated verification** Pass a two-module synthetic coding task through the handoff e2e fixture. Reconstruct and compare inputs and outputs by repository-relative path, assignment ID and hash.
 
-| ID | Objective | Implementation plan | Acceptance |
-| --- | --- | --- | --- |
-| APEX-28-06 | Pass only explicitly chosen input documents | Seed three stored files and attach only the middle one to a handoff. | The recipient gets exactly that file's hash. |
-| APEX-28-07 | Apply the aggregate file-size cap before dispatch | Supply individually small inputs exceeding the assignment's total limit. | No partial accepted file set is published. |
-| APEX-28-08 | Keep parallel file deliveries within the daily limit | Race two deliveries whose combined bytes exceed the same bot's remaining allowance. | Accepted charges never exceed the daily cap. |
-| APEX-28-09 | Deduplicate a repeated attachment without losing its assignment links | Pass identical content to two authorized assignments. | Both receipts resolve correctly while underlying storage retains one content copy. |
-| APEX-28-10 | Credit bytes only to successful recipients | Deliver to one accepting and one refused teammate. | The daily accounting charges only the accepted recipient and the failed one obtains no readable copy. |
-
-## Browser lending
-
-**Current state** The handoff surface selector treats the built-in browser separately from other computer surfaces. Existing case “lets a hand-off ask only for the built-in browser, auto included”.
-
-**Sources** [server/host/handoff-browser.ts](../../../../server/host/handoff-browser.ts) · [server/host/handoff-browser.test.ts](../../../../server/host/handoff-browser.test.ts)
-
-**Dependencies** APEX-24-11
-
-**Risk** Lending a browser might imply permission for a different computer surface.
-
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/handoff-browser.test.ts`.
-
-**Manual verification** Inspect the fixture's surface selector and inert control counters on the receiving worker.
+**Manual verification** Open the worker's brief and returned files. Apply the resulting patch in a disposable fixture checkout and run the named failing test before and after.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-28-11 | Keep a browser-only child off the host desktop | Request a browser handoff then attempt a benign fixture desktop action. | Browser tools remain usable and the desktop adapter sees zero input. |
-| APEX-28-12 | Record an abandoned browser handoff accurately | Give up the fixture handoff before its worker outcome arrives. | One stopped result appears and the late outcome cannot replace it. |
-| APEX-28-13 | Retain a real browser failure in the child result | Fail the synthetic browser action after a valid handoff. | The parent sees the actual failure and no generic success. |
-| APEX-28-14 | Close the browser grant when its assignment ends | Complete the child then request another page action on its old assignment. | The retired scope grants no new work. |
-| APEX-28-15 | Keep two borrowed browser contexts isolated | Give two workers different fixture tabs through different assignments. | Each reads only its intended page marker and receives its own action receipt. |
+| APEX-28-06 | Deliver the failing test alongside the implicated source | Dispatch one fixture test and one module while leaving an unrelated source unselected. | The worker gets exactly the two agreed hashes and can reproduce the stated failing assertion. |
+| APEX-28-07 | Preserve module paths when handing off duplicate basenames | Assign two index.ts modules under different fixture packages. | The worker's bundle maps both paths to distinct bytes and the returned patch changes only the requested package. |
+| APEX-28-08 | Detect a code task whose reference revision changed | Advance the fixture source after dispatch but before the worker returns a patch. | Review reports the base mismatch and does not silently apply the patch to the newer bytes. |
+| APEX-28-09 | Refuse a partial coding brief when its required files exceed budget | Include two required modules exceeding the shared limit together. | The assignment names the missing inputs and records zero accepted incomplete source bundles. |
+| APEX-28-10 | Retain the reviewer’s test instructions through a resumed handoff | Restart after a source bundle and exact test command have been accepted but before the worker replies. | The resumed assignment lists the original hashes and command once and its result points to the same task. |
 
-## Refused requests
+## Frontend coding acceptance
 
-**Current state** Refused-handoff bookkeeping associates failed named assignments with routine runs and can clear them after success. Existing case “makes the run say so, once, whether the bot was named by id or by name”.
+**Current state** A worker can receive a browser-only handoff and the CDP fixture asserts resulting DOM state. A stopped handoff has a distinct terminal outcome.
 
-**Sources** [server/host/refused-handoffs.ts](../../../../server/host/refused-handoffs.ts) · [server/host/refused-handoffs.test.ts](../../../../server/host/refused-handoffs.test.ts)
+**Sources** [server/host/handoff-browser.ts](../../../../server/host/handoff-browser.ts) · [server/host/handoff-browser.test.ts](../../../../server/host/handoff-browser.test.ts) · [server/browser/cdp/s4-actions.e2e.test.ts](../../../../server/browser/cdp/s4-actions.e2e.test.ts) · [server/browser/cdp/s4-pages.e2e.test.ts](../../../../server/browser/cdp/s4-pages.e2e.test.ts)
+
+**Dependencies** APEX-01-14
+
+**Risk** A frontend coding task can claim success from a compile or screenshot while the requested interaction still fails.
+
+**Risk level** High
+
+**Automated verification** Have a deterministic fixture worker edit a local demonstration page; run its before/after browser assertions against the served fixture and correlate them with its accepted diff.
+
+**Manual verification** Open the patched fixture page at the displayed revision, repeat the user action and compare the result with the recorded browser proof.
+
+| ID | Objective | Implementation plan | Acceptance |
+| --- | --- | --- | --- |
+| APEX-28-11 | Prove a UI behavior fix through its normal entry point | Change a fixture form whose Save button previously left the result unchanged. | The original build fails the interaction check and the patched build shows the expected saved value after one click. |
+| APEX-28-12 | Run the regression on the built frontend artifact | Rebuild the fixture after a source edit and run the checker against the output directory. | Served build hash matches the patch receipt and contains its intended UI change. |
+| APEX-28-13 | Reject a frontend pass from a stale preview | Leave a passing fixture server running on A's port while a second build contains a deliberate failing control. | The checker identifies the expected build marker and refuses to credit A's page for B. |
+| APEX-28-14 | Keep browser-only coding checks within the delegated surface | Give the frontend reviewer a synthetic app URL and a browser-only assignment. | Its verification reaches the intended control with zero calls to host desktop input. |
+| APEX-28-15 | Preserve a failed interaction beside an otherwise green build | Return a successful compile and a failing browser assertion for the same revision. | The coding result retains both outcomes and reports the requested behavior as unverified. |
+
+## Unavailable specialists and fallback
+
+**Current state** The host records a denied handoff once for its routine and clears that refusal when the assignment later succeeds. Roles and actual bot identities are separate inputs.
+
+**Sources** [server/host/refused-handoffs.ts](../../../../server/host/refused-handoffs.ts) · [server/host/refused-handoffs.test.ts](../../../../server/host/refused-handoffs.test.ts) · [src/lib/bot-roles.ts](../../../../src/lib/bot-roles.ts) · [server/team-refused-handoff.e2e.test.ts](../../../../server/team-refused-handoff.e2e.test.ts)
 
 **Dependencies** APEX-21-01
 
-**Risk** Refusal messages can misattribute nonexistent work or conceal a legitimate permissions problem.
+**Risk** A fallback can silently bypass the specialist's permission boundary or falsely claim that a specialist checked a result.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/refused-handoffs.test.ts`.
+**Risk level** High
 
-**Manual verification** Review the synthetic routine's result and assignment list beside its refusal notices.
+**Automated verification** Use the refused-handoff suite and the synthetic team e2e to record proposed, refused and successful specialist assignments. Verify the receiving actor's ID before crediting work.
+
+**Manual verification** Read the fixture parent summary beside the requested specialist's own task list; verify who actually had access and who completed the work.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-28-16 | Report a refused named teammate once | Request the same unavailable worker by ID and display name in one routine. | One refusal appears and no phantom child is created. |
-| APEX-28-17 | Exclude typos from permission-denied attribution | Ask for a nonexistent synthetic teammate that resembles a valid name. | The run identifies the unresolved name and does not blame the valid worker. |
-| APEX-28-18 | Clear a refusal after a successful later dispatch | Restore the teammate's permitted scope and retry the original task. | The current result reflects the successful assignment without a stale refusal. |
-| APEX-28-19 | Scope refusal bookkeeping to the originating run | Cause the same denial in a routine and a separate ordinary chat. | Routine summary includes only its own denial. |
-| APEX-28-20 | Keep another person's private bot out of refusal detail | Reference an unavailable synthetic personal bot from a shared routine. | Shared output exposes no private profile detail and creates no child. |
+| APEX-28-16 | Name an unavailable specialist once in a run result | Request an out-of-scope specialist by display name and then by its ID. | One refusal names the intended role without claiming a completed specialist turn. |
+| APEX-28-17 | Distinguish an unknown specialty from a known but busy worker | Request a nonexistent role and then a known specialist held on a fixture gate. | The two outcomes distinguish missing capability from temporary availability. |
+| APEX-28-18 | Reassign a refused specialist task without duplicating success | Restore the original specialist's access after a permitted replacement has already delivered. | The root counts one accepted specialist result and explains which bot provided it. |
+| APEX-28-19 | Keep specialist fallback inside the project audience | Offer a qualified bot outside the fixture team's audience and a less specialized allowed bot. | Private inputs never reach the outside bot and the parent explicitly identifies the fallback's missing capability. |
+| APEX-28-20 | Withdraw a stale specialist refusal after a legitimate retry | Grant the intended specialist project access and rerun a previously refused brief. | Its current assignment succeeds once and the result no longer presents the earlier refusal as current. |

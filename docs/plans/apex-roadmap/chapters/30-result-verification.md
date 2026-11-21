@@ -18,6 +18,8 @@
 
 **Risk** A reviewer may judge truncated instructions or a different revision of the work.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/checked-handoff.e2e.test.ts`.
 
 **Manual verification** Open the synthetic checker conversation and compare its brief and attachment hashes with the sender's.
@@ -40,9 +42,13 @@
 
 **Risk** A successful-looking activity line can point to a worker or file that never received the assignment.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/handoff-sent.test.ts`.
 
 **Manual verification** Follow each fixture result chip from the parent and match its destination and artifact.
+
+**APEX-30-09 Related GitHub** [Fork PR #8 audience checks for waiting chips](https://github.com/JonaWasTaken/Bot-v2/pull/8)
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -52,46 +58,50 @@
 | APEX-30-09 | Keep private child detail out of a shared result preview | Complete a fixture child with an owner-only marker and a shareable summary. | The shared parent line shows the summary and zero private markers. |
 | APEX-30-10 | Repair a deleted child link gracefully | Remove a synthetic completed child after its result is delivered. | The parent retains the accepted result and clearly identifies the unavailable destination. |
 
-## Result assertions
+## Independent artifact verdicts
 
-**Current state** The evaluator derives pass/fail results from actual snapshot tool calls, order, prompt and handoff structure. Existing case “counts activities and pins a gate answer HTTP status”.
+**Current state** Snapshot scoring can assert actual calls, turn order and stored evidence. The checked-handoff fixture supplies the independent checker with the selected brief and artifact.
 
-**Sources** [evals/scorers/assertions.ts](../../../../evals/scorers/assertions.ts) · [evals/scorers/assertions.test.ts](../../../../evals/scorers/assertions.test.ts)
-
-**Dependencies** APEX-05-16
-
-**Risk** A narrative of success can satisfy a text check without any accepted deliverable.
-
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/scorers/assertions.test.ts`.
-
-**Manual verification** Compare the frozen fixture assertions with the actual artifact and handoff tree.
-
-| ID | Objective | Implementation plan | Acceptance |
-| --- | --- | --- | --- |
-| APEX-30-11 | Assert the artifact hash independently of the final reply | Let a scripted child claim it returned the file while supplying different bytes. | The artifact criterion fails despite successful prose. |
-| APEX-30-12 | Check that every required child delivered | Supply a valid-looking final answer but omit one of three required child results. | The missing child ID appears as the specific failing condition. |
-| APEX-30-13 | Reject a result from the wrong generation | Replace the accepted child's evidence with a previous run's equally named answer. | The scorer refuses it as belonging to a different run. |
-| APEX-30-14 | Require a terminal result before parent completion | Present a snapshot with dispatched and working states but no settlement. | Completion fails even if all requested tools appeared. |
-| APEX-30-15 | Measure review disagreement separately from artifact correctness | Pair opposing checker opinions with an objectively correct fixture total. | The report records disagreement and the independent total verdict separately. |
-
-## Golden replay
-
-**Current state** Golden replay compares a redacted scenario and its normalized behavior trace against committed baselines. Existing case “carry golden provenance and pass both leak scans”.
-
-**Sources** [evals/golden/run-golden.ts](../../../../evals/golden/run-golden.ts) · [evals/golden/golden.test.ts](../../../../evals/golden/golden.test.ts) · [evals/golden/redact/redact-thread.ts](../../../../evals/golden/redact/redact-thread.ts)
+**Sources** [evals/scorers/assertions.ts](../../../../evals/scorers/assertions.ts) · [evals/scorers/assertions.test.ts](../../../../evals/scorers/assertions.test.ts) · [server/checked-handoff.e2e.test.ts](../../../../server/checked-handoff.e2e.test.ts) · [server/checker-model.ts](../../../../server/checker-model.ts)
 
 **Dependencies** APEX-05-16
 
-**Risk** A recorded golden can preserve a regression or leak synthetic identities across replay runs.
+**Risk** An independent reviewer can approve persuasive prose without validating the delivered artifact itself.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/golden/golden.test.ts`.
+**Risk level** High
 
-**Manual verification** Inspect the redacted fixture, normalized trace and diff before accepting a baseline.
+**Automated verification** Cross a scripted author's claim with a checker that has the frozen artifact, expected values and a separate actor ID. Vary artifact correctness and verdict independently.
+
+**Manual verification** Blind-review the synthetic deliverable and compare the checker's cited bytes, measurements and conclusion with the review rubric.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-30-16 | Reconstruct a reference handoff from its golden fixture | Replay into two fresh mock worlds with different generated actor IDs. | Both normalized traces match the same committed baseline. |
-| APEX-30-17 | Catch a missing specialist step during replay | Remove the specialist's only recorded action from a copied scenario. | The trace diff identifies the missing turn or action. |
-| APEX-30-18 | Expose a real result-order change in the golden diff | Reverse a required review and delivery in a controlled snapshot. | The first differing step is reported with both expected and actual order. |
-| APEX-30-19 | Verify re-redaction reproduces the committed fixture | Redact the same synthetic sample twice in disposable directories. | Both outputs match the stored fixture byte for byte. |
-| APEX-30-20 | Keep baseline updates reviewable | Stage a deliberate golden change with its old trace, new trace and fixture diff. | Each changed outcome is tied to a named scenario and no unrelated trace changes. |
+| APEX-30-11 | Make an objectively wrong artifact fail independent review | Have a writer claim the expected output hash but attach different bytes. | The checker names the observed hash mismatch and declines approval despite the claim. |
+| APEX-30-12 | Account for every required reviewer finding | Seed three bounded errors and supply a review that identifies only two. | The review scorer reports two detected errors and the specific missed fixture issue. |
+| APEX-30-13 | Require a checker verdict from the same assignment revision | Attach a positive verdict for an earlier, correct revision while the latest artifact contains a known defect. | The current submission stays unaccepted until its own revision has a verdict. |
+| APEX-30-14 | Keep a reviewer timeout distinct from a failed artifact | Withhold the checker result for a known-valid fixture artifact. | The report records review unavailable and issues neither a pass nor a content-failure verdict. |
+| APEX-30-15 | Grade reviewer disagreement separately from objective correctness | Give two eligible reviewers opposing recommendations on an artifact with a deterministic total. | The report shows the independently computed total, both verdicts, and the disagreement without treating majority opinion as arithmetic proof. |
+
+## Coding evaluation and reproducible tests
+
+**Current state** Golden replays compare deterministic traces, and the loopback tool fixture observes a real file effect. These provide seams for judging a coding task by its patch, test and changed behavior.
+
+**Sources** [evals/golden/run-golden.ts](../../../../evals/golden/run-golden.ts) · [evals/golden/golden.test.ts](../../../../evals/golden/golden.test.ts) · [evals/golden/trace/behavior-trace.ts](../../../../evals/golden/trace/behavior-trace.ts) · [server/checkpoints.ts](../../../../server/checkpoints.ts) · [server/openai-tools.e2e.test.ts](../../../../server/openai-tools.e2e.test.ts)
+
+**Dependencies** APEX-05-16
+
+**Risk** A coding evaluator can accept a passing transcript despite incorrect code, skipped tests or a mismatched worktree.
+
+**Risk level** High
+
+**Automated verification** Extend the offline fixture with a tiny two-function package, a failing regression and an inert developer tool that runs its test command. Freeze tree hashes, exits and assertion counts for scoring.
+
+**Manual verification** Inspect the proposed source diff, apply it to a fresh copy of the tiny package and rerun the documented regression independently of the model transcript.
+
+| ID | Objective | Implementation plan | Acceptance |
+| --- | --- | --- | --- |
+| APEX-30-16 | Require a reproducible red-to-green coding result | Seed a function with a deterministic off-by-one error and a boundary test. | The original source fails, the patch passes, and both exit codes point to the same test and named fixture revision. |
+| APEX-30-17 | Catch a patch that removes its own failing test | Have a scripted worker omit the boundary assertion while claiming a fix. | The grader detects the changed test inventory and denies credit even with a zero exit code. |
+| APEX-30-18 | Detect a skipped required test in a coding receipt | Mark the only required case skipped in a copied fixture result. | The evaluator records zero exercised required assertions and withholds a pass. |
+| APEX-30-19 | Separate a lint-only edit from the requested behavior change | Offer one formatting-only patch and one functional patch against the same regression. | Only the functional patch passes the behavioral oracle and both retain their exact diffs. |
+| APEX-30-20 | Replay an accepted patch outside the original worker checkout | Apply the recorded patch and test command to two newly seeded fixture directories. | Their changed path sets, resulting tree hashes and required test outcomes agree. |

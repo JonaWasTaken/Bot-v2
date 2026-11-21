@@ -18,6 +18,8 @@
 
 **Risk** Incorrect process attribution can make the wrong subsystem look responsible for a slowdown.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/perf/process-sampler.test.ts`.
 
 **Manual verification** Compare the specimen process tree, sampled bucket table and aggregate totals in the fixture report.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** Event-loop stalls may be attributed to the wrong task or observation window.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/event-loop-stalls.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Profiling a distressed process can worsen the stall or hide missing diagnostics.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/perf/stall-watch.test.ts`.
 
 **Manual verification** Review fixture watchdog files next to the controlled stall and memory-pressure timeline.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** Pressure handling can terminate useful work or conceal the actual source of memory growth.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/engine-memory.test.ts`.
 

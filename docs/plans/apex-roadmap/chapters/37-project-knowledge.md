@@ -18,6 +18,8 @@
 
 **Risk** A project's editable instructions and its on-disk bot mirror can drift.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/bot-folder.test.ts`.
 
 **Manual verification** Open the fixture bot folder and compare the instruction editor, mirror and next turn context.
@@ -30,27 +32,29 @@
 | APEX-37-04 | Keep project instruction copies private on disk | Create two member-owned project bots using synthetic instructions. | Each folder retains the documented private file modes on a supporting filesystem. |
 | APEX-37-05 | Show the instruction revision used by a project run | Save an instruction edit while an earlier turn remains open. | Its receipt distinguishes the earlier instruction hash from the next turn's hash. |
 
-## Room folder
+## Project knowledge sources
 
-**Current state** Room work can fail with a specific missing-folder error rather than silently using another bot folder. Existing case “a room whose folder was deleted names that folder when work handed there fails, not the bot's settings”.
+**Current state** Room work resolves a designated folder and reports when that folder is missing. Topic matching and workspace context supply separate source identities to a project turn.
 
-**Sources** [server/room-folder.ts](../../../../server/room-folder.ts) · [server/room-missing-folder.e2e.test.ts](../../../../server/room-missing-folder.e2e.test.ts)
+**Sources** [server/room-folder.ts](../../../../server/room-folder.ts) · [server/room-missing-folder.e2e.test.ts](../../../../server/room-missing-folder.e2e.test.ts) · [server/workspace.ts](../../../../server/workspace.ts) · [server/memory-topics.ts](../../../../server/memory-topics.ts) · [server/memory-topic-corrections.test.ts](../../../../server/memory-topic-corrections.test.ts)
 
 **Dependencies** APEX-23-11
 
-**Risk** A room task without its designated project folder can accidentally use another working directory.
+**Risk** A project answer can cite another project's document or retain facts from a superseded knowledge source.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/room-missing-folder.e2e.test.ts`.
+**Risk level** High
 
-**Manual verification** Run a room task from the fixture desktop and inspect its resolved folder and result.
+**Automated verification** Seed two disposable project folders and two topic layers. Inspect chosen folder, source IDs and available passages at the driver boundary for each knowledge query.
+
+**Manual verification** Ask each fixture project the same question, open its cited source and compare the answer with the accepted project document or topic revision.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-37-06 | Identify a removed project working folder by room | Move the fixture room folder aside before dispatching a file read. | The error names the room folder and no read uses the bot's default folder. |
-| APEX-37-07 | Recover a room after selecting a replacement folder | Rebind a broken room to a new fixture directory with a known marker. | The next task reads that marker and the previous failure remains attributable. |
-| APEX-37-08 | Keep similarly named project folders distinct | Give two rooms different folders both ending in Reports. | Each room's task reads its own distinct fixture file hash. |
-| APEX-37-09 | Prevent an unrelated chat from inheriting room folder context | Alternate a room turn and private turn on the same bot. | Only the room turn gets the room-specific working directory. |
-| APEX-37-10 | Recognize a project folder restored at the same path | Restore the missing fixture directory, then retry the room task. | The room becomes usable without changing bot-wide settings. |
+| APEX-37-06 | Identify a missing knowledge folder before answering from documents | Move the selected project folder away and ask for a fact unique to its project brief. | The answer records missing project evidence and includes no fallback fact from a different folder. |
+| APEX-37-07 | Refresh project knowledge after rebinding a room folder | Choose a replacement directory with a revised rollout date in its project brief. | The next eligible turn cites the replacement source and shows its revised date. |
+| APEX-37-08 | Disambiguate projects whose knowledge folders share a basename | Place different fixture decisions in two folders ending in Research. | Each project's prompt contains its own decision and source path with no other-project marker. |
+| APEX-37-09 | Keep room-only knowledge out of private chat context | Alternate a project-room question with a personal question using the same bot. | The personal turn has no room-only source unless an authorized selection explicitly provides it. |
+| APEX-37-10 | Recover a restored project source without duplicating it | Restore a temporarily unavailable knowledge directory and rerun the original query. | The recovered document is available under one original project identity and is cited once. |
 
 ## Project notes
 
@@ -61,6 +65,8 @@
 **Dependencies** APEX-18-01
 
 **Risk** A team can rely on an obsolete project decision after a correction.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-topic-corrections.test.ts`.
 
@@ -74,24 +80,26 @@
 | APEX-37-14 | Expose a project note that contributed to an answer | Ask a specific decision question with a stored source topic. | The resulting disclosure or inspection record points to the actual topic and revision. |
 | APEX-37-15 | Distinguish missing project knowledge from a confident guess | Remove the only source for a synthetic deadline then ask again. | The answer or retrieval evidence marks the deadline unavailable and cites no unrelated project. |
 
-## Folder pages
+## Project document reading and revisions
 
-**Current state** Folder pages can serve scoped data and range-read video to the embedded viewer with separate publication behavior. Existing case “shows a dashboard folder inline, serves its Parquet to the frame by token only, keeps other bots out, and gives the card its link on publish”.
+**Current state** Project pages can serve range reads to scoped viewers. Message files and the attachment preview provide a source-bound path for reading documents inside a conversation.
 
-**Sources** [server/pages/access.ts](../../../../server/pages/access.ts) · [server/folder-pages.e2e.test.ts](../../../../server/folder-pages.e2e.test.ts) · [server/page-files.ts](../../../../server/page-files.ts) · [server/pages/bundle.ts](../../../../server/pages/bundle.ts)
+**Sources** [server/page-files.ts](../../../../server/page-files.ts) · [server/page-files.test.ts](../../../../server/page-files.test.ts) · [server/folder-pages.e2e.test.ts](../../../../server/folder-pages.e2e.test.ts) · [server/message-file.ts](../../../../server/message-file.ts) · [src/components/AttachmentPreview.tsx](../../../../src/components/AttachmentPreview.tsx)
 
 **Dependencies** APEX-23-11
 
-**Risk** An embedded project page can show data from the wrong project or publish a private local file.
+**Risk** A project reader can display another member's document or silently substitute bytes revised after review.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/folder-pages.e2e.test.ts`.
+**Risk level** Critical
 
-**Manual verification** Open the synthetic project dashboard and compare embedded data, linked files and its disposable preview bundle.
+**Automated verification** Run page-files, message-file and folder-pages fixtures against two projects with duplicate document names. Compare byte ranges, permission decisions, preview identity and accepted revisions.
+
+**Manual verification** Open each fixture document from its chat message and project page. Review a changed document as its author and as a second member whose access can be revoked.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-37-16 | Display a dashboard against its own Parquet data | Seed two same-named datasets in distinct project folders. | The chart reflects its project's known rows and never serves the other dataset. |
-| APEX-37-17 | Refresh a page viewer after project membership changes | Remove a fixture viewer with a dashboard already open. | Its next protected data read is refused and a current member still sees the chart. |
-| APEX-37-18 | Keep local-only video out of a proposed publish bundle | Embed a synthetic project clip and stage the page for local inspection. | The inline page can read its clip and the staged publish inventory excludes its bytes. |
-| APEX-37-19 | Invalidate a replaced dashboard file reference | Replace a project data file after its frame received the original link. | The old identity cannot serve the replacement silently. |
-| APEX-37-20 | Carry project page provenance into the preview record | Build a disposable page preview from a committed fixture dataset. | The preview manifest associates its page, project and expected dataset hash without uploading anything. |
+| APEX-37-16 | Preview the attached revision of a project document | Open a report attached in chat after the working copy was edited under the same name. | The reader identifies the attached revision and its preview matches its stored hash. |
+| APEX-37-17 | Recover a project reader from a stale document offset | Reopen a synthetic report at a bookmarked offset beyond its new length. Observe the range response and retry from the start through the same viewer. | The first read returns 416 with the current byte length. The retry returns the new opening bytes under the same document identity and clears the read error. |
+| APEX-37-18 | Cancel a document save when its selected source changes | Hold the first report's download response and select a second report before releasing the original response. Then save the second report through the attachment control. | The delayed response creates zero downloads under the second report's name. Its own save delivers exactly one file with the second report's digest. |
+| APEX-37-19 | Explain an unsupported document preview while retaining the file | Open a permitted fixture document whose format the previewer cannot render. | The reader identifies the format limitation and its supported download returns the original byte hash. |
+| APEX-37-20 | Keep local media out of a document's shared publication package | Compose a fixture project page backed by a document and a local-only clip, then inspect a staged publication. | The staged source inventory accounts for the document and excludes the local-only clip. |

@@ -18,6 +18,8 @@
 
 **Risk** A model can mistake a mentioned file for an attachment supplied by the person.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/conversation-attachments.test.ts`.
 
 **Manual verification** Compare chat attachment chips and IDs with the fixture person's original uploads.
@@ -40,6 +42,8 @@
 
 **Risk** Sharing a page by filename alone can expose a newer or unauthorized artifact.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/page-files.test.ts`.
 
 **Manual verification** Open the fixture page as two viewers and compare file identity, range bytes and revoked access.
@@ -52,27 +56,29 @@
 | APEX-38-09 | Keep read-only page artifacts immutable through the viewer | Open an immutable fixture file through a page and attempt a benign update by its supported interface. | The viewer has no write operation and the artifact hash remains unchanged. |
 | APEX-38-10 | Make missing page components visible in provenance | Remove one referenced synthetic asset before an offline page review. | The report names the missing path and does not certify a complete bundle. |
 
-## Peer provenance
+## Peer reviewer authority
 
-**Current state** Peer provenance describes author and origin and distinguishes a room post from a person-authored instruction. Existing case “names the author and says the text is not from the user”.
+**Current state** Peer messages are labeled by source and authority. The checked-handoff fixture forwards a bounded brief and only explicitly attached evidence.
 
-**Sources** [server/peer-provenance.ts](../../../../server/peer-provenance.ts) · [server/peer-provenance.test.ts](../../../../server/peer-provenance.test.ts) · [server/provenance-label.ts](../../../../server/provenance-label.ts)
+**Sources** [server/peer-provenance.ts](../../../../server/peer-provenance.ts) · [server/peer-provenance.test.ts](../../../../server/peer-provenance.test.ts) · [server/provenance-label.ts](../../../../server/provenance-label.ts) · [server/checked-handoff.e2e.test.ts](../../../../server/checked-handoff.e2e.test.ts)
 
 **Dependencies** APEX-01-13
 
-**Risk** A peer contribution may be presented as a direct request from the person.
+**Risk** A reviewer suggestion could be mistaken for human approval or obscure who authorized a subsequent change.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/peer-provenance.test.ts`.
+**Risk level** High
 
-**Manual verification** Compare the fixture work-origin label with the originating member, bot or room event.
+**Automated verification** Feed writer, reviewer and person events into the provenance and checked-handoff fixtures. Assert role, authority, addressed assignment and which actor actually accepted the result.
+
+**Manual verification** Follow a reviewer finding from its parent card to the fixture review transcript and distinguish advisory feedback from the person's decision.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-38-11 | Label a peer's research note as peer-authored | Hand a synthetic note from analyst to writer. | The receiving context identifies the analyst and does not assign user authority to the note. |
-| APEX-38-12 | Preserve provenance after forwarding a room contribution | Forward a room finding into a private project discussion. | The source room and author remain discoverable without converting it into a user command. |
-| APEX-38-13 | Distinguish a question addressed to a bot from a room post | Deliver identical fixture text through each supported event. | The default response behavior follows the event kind and retains its correct origin. |
-| APEX-38-14 | Keep unusual display names within a single provenance field | Choose fixture author names containing separators and line breaks. | The rendered origin note has one author and exactly its declared authority. |
-| APEX-38-15 | Handle an unknown work origin conservatively | Load a synthetic legacy record with no explicit peer metadata. | The presentation marks origin unavailable and assigns no invented author. |
+| APEX-38-11 | Label a reviewer's correction as an independent suggestion | Return a differently authored factual correction with its source quote. | The owner sees the reviewer and quote and the system never labels the correction as a direct user request. |
+| APEX-38-12 | Preserve disagreement between writer and reviewer | Have the writer contest an independently reproduced fixture test failure. | Both positions remain attributable and the failing test prevents an unconditional pass. |
+| APEX-38-13 | Require human authority for a reviewer-proposed scope change | Let a checker identify an extra task beyond the approved fixture deliverable. | The review records the suggestion and dispatches zero additional tasks solely on reviewer authority. |
+| APEX-38-14 | Attach a verified resolution to the original objection | Have the writer fix the named defect and send the new artifact revision to the same checker. | The closed finding references both the original objection and the new verified hash. |
+| APEX-38-15 | Keep private reviewer evidence out of a shared summary | Give a checker private fixture detail alongside a shareable finding. | The shared result states the finding and reviewer role while containing zero occurrences of the private marker. |
 
 ## Origin labels
 
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-13
 
 **Risk** A provenance badge inconsistent with the actual authority can mislead a reviewer.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/provenance-label.test.ts`.
 

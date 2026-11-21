@@ -14,9 +14,11 @@
 
 **Sources** [src/lib/voice-key-draft.ts](../../../../src/lib/voice-key-draft.ts) · [src/lib/voice-key-draft.test.ts](../../../../src/lib/voice-key-draft.test.ts) · [src/components/VoiceSettings.tsx](../../../../src/components/VoiceSettings.tsx) · [src/components/VoiceSettings.test.ts](../../../../src/components/VoiceSettings.test.ts) · [server/tts/index.ts](../../../../server/tts/index.ts)
 
-**Dependencies** APEX-09-01
+**Dependencies** APEX-06-01
 
 **Risk** Voice-provider changes can show or store an unsaved key for another provider.
+
+**Risk level** Critical
 
 **Automated verification** Extend the relevant draft and settings cases and run `corepack pnpm exec vitest run src/lib/voice-key-draft.test.ts src/components/VoiceSettings.test.ts` with fake provider settings and a recording speech sink.
 
@@ -40,6 +42,8 @@
 
 **Risk** Partial recognition text may duplicate or erase dictated phrases.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `node --test electron/speech-transcript.node-test.mjs`.
 
 **Manual verification** Dictate using the fixture callback stream and compare the final composer text with the expected utterances.
@@ -62,6 +66,8 @@
 
 **Risk** Streamed speech can repeat text, speak secrets or continue in the wrong thread.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/spoken-reply-stream.test.ts`.
 
 **Manual verification** Listen to the fake audio sink and compare its emitted blocks and stop events with the visible reply.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** Voice generation can attach private speech or leave a note on a stopped turn.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/reply-voice-notes.test.ts`.
 

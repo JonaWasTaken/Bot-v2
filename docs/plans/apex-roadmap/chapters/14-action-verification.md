@@ -18,6 +18,8 @@
 
 **Risk** A screenshot can be associated with the wrong action after restart.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/browser-evidence.test.ts`.
 
 **Manual verification** Compare the numbered steps, saved images and fixture page before accepting the reported action.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** A clipped tool response can look like a complete artifact.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/tool-results.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A late result can overwrite the record of an unrelated turn.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/late-tool-results.test.ts`.
 
 **Manual verification** End the fixture turn, release its delayed result and inspect the original and successor cards.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** A model's text can claim a write even when the adapter did nothing.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/openai-tools.e2e.test.ts`.
 

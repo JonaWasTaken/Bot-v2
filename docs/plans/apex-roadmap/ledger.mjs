@@ -17,15 +17,34 @@ const programNames = [
   "Multimodal, performance and reliability",
   "Security, packaging and release",
 ];
+const releaseTitles = [
+  ["Repository audit", "Architecture", "Build infrastructure", "Storage", "Developer tooling"],
+  ["Design system", "Application shell", "Chat experience", "Execution visibility", "Accessibility"],
+  ["Models", "Context", "Sessions", "Task routing", "Output verification"],
+  ["Persistence", "Formation", "Retrieval", "Correction", "Personalization"],
+  ["Execution tools", "MCP", "Research", "Browser", "Workspace capabilities"],
+  ["Orchestration", "Specialists", "Parallelism", "Coding", "Independent review"],
+  ["Scheduling", "Events", "Durable tasks", "Proactive assistance", "Governance"],
+  ["Projects", "Documents", "Artifacts", "Integrations", "Knowledge management"],
+  ["Voice", "Multimodal", "Performance", "Efficiency", "Reliability"],
+  ["Authorization", "Tool security", "Data protection", "Windows packaging", "Final acceptance"],
+].flat();
+const programNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+const riskLevels = new Set(["Low", "Medium", "High", "Critical"]);
+const planningUrl = "https://github.com/JonaWasTaken/Bot-v2/pull/7";
+const issueOrPull = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/(?:issues|pull)\/[1-9]\d*$/;
 const statuses = new Set([
   "Not started", "Blocked", "In progress", "Implemented",
   "Verified", "Integrated", "Failed or requires rework",
 ]);
 const fields = [
-  "Current state", "Sources", "Dependencies", "Risk", "Automated verification",
+  "Current state", "Sources", "Dependencies", "Risk", "Risk level", "Automated verification",
   "Manual verification", "Completion evidence", "GitHub", "Status",
 ];
+const metadataFields = new Set([...fields, "Related GitHub", "Evidence GitHub"]);
 const pad = (number) => String(number).padStart(2, "0");
+const anchor = (heading) => heading.toLowerCase().replace(/[^\w -]/g, "").replaceAll(" ", "-");
+const repoPath = (file) => relative(root, file).split(sep).join("/");
 const normalize = (value) => value.toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 const read = (path) => readFileSync(path, "utf8");
 const requireThat = (condition, message) => {
@@ -55,6 +74,32 @@ function sourceFiles(id, file, line) {
       `${id} needs a repository-relative label and an in-scope source for ${target}`);
   }
   return links.map(({ label }) => label);
+}
+
+function githubTracking(id, metadata) {
+  const references = [{ type: "planning", url: planningUrl }];
+  const tracker = metadata.GitHub;
+  for (const [field, type] of [["GitHub", "implementation"], ["Evidence GitHub", "evidence"], ["Related GitHub", "related"]]) {
+    const value = metadata[field];
+    if (!value || (field === "GitHub" && value === "Unfiled")) continue;
+    const links = markdownLinks(value);
+    requireThat(links.length && !value.startsWith("Unfiled"), `${id} needs a separate ${type} issue or PR`);
+    for (const { target } of links) {
+      requireThat(issueOrPull.test(target) && target !== planningUrl, `${id} has an invalid ${type} reference ${target}`);
+      requireThat(!references.some((r) => r.type === type && r.url === target), `${id} repeats a ${type} reference`);
+      references.push({ type, url: target });
+    }
+  }
+  return {
+    implementation_tracker: tracker,
+    github_reference: [
+      `Planning [APEX ledger PR #7](${planningUrl})`, `Individual implementation tracker — ${tracker}`,
+      metadata["Evidence GitHub"] && `Recorded evidence — ${metadata["Evidence GitHub"]}`,
+      metadata["Related GitHub"] && `Related work — ${metadata["Related GitHub"]}`,
+    ].filter(Boolean).join(" · "),
+    github_references: references,
+    github_urls: [...new Set(references.map(({ url }) => url))],
+  };
 }
 
 function roadmapTitles() {
@@ -92,8 +137,9 @@ function readChapter(file, number, sprintTitle) {
       scope = {};
     } else if (line.startsWith("**")) {
       const match = line.match(/^\*\*(?:(APEX-\d\d-\d\d) )?([^*]+)\*\* (\S.*)$/);
-      requireThat(match && fields.includes(match[2]), `Invalid metadata in ${basename(file)}: ${line}`);
+      requireThat(match && metadataFields.has(match[2]), `Invalid metadata in ${basename(file)}: ${line}`);
       const [, id, field, value] = match;
+      if (field === "Risk level") requireThat(riskLevels.has(value.trim()), `Invalid risk level in ${id || group || basename(file)}: ${value}`);
       let values = group ? scope : defaults;
       if (id) {
         if (!overrides.has(id)) overrides.set(id, {});
@@ -115,27 +161,76 @@ function readChapter(file, number, sprintTitle) {
     const m = { ...metadata, ...overrides.get(id) };
     for (const field of fields) requireThat(m[field]?.trim(), `${id} lacks ${field}`);
     requireThat(statuses.has(m.Status), `${id} has an unknown status ${m.Status}`);
-    const github = markdownLinks(m.GitHub).map(({ target }) => target);
-    requireThat((github.length || /^Unfiled\b/.test(m.GitHub)) &&
-      github.every((url) => /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/(?:issues|pull)\/[1-9]\d*$/.test(url)), `${id} needs a GitHub issue/PR reference or Unfiled`);
-    if (["Implemented", "Verified", "Integrated"].includes(m.Status)) {
+    requireThat(riskLevels.has(m["Risk level"]), `${id} needs an explicit risk level`);
+    requireThat(!m["Completion evidence"].includes(planningUrl), `${id} cites the umbrella planning PR as completion evidence`);
+    if (["In progress", "Implemented", "Verified", "Integrated"].includes(m.Status)) {
       requireThat(!/^Pending\b/i.test(m["Completion evidence"]) && markdownLinks(m["Completion evidence"]).length, `${id} needs recorded completion evidence`);
     }
     const dependencies = m.Dependencies === "None" ? [] : m.Dependencies.split(", ");
     requireThat(new Set(dependencies).size === dependencies.length, `${id} repeats a dependency`);
     return {
-      id, program, chapter: number, chapter_title: title, scope: group,
-      chapter_file: relative(root, file).split(sep).join("/"), objective,
+      id, source_program: program, source_chapter: number, source_chapter_title: title, scope: group,
+      chapter_file: repoPath(file), objective,
       current_state: m["Current state"], source_files: sourceFiles(id, file, m.Sources),
-      implementation_plan, dependencies, risk: m.Risk, acceptance,
+      implementation_plan, dependencies, risk_level: m["Risk level"], risk: m.Risk, acceptance,
       automated_verification: { method: m["Automated verification"], stimulus: implementation_plan, assertion: acceptance },
       manual_verification: { procedure: m["Manual verification"], scenario: implementation_plan, observation: acceptance },
       completion_evidence: m["Completion evidence"],
       evidence_references: markdownLinks(m["Completion evidence"]).map(({ target }) =>
         target.startsWith("https://") ? target : relative(root, resolve(dirname(file), target)).split(sep).join("/")),
-      github_reference: m.GitHub, github_urls: github, status: m.Status,
+      ...githubTracking(id, m), status: m.Status,
     };
   });
+}
+
+function mapReleaseChapters(missions, index) {
+  const manifest = resolve(home, "release-chapters.md");
+  const source = read(manifest);
+  checkLinks(manifest, source);
+  const indexLinks = new Set(markdownLinks(index).map(({ target }) => target));
+  const byId = new Map(missions.map((m) => [m.id, m]));
+  const membership = new Map();
+  const counts = [];
+  let program = -1;
+  let chapter = 0;
+  for (const line of source.split(/\r?\n/)) {
+    if (line.startsWith("## ")) {
+      program++;
+      requireThat(chapter === program * 5 && program < programNames.length &&
+        line === `## Program ${programNumerals[program]} · ${programNames[program]}`, `Unexpected release program: ${line}`);
+    } else if (line.startsWith("### ")) {
+      chapter++;
+      const title = releaseTitles[chapter - 1];
+      requireThat(title && line === `### ${pad(chapter)} ${title}` && program === Math.floor((chapter - 1) / 5),
+        `Unexpected release chapter: ${line}`);
+      requireThat(indexLinks.has(`release-chapters.md#${anchor(line.slice(4))}`), `Unindexed release chapter ${chapter}`);
+      counts.push(0);
+    } else if (line.startsWith("- ")) {
+      const range = line.match(/^- `APEX-(\d\d)-(\d\d)\.\.APEX-(\d\d)-(\d\d)` \[([^\]]+)\]\(([^)]+)\)$/);
+      requireThat(chapter && range && range[1] === range[3], `Invalid mission range: ${line}`);
+      const [, book, first, , last, label, target] = range;
+      const start = Number(first), end = Number(last);
+      requireThat(start >= 1 && start <= end && end <= 20, `Invalid bounds: ${line}`);
+      const [filename, section] = target.split("#");
+      for (let row = start; row <= end; row++) {
+        const id = `APEX-${book}-${pad(row)}`;
+        const m = byId.get(id);
+        requireThat(m && m.chapter_file === repoPath(resolve(home, filename)), `Wrong source book for ${id} in chapter ${chapter}`);
+        requireThat(section ? section === anchor(m.scope) && label === m.scope : book === "01" && start === 1 && end === 20,
+          `Wrong source section for ${id} in chapter ${chapter}`);
+        requireThat(!membership.has(id), `${id} appears in more than one release range`);
+        const title = releaseTitles[chapter - 1];
+        membership.set(id, {
+          program: programNames[program], chapter, chapter_title: title, release_position: ++counts[chapter - 1],
+          release_view: `${repoPath(manifest)}#${anchor(pad(chapter) + " " + title)}`,
+        });
+      }
+    }
+  }
+  requireThat(chapter === 50 && program === 9, "Expected ten release programs and fifty chapters");
+  counts.forEach((count, i) => requireThat(count === 20, `Release chapter ${i + 1} has ${count} missions instead of 20`));
+  requireThat(membership.size === missions.length, "Release view omits stable IDs");
+  return missions.map(({ id, ...source }) => ({ id, ...membership.get(id), ...source }));
 }
 
 function loadLedger() {
@@ -143,30 +238,35 @@ function loadLedger() {
   requireThat(files.length === 50, `Expected 50 chapters, found ${files.length}`);
   const index = read(resolve(home, "README.md"));
   checkLinks(resolve(home, "README.md"), index);
-  const indexed = markdownLinks(index).map(({ target }) => target);
   const titles = roadmapTitles();
-  const missions = files.flatMap((name, i) => {
-    requireThat(indexed.includes("chapters/" + name), `Unindexed chapter ${name}`);
-    return readChapter(resolve(chapters, name), i + 1, titles[i]);
-  });
+  const missions = files.flatMap((name, i) => readChapter(resolve(chapters, name), i + 1, titles[i]));
   const seen = new Set();
-  const objectives = new Map();
-  for (const { id, objective, dependencies } of missions) {
-    const key = normalize(objective);
-    requireThat(!objectives.has(key), `Duplicate objective in ${id} and ${objectives.get(key)}`);
-    objectives.set(key, id);
+  const unique = { objective: new Map(), implementation_plan: new Map(), acceptance: new Map() };
+  for (const mission of missions) {
+    const { id, dependencies } = mission;
+    for (const [field, values] of Object.entries(unique)) {
+      const key = normalize(mission[field]);
+      requireThat(key && !values.has(key), `Empty or duplicate ${field} in ${id} and ${values.get(key)}`);
+      values.set(key, id);
+    }
     for (const required of dependencies) requireThat(seen.has(required), `${id} has a missing or non-earlier dependency ${required}`);
     seen.add(id);
   }
-  return missions;
+  return mapReleaseChapters(missions, index);
 }
 
 function main(args) {
   const missions = loadLedger();
   if (!args.length || (args.length === 1 && args[0] === "--check")) {
     const sources = new Set(missions.flatMap((m) => m.source_files));
-    console.log(`Validated ${programNames.length} programs, 50 chapters, ${missions.length} ordered IDs and unique objectives, ${sources.size} source files.`);
+    console.log(`Validated ${programNames.length} programs, 50 release chapters of 20 missions, ${missions.length} stable IDs and ${sources.size} source files.`);
+    console.log("Validated unique objectives, plans and acceptance criteria, dependency order, risk levels and typed GitHub references.");
     for (const status of statuses) console.log(`${status}: ${missions.filter((m) => m.status === status).length}`);
+  } else if (args.length === 2 && args[0] === "--chapter") {
+    const selection = missions.filter((m) => pad(m.chapter) === args[1]);
+    requireThat(selection.length, `Unknown release chapter ${args[1]} (use 01 through 50)`);
+    selection.sort((a, b) => a.release_position - b.release_position);
+    for (const mission of selection) console.log(JSON.stringify(mission));
   } else if (args.length === 1 && args[0] === "--jsonl") {
     for (const mission of missions) console.log(JSON.stringify(mission));
   } else if (args.length === 2 && args[0] === "--show") {
@@ -174,7 +274,7 @@ function main(args) {
     requireThat(mission, `Unknown mission ${args[1]}`);
     console.log(JSON.stringify(mission, null, 2));
   } else {
-    throw new Error("Usage: node docs/plans/apex-roadmap/ledger.mjs [--check | --show APEX-CC-MM | --jsonl]");
+    throw new Error("Usage: node docs/plans/apex-roadmap/ledger.mjs [--check | --show APEX-CC-MM | --chapter NN | --jsonl]");
   }
 }
 

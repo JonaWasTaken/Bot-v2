@@ -18,9 +18,15 @@
 
 **Risk** A permission response can be routed to a different pending call.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/permission-proxy.test.ts`.
 
 **Manual verification** Inspect the fixture's open cards and recording sink while approving and declining synthetic actions.
+
+**APEX-21-02 Risk level** High
+
+**APEX-21-02 Risk** Losing one keyed response can send an unintended argument to a sensitive tool even when the callback belongs to the right request.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -39,6 +45,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** Grant migration can extend a saved permission to a different tool server.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/mcp-grant-spec.test.ts`.
 
@@ -62,6 +70,8 @@
 
 **Risk** A broad command match could authorize a different harmless fixture operation.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/command-allowlist.test.ts`.
 
 **Manual verification** In a disposable command recorder compare accepted and rejected tuples with the saved rule.
@@ -84,10 +94,14 @@
 
 **Risk** An adapter can dispatch a computer action before its approval completes.
 
+**Risk level** Critical
+
 **Automated verification** Extend the recording adapter in `server/cloud-computer-tools.test.ts` and run it alongside `server/routine-unattended-approval.e2e.test.ts` with Vitest. Compare gate decisions and adapter invocations using the same operation ID.
 
 **Manual verification** Use an inert recording cloud-computer adapter and compare gate events with its action counter.
-**GitHub** Unfiled in the fork. Related upstream report [#6859](https://github.com/milind-soni/OpenMausBot/issues/6859).
+**GitHub** Unfiled
+
+**Related GitHub** [#6859](https://github.com/milind-soni/OpenMausBot/issues/6859)
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |

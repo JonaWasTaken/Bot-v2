@@ -18,6 +18,8 @@
 
 **Risk** Keyword relevance can hide the passage containing the actual answer.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/recall.test.ts`.
 
 **Manual verification** Inspect ranked fixture matches and the exact text included in the driver's recall supplement.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Repeated source disclosures distract readers while missing disclosures hide provenance.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/recall-disclosure.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** An indexed alias may prefer a stale topic introduction over a corrected fact.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-topic-corrections.test.ts`.
 
 **Manual verification** Read both the topic file and the passage actually injected into the fixture turn.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Good retrieval scores can mask an unusable final answer.
+
+**Risk level** Medium
 
 **Automated verification** Extend the synthetic pair fixtures in `evals/runners/notebook-reader.mjs`, run the pinned loopback reader and score its JSONL against the row.
 

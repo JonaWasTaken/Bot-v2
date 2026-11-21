@@ -18,6 +18,8 @@
 
 **Risk** Eager quick-model routing can degrade a complex answer silently.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/turn-route.test.ts`.
 
 **Manual verification** Send each labeled fixture prompt from a fresh desktop chat and inspect the selected engine and reply.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-06
 
 **Risk** A training set dominated by English may hide costly routing mistakes.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/turn-routing/score.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** An inflated context window can make a selected model reject the entire turn.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/model-context-window.test.ts`.
 
 **Manual verification** Compare a fixture model's catalog, assembled prompt budget and provider request.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-07
 
 **Risk** A checker could be presented as independent while sharing the original provider.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/checker-model.test.ts`.
 

@@ -18,6 +18,8 @@
 
 **Risk** A permissive grader or fixed run order can exaggerate answer quality.
 
+**Risk level** Medium
+
 **Automated verification** Replay `evals/runners/local-answer-comparison.mjs` with the pinned local model and an explicit loopback endpoint, then grade the row against the CSV columns.
 
 **Manual verification** Blind-review a sample of the paired local answers against the frozen task and exact-format rules.
@@ -30,27 +32,29 @@
 | APEX-15-04 | Recover per-turn usage without bot-key ambiguity | Join recorded provider usage by bot, task and turn identity. | Each completed trial has one attributable row or an explicit missing reason. |
 | APEX-15-05 | Exclude mismatched model settings from paired results | Change the local model identifier or decoding temperature in one arm of an otherwise identical trial pair. | The comparison identifies the exact mismatched setting and excludes only that pair from the effect estimate. |
 
-## Reader trials
+## Personalized answers and controls
 
-**Current state** The reader uses real recall output and scores labeled member and team facts from synthetic notebooks.
+**Current state** The loopback reader grades personal and team facts separately, including a member-only control. Its synthetic corpus can also evaluate whether an answer respects the chosen person's preferences.
 
-**Sources** [evals/runners/notebook-reader.mjs](../../../../evals/runners/notebook-reader.mjs) · [docs/plans/2026-11-21-notebook-reader-trials.jsonl](../../../../docs/plans/2026-11-21-notebook-reader-trials.jsonl)
+**Sources** [evals/runners/notebook-reader.mjs](../../../../evals/runners/notebook-reader.mjs) · [docs/plans/2026-11-21-notebook-reader-trials.jsonl](../../../../docs/plans/2026-11-21-notebook-reader-trials.jsonl) · [server/recall.ts](../../../../server/recall.ts) · [server/memory-entries.ts](../../../../server/memory-entries.ts)
 
 **Dependencies** APEX-01-09
 
-**Risk** A reader test may reward knowing one answer while misattributing it to the wrong notebook.
+**Risk** A superficially correct personalized answer can apply another person's preference or rely on a superseded profile fact.
 
-**Automated verification** Run `evals/runners/notebook-reader.mjs` with an explicit loopback Ollama endpoint, write disposable JSONL and grade the requested comparison.
+**Risk level** High
 
-**Manual verification** Compare the raw passages and two labeled answers for each synthetic terminal pair.
+**Automated verification** Extend the reader pairs with explicit preferences, overrides and a no-profile condition. Score the answer and its source labels for both members across counterbalanced trials.
+
+**Manual verification** Blind-review the fixture answer before opening its member and team source passages. Verify which instruction was actually relevant to this request.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-15-06 | Grade swapped notebook labels as a failure | Swap only the two correct station values in a reader output. | Both label-specific checks fail despite both correct words being present. |
-| APEX-15-07 | Rotate notebook names independently of expected facts | Counterbalance four synthetic station names between member and team. | Per-source accuracy and a denominator are reported for all assignments. |
-| APEX-15-08 | Separate context omission from reader error | Remove a required passage in one arm and retain it in the other. | The report distinguishes absent evidence from a wrong answer with evidence present. |
-| APEX-15-09 | Test whitespace handling without accepting extra prose | Score trailing spaces, a case variant and an added explanatory sentence. | Only the first two receive the tolerant exact-label verdict. |
-| APEX-15-10 | Distinguish unavailable team knowledge from a guessed answer | Give the reader only the member passage with a familiar team label. | The accepted answer states unknown for the team and preserves the member fact. |
+| APEX-15-06 | Adapt one answer to two members' distinct unit preferences | Give member A metric and B imperial preferences, then ask the identical fixture measurement question. | Each answer uses its own units and the numeric conversion is correct in both arms. |
+| APEX-15-07 | Honor a one-turn preference override without changing the profile | Ask a member who prefers terse replies for one detailed fixture explanation and then send a normal follow-up. | Only the first reply uses the override and the stored preference remains terse. |
+| APEX-15-08 | Stop personalizing from a withdrawn preference | Remove a synthetic preferred language, reopen the chat and ask the same question. | The old preference is absent from the supplied passages and evaluation does not credit an accidental language match. |
+| APEX-15-09 | Separate team style from a member's private preference | Give the shared notebook a project template and the personal notebook an unrelated accessibility preference. | The response follows both where applicable and attributes each to its proper scope. |
+| APEX-15-10 | Measure correct abstention on an unknown preference | Ask for a personalized recommendation with no preference source, then repeat with an explicit member note. | The empty control invents no preference and the sourced answer uses only the expected fact. |
 
 ## Judge calibration
 
@@ -61,6 +65,8 @@
 **Dependencies** APEX-01-07
 
 **Risk** Judge drift can change historical scores without any product change.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/live/live-suite.test.ts`.
 
@@ -74,24 +80,26 @@
 | APEX-15-14 | Check blind scoring order sensitivity | Present identical paired artifacts in both orders with hidden arm labels. | The report shows per-pair disagreement and the number of order reversals. |
 | APEX-15-15 | Preserve an auditable rubric revision | Run the same frozen snapshots under two deliberately versioned rubrics. | Each reported score identifies its rubric hash and original input ID. |
 
-## Paired scoring
+## Specialist skill evaluation
 
-**Current state** The paired skill scorer computes deltas, spread, non-discriminating controls and replicate instability. Existing case “computes mean and sample standard deviation”.
+**Current state** The skill bench compares skill-installed and no-skill arms. It measures non-discriminating controls and unstable verdicts; the prompt corpus includes held-out near misses.
 
-**Sources** [evals/scorers/skill-bench.ts](../../../../evals/scorers/skill-bench.ts) · [evals/scorers/skill-bench.test.ts](../../../../evals/scorers/skill-bench.test.ts)
+**Sources** [evals/scorers/skill-bench.ts](../../../../evals/scorers/skill-bench.ts) · [evals/scorers/skill-bench.test.ts](../../../../evals/scorers/skill-bench.test.ts) · [evals/runners/run-skill-bench.ts](../../../../evals/runners/run-skill-bench.ts) · [evals/skill-bench/fixtures/bench-triage-handoff.json](../../../../evals/skill-bench/fixtures/bench-triage-handoff.json) · [evals/skill-bench/triggers.test.ts](../../../../evals/skill-bench/triggers.test.ts)
 
 **Dependencies** APEX-01-12
 
-**Risk** A mean score can conceal task mix, failed runs or unstable verdicts.
+**Risk** A skill can appear helpful by dispatching a specialist on every prompt, including unrelated work.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/scorers/skill-bench.test.ts`.
+**Risk level** Medium
 
-**Manual verification** Inspect paired scorer output and recompute selected deltas from the raw run table.
+**Automated verification** Run the offline skill bench on matched installed and uninstalled arms. Score both the selected role ID and the accepted deliverable using held-out, positive and near-miss cases.
+
+**Manual verification** Blind-review the handoff briefs with the skill label hidden and inspect which specialist actually got each job.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-15-16 | Expose nondiscriminating controls | Include one assertion true for both skill and no-skill arms in every replicate. | It is marked a control and excluded from the effect count. |
-| APEX-15-17 | Measure instability across identical replicates | Alternate one assertion's outcome in three repeated synthetic runs. | The scorer flags the unstable assertion and shows its raw numerator and denominator. |
-| APEX-15-18 | Separate compute estimates from metered usage | Include a character-derived estimate beside a provider usage record. | Both are labeled with units and are never added together as measured tokens. |
-| APEX-15-19 | Keep failed trial pairs visible | Remove one arm's artifact from a paired comparison. | The result includes one incomplete pair and excludes it from the paired effect denominator. |
-| APEX-15-20 | Publish magnitude alongside pass counts | Score two arms with identical accuracy and different recorded durations. | The report preserves equal accuracy and reports the paired elapsed-time delta separately. |
+| APEX-15-16 | Separate specialist activation from task success | Have a correctly activated specialist return an intentionally incomplete result. | Activation passes and artifact acceptance fails as separate recorded verdicts. |
+| APEX-15-17 | Measure false specialist dispatches on near misses | Use held-out prompts containing the trigger term in an unrelated request. | Report the number of unnecessary specialist assignments separately from correct no-dispatch decisions. |
+| APEX-15-18 | Require a complete brief when a skill dispatches its specialist | Withhold the synthetic packing slip in one otherwise valid triage handoff. | Only the arm containing the actual input and a named expected output passes brief completeness. |
+| APEX-15-19 | Expose unstable specialty selection across repeated prompts | Flip the selected role in one of three identical fixture replicates. | The score reports the differing specialist IDs and a 2/3 agreement rate. |
+| APEX-15-20 | Exclude always-passing controls from a specialization claim | Include one general greeting satisfied by every role and one role-specific audit case. | The effect report isolates the audit delta and marks the greeting nondiscriminating. |

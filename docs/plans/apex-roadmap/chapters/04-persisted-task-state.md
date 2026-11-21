@@ -18,6 +18,8 @@
 
 **Risk** A default copied at the wrong time can elevate a newly created thread.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/task-record.test.ts`.
 
 **Manual verification** Create two fixture chats, restart only the fixture and compare their stored and displayed levels.
@@ -40,6 +42,8 @@
 
 **Risk** Partial registry saves can desynchronize the UI, permissions and disk.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/registry-save.test.ts`.
 
 **Manual verification** Trigger the named save fault with the fixture store and inspect the old and reopened state.
@@ -52,27 +56,29 @@
 | APEX-04-09 | Coalesce harmless edits without losing the final value | Burst ten display-name updates and hold the deferred save. | One flushed record holds the tenth name after restart. |
 | APEX-04-10 | Return a recoverable receipt for failed creation | Make the first registry save fail and resubmit the same create interaction. | One task appears after the successful retry and no ghost appears before it. |
 
-## Restore points
+## Code checkpoints and scoped diffs
 
-**Current state** Workspace checkpoints track usable revisions and throttle collection of obsolete data. Existing case “cancels optional digest capture without disabling later checkpoints”.
+**Current state** The checkpoint suite uses a shadow Git store, excludes ignored files and can pin the pre-turn revision while a sibling turn takes another snapshot.
 
-**Sources** [server/checkpoints.ts](../../../../server/checkpoints.ts) · [server/checkpoints.test.ts](../../../../server/checkpoints.test.ts)
+**Sources** [server/checkpoints.ts](../../../../server/checkpoints.ts) · [server/checkpoints.test.ts](../../../../server/checkpoints.test.ts) · [server/workspace.ts](../../../../server/workspace.ts)
 
 **Dependencies** APEX-01-03
 
-**Risk** A restore point can capture the wrong directory or displace the last usable snapshot.
+**Risk** A coding turn can include another worker's edits, erase pre-existing work or present an incomplete patch.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/checkpoints.test.ts`.
+**Risk level** High
 
-**Manual verification** Compare fixture checkpoint trees and worktree contents before and after each transition.
+**Automated verification** Extend the checkpoint suite using a disposable repository with a pre-existing edit, ignored output and two independent source files. Compare Git tree IDs, diff paths and file bytes.
+
+**Manual verification** Open the coding result in the fixture workspace and compare the delivered patch against the pinned pre-turn state and the original uncommitted change.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-04-11 | Preserve the preceding checkpoint when capture aborts | Interrupt optional digest collection midway through a changed fixture directory. | The last completed checkpoint remains readable and the next capture succeeds. |
-| APEX-04-12 | Deduplicate checkpoints for a no-op turn | Run five text-only turns against identical workspace bytes. | The usable checkpoint count and tree ID remain constant. |
-| APEX-04-13 | Bound checkpoint garbage collection during active work | Cross the GC interval while holding a settled diff reader open. | The diff reads completely and obsolete content is reclaimed after that read. |
-| APEX-04-14 | Restore both renamed and edited files as one change | Rename a fixture document and edit its body after snapshotting. | Restore reproduces the original path and hash and removes the renamed path. |
-| APEX-04-15 | Report a refused checkpoint visibly | Select a fixture folder the checkpoint implementation refuses. | The refusal includes a reason and zero unusable restore points enter the list. |
+| APEX-04-11 | Base a coding patch on the actual pre-turn tree | Start with a pre-existing edit in one fixture source file and have a coding turn change another. | The reported patch contains the bot's edit and the untouched prior edit survives byte for byte. |
+| APEX-04-12 | Exclude generated test output from the coding diff | Run a successful fixture test that writes ignored coverage data beside one tracked source change. | The patch contains only the tracked source change and omits the generated output. |
+| APEX-04-13 | Pin a code-review baseline across concurrent snapshots | Hold a review of worker A's change while worker B takes a newer checkpoint. | A's review still compares against its original tree ID until the pin is released. |
+| APEX-04-14 | Preserve renamed source files during code rollback | Rename and edit a fixture module and then restore its accepted pre-turn revision. | The original path and bytes return and the temporary renamed module is absent. |
+| APEX-04-15 | Distinguish a no-op coding turn from a missing patch | Ask for a change already present and run the fixture test at the unchanged revision. | The receipt reports zero changed paths, a successful test and the original tree ID. |
 
 ## Thread tenancy
 
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-03
 
 **Risk** A bot-wide action can overwrite independent histories, cursors or archived preferences.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/independent-task-store.test.ts`.
 

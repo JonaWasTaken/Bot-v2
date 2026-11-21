@@ -18,6 +18,8 @@
 
 **Risk** IME confirmation can send unfinished text or execute a command.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/Composer.ime.test.ts`.
 
 **Manual verification** Type the fixture phrases with an IME in the desktop composer and count sent messages.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-11
 
 **Risk** Autocomplete can displace the draft or send a different command.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/Composer.slash.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Streaming Markdown can expose incomplete actions or redraw finished content.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/ChatMarkdown.streaming.test.ts`.
 
 **Manual verification** Watch a throttled fixture reply from its first fragment through the saved message.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-11
 
 **Risk** A streaming reply can steal reading position or hide the latest message.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/transcript-follow.test.ts`.
 

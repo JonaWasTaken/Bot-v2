@@ -8,27 +8,29 @@
 
 **Completion evidence** Pending. Attach the scoped fixture result and the manual observation for the row’s acceptance criterion, with revision and platform. The existing source case is baseline context.
 
-## Bot access
+## Project folders and member access
 
-**Current state** Shared bot access has separate view, chat and edit levels and distinguishes member authority from administrative operations. Existing case “lets Bob, who can view, read the bot, its chat and its room, and refuses every way of writing to it”.
+**Current state** Project API fixtures create empty folders, order them and move live threads without changing their model or history. Shared bot access is evaluated per member.
 
-**Sources** [server/host/member-bots.ts](../../../../server/host/member-bots.ts) · [server/cloud-team-bot-access.e2e.test.ts](../../../../server/cloud-team-bot-access.e2e.test.ts) · [server/cloud-team.ts](../../../../server/cloud-team.ts)
+**Sources** [server/bot-projects-api.test.ts](../../../../server/bot-projects-api.test.ts) · [server/store.ts](../../../../server/store.ts) · [server/host/member-bots.ts](../../../../server/host/member-bots.ts) · [server/cloud-team-bot-access.e2e.test.ts](../../../../server/cloud-team-bot-access.e2e.test.ts) · [src/components/Sidebar.tsx](../../../../src/components/Sidebar.tsx)
 
 **Dependencies** APEX-17-01
 
-**Risk** A project role can appear correct in Settings while a chat operation uses the wrong effective level.
+**Risk** A project move or stale role can make a private chat visible outside its intended audience.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-team-bot-access.e2e.test.ts`.
+**Risk level** Critical
 
-**Manual verification** Switch among synthetic viewer, chatter, editor and unshared members in isolated desktop profiles.
+**Automated verification** Run the project API and cloud-team access fixture with two members, two project folders and an unshared bot. Compare persisted order, membership, model and history after each operation.
+
+**Manual verification** Create, reorder and reopen project folders through the fixture sidebar as two members. Check actual visible conversations against each member's project access.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-36-01 | Show each member's effective bot level | Give three synthetic members different rights to the same project bot. | Each settings view matches the level actually enforced by that member's next action. |
-| APEX-36-02 | Keep a viewer's project inspection read-only | Open the project chat and room as a viewer then attempt an ordinary fixture edit. | Both reads succeed and the edit leaves project state unchanged. |
-| APEX-36-03 | Separate personal routine ownership from bot editing rights | Let a chat-level member create a personal routine for a shared bot. | They can manage that routine and cannot edit a peer's routine or the bot's instructions. |
-| APEX-36-04 | Refresh editor controls after membership downgrade | Downgrade a synthetic editor while their Settings panel is open. | The next save is refused and the UI removes unavailable controls on refresh. |
-| APEX-36-05 | Keep unshared bots out of project navigation | Seed public and private project bots with similar labels. | An unshared fixture member sees neither the private bot nor its task count. |
+| APEX-36-01 | Create an empty project before its first conversation | Create a named fixture project, set its supported emoji and restart without adding a bot. | The same empty project ID, label and emoji survive and can receive a first thread. |
+| APEX-36-02 | Move a live project thread without resetting its work | Move an active fixture conversation to a different permitted project folder. | Its original thread ID, selected model and message hashes survive and only its project membership changes. |
+| APEX-36-03 | Validate project folder reordering as one operation | Submit a reordered fixture list containing a duplicate ID, then a complete valid order. | The invalid update changes nothing and the valid ordering persists across reopen. |
+| APEX-36-04 | Retain project visibility when a member's rights are reduced | Downgrade one editor to viewer while their project settings are open. | They keep the eligible project view, cannot save an edit and see the refreshed effective capability. |
+| APEX-36-05 | Exclude unshared project bots from navigation and counts | Seed a similarly named public and private bot under two fixture folders. | An unrelated member sees the public bot and no private bot ID, thread label or count. |
 
 ## Shared conversations
 
@@ -39,6 +41,8 @@
 **Dependencies** APEX-17-01
 
 **Risk** Inviting a collaborator to one chat can unintentionally expose another notebook or room.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-team-conversation-share.e2e.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Removing a project member can orphan shared routines or delete other members' work.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/team-member-left.test.ts`.
 
 **Manual verification** Remove a synthetic member from a seeded project and inspect surviving assets as its owner.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-17-01
 
 **Risk** Ownership changes can leave approval questions assigned to the wrong person.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-team-owners.e2e.test.ts`.
 

@@ -18,9 +18,15 @@
 
 **Risk** Eager boot work can run twice or conceal a failure from the first consumer.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `node --test electron/boot-head-start.node-test.mjs`.
 
 **Manual verification** Inspect timing marks, request counters and first visible chat in cold and warm fixture windows.
+
+**APEX-43-04 Risk level** Critical
+
+**APEX-43-04 Risk** A late result from a previously selected workspace could expose private workspace data in the new one.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -39,6 +45,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** Timing markers may leak server addresses or conflate a blank window with usable chat.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/launch-marks.test.ts`.
 
@@ -62,6 +70,8 @@
 
 **Risk** A stale startup model list can momentarily offer a disabled provider.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/startup-model-catalog.test.ts`.
 
 **Manual verification** Inspect the fixture picker before, during and after a delayed catalog refresh.
@@ -83,6 +93,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** A startup improvement under one seed or load level may regress navigation elsewhere.
+
+**Risk level** Medium
 
 **Automated verification** Run `scripts/bench-desktop.ts` with the sprint seed counts, an explicit fixture browser and a fresh output JSON per arm. Compare the recorded marks and counters.
 

@@ -18,6 +18,8 @@
 
 **Risk** Screenless work can unnecessarily occupy a scarce computer.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/auto-vm-claims.test.ts`.
 
 **Manual verification** Use the fake desktop with two tasks, observe lease ownership, and count claim calls.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** A wedged lease can block later work or let concurrent inputs interleave.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/local-vm-lease.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Repeated computer requests can nag the person or resume without an answer.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/computer-asks.test.ts`.
 
 **Manual verification** Use the existing desktop sharing controls in a fixture and compare each card with the waiting request.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-13
 
 **Risk** A delegated turn can borrow the owner's desktop in an ineligible context.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-lending.test.ts`.
 

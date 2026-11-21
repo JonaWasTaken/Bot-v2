@@ -18,6 +18,8 @@
 
 **Risk** Virtualization can hide the newest message or grow without bound when scrolling.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/transcript-window.test.ts`.
 
 **Manual verification** Scroll an isolated synthetic transcript while recording rendered IDs and the visible anchor.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** Deriving rows by repeated transcript scans can make edits, forks and retries costly.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/transcript-derivations.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Virtualized selection can copy hidden or newly inserted text without the reader noticing.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/transcript-selection.test.ts`.
 
 **Manual verification** Select fixture text with mouse and keyboard and compare clipboard contents with the intended range.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-05
 
 **Risk** A transcript export can reorder speakers, omit attachments or expose internal control data.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/export-transcript.test.ts`.
 

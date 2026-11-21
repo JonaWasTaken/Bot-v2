@@ -18,6 +18,8 @@
 
 **Risk** A stale successful probe can pair a different destination.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/PlacesRail.test.ts`.
 
 **Manual verification** Hold fake IPC responses in the isolated Electron sheet and inspect submitted address/code pairs.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-11
 
 **Risk** Broken settings navigation can hide persistence or trust failures.
+
+**Risk level** High
 
 **Automated verification** Run `corepack pnpm exec vitest run src/components/ConnectedWorkspacesSettings.test.ts` for Settings interactions. Extend `node scripts/verify-server-connection.mjs` in isolated Electron for persistence, cancellation and trust.
 
@@ -62,6 +66,8 @@
 
 **Risk** Migration can attach a synthetic credential to the wrong workspace.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run electron/workspace-credentials.test.mjs`.
 
 **Manual verification** Inspect the disposable config and fake credential-store keys from two named fixture environments.
@@ -74,24 +80,30 @@
 | APEX-08-14 | Keep an empty credential from replacing a valid entry | Re-read config with an empty migrated field beside a valid fake store record. | Subsequent connection still retrieves the original marker. |
 | APEX-08-15 | Remove only the chosen place's credential | Forget one of two saved fixture places then reopen the remaining one. | Only the forgotten store key disappears and the surviving place still authenticates. |
 
-## Place switch
+## Frame geometry and rail states
 
-**Current state** Main receives a place ID from the rail. The renderer immediately marks a click pending and also supports older page frames.
+**Current state** Frame tests cover native-window spacing and the old/new page frame contract. The place rail draws separate current, hovered and pending indicators.
 
-**Sources** [src/components/PlacesRail.tsx](../../../../src/components/PlacesRail.tsx) · [src/components/PlacesRail.test.ts](../../../../src/components/PlacesRail.test.ts) · [src/components/PlacesRail.frame.test.ts](../../../../src/components/PlacesRail.frame.test.ts)
+**Sources** [src/components/PlacesRail.tsx](../../../../src/components/PlacesRail.tsx) · [src/components/PlacesRail.frame.test.ts](../../../../src/components/PlacesRail.frame.test.ts) · [src/components/PlacesRail.test.ts](../../../../src/components/PlacesRail.test.ts) · [src/rail.theme.test.ts](../../../../src/rail.theme.test.ts) · [DESIGN.md](../../../../DESIGN.md)
 
 **Dependencies** APEX-01-11
 
-**Risk** A pending workspace switch can mislabel where a message will be sent.
+**Risk** A mismatched frame inset can obscure native controls or visually select the wrong workspace.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/PlacesRail.test.ts`.
+**Risk level** Medium
 
-**Manual verification** Alternate between two fixture places in one desktop window and inspect the rail and chat header.
+**Automated verification** Extend the rail's frame and theme fixtures to compare native insets, semantic tokens and state-specific accessible attributes on both desktop platforms.
+
+**Manual verification** Switch two fixture places across old and new page frames on macOS and Windows. Check the top rail, selected marker and window buttons at two zoom settings.
+
+**APEX-08-18 Risk level** Low
+
+**APEX-08-18 Risk** A mismatched rail surface can leave a visible seam even when selection and navigation are correct.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-08-16 | Revert a pending selection when main refuses to switch | Delay then reject a click on B while A is open. | Both active rail and chat header return to A and its input remains usable. |
-| APEX-08-17 | Suppress duplicate loads of the active place | Click the current rail tile ten times. | Main receives no workspace-open request and draft text stays present. |
-| APEX-08-18 | Prevent a delayed place switch from stealing selection | Click B then C and resolve their IPC calls in reverse order. | The final place indicator, header and active transport all identify C. |
-| APEX-08-19 | Keep an unavailable place visibly distinct from an active one | Seed a setting-up tile next to a connected place. | Only one tile announces itself as current and the pending one opens no chat. |
-| APEX-08-20 | Preserve rail placement across frame versions | Switch between fixtures serving old and current page frames on Windows and macOS. | Every rail tile stays reachable and none overlaps the native window controls. |
+| APEX-08-16 | Align the rail inset with each window frame | Compare an old macOS page frame, a new frame and a Windows frame at 100 and 125 percent. | The first place tile never overlaps window controls and follows the prescribed inset for all six combinations. |
+| APEX-08-17 | Separate active, pending and hover rail markers | Snapshot each state on adjacent places under a single theme and then with color removed. | Each state remains distinguishable by shape or text and only the active place announces current. |
+| APEX-08-18 | Share the sidebar surface token with the rail | Apply a contrasting custom theme and toggle between legacy and current frame layouts. | The rail and sidebar use their designated semantic surface in both layouts with no fallback-color seam. |
+| APEX-08-19 | Keep rail hit areas stable during optimistic navigation | Measure tile hit rectangles between pointer hover, pending and confirmed selection. | Selection decoration changes without shifting a neighboring hit area by more than one CSS pixel. |
+| APEX-08-20 | Keep status rings visible when platform contrast changes | Switch theme while one fixture place is provisioning and one needs attention. | Both status treatments remain identifiable at the same icon size without changing which tile opens. |

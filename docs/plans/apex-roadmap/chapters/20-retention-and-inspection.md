@@ -18,6 +18,8 @@
 
 **Risk** Retention accounting can misclassify topics, daily logs and the notebook index.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-store.test.ts`.
 
 **Manual verification** Browse the fixture memory overview and compare paths and reported bytes with its temporary directory.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Background retention can continue after a workspace is frozen or moved.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-upkeep-lifecycle.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Moving notebooks can overwrite destination facts or leave partial histories.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-move.test.ts`.
 
 **Manual verification** Move two synthetic notebooks, reopen both destinations and compare their files and journal.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-10
 
 **Risk** A personal library UI can blend member-owned and team-owned notes.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/bot-panel/MemoryPage.team.test.ts`.
 

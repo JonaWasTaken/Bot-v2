@@ -18,6 +18,8 @@
 
 **Risk** A one-turn instruction can become a permanent preference.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-capture-calls.test.ts`.
 
 **Manual verification** Read the capture candidates and reopened notebook after each synthetic conversation.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** A nightly synthesis can combine unrelated owners or miss a recent correction.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-dream.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Synthesis can retain an invented detail or sensitive marker.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-fact-checks.test.ts`.
 
 **Manual verification** Check each saved line against the fixture quotes and inspect reasons for discarded candidates.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Group learning can retain room content after consent changes.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/memory-room-capture.e2e.test.ts`.
 

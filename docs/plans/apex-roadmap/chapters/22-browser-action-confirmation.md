@@ -18,6 +18,8 @@
 
 **Risk** A ref can identify a different control after the page rerenders.
 
+**Risk level** High
+
 **Automated verification** Use `OMB_CDP_CHROME` to identify fixture Chrome. Extend and run `corepack pnpm exec vitest run server/browser/cdp/s4-actions.e2e.test.ts` against the local form and its observed DOM effects.
 
 **Manual verification** Use locally served form fixtures with numbered rows and compare the changed DOM node to the intended control.
@@ -30,27 +32,29 @@
 | APEX-22-04 | Confirm selection inside a nested frame | Select the third option in a fixture iframe with a lookalike outer select. | The inner selected value changes and the outer value stays unchanged. |
 | APEX-22-05 | Detect an intercepted click via its observed effect | Cover a fixture checkbox with a visible overlay. | The action never reports a verified toggle while the checkbox remains false. |
 
-## Page lifecycle
+## Source acquisition and pagination
 
-**Current state** CDP navigation exposes document readiness, status, downloads and tab changes on local fixture pages. Existing case “waits for the readiness asked for and reports the document's status”.
+**Current state** The social research pager counts unique post IDs and detects repeated continuation pages. CDP navigation returns final document status and exposes redirect and download outcomes.
 
-**Sources** [server/browser/cdp/navigations.ts](../../../../server/browser/cdp/navigations.ts) · [server/browser/cdp/s4-pages.e2e.test.ts](../../../../server/browser/cdp/s4-pages.e2e.test.ts)
+**Sources** [server/x-research.ts](../../../../server/x-research.ts) · [server/x-research.test.ts](../../../../server/x-research.test.ts) · [server/x-research-pagination.test.ts](../../../../server/x-research-pagination.test.ts) · [server/browser/cdp/navigations.ts](../../../../server/browser/cdp/navigations.ts) · [server/browser/cdp/s4-pages.e2e.test.ts](../../../../server/browser/cdp/s4-pages.e2e.test.ts)
 
 **Dependencies** APEX-01-14
 
-**Risk** A navigation receipt can describe the outgoing page as the destination.
+**Risk** Duplicate or inaccessible sources can inflate corroboration or make an incomplete research run look exhaustive.
 
-**Automated verification** Use the explicit fixture Chrome binary and run `corepack pnpm exec vitest run server/browser/cdp/s4-pages.e2e.test.ts` against local origin, redirect and download responders.
+**Risk level** High
 
-**Manual verification** Follow the local fixture navigation and compare status, committed URL and tab identity.
+**Automated verification** Run the X research pagination suite with a recording fixture backend. Use loopback pages in the real-CDP page suite for the final-document and attachment cases.
+
+**Manual verification** Follow the research source list from desktop, comparing each source URL or post ID with the actual fixture item and observed page outcome.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-22-06 | Report the final document of a redirect chain | Follow three loopback redirects ending at a marked page. | The receipt identifies the final URL, status and correct tab. |
-| APEX-22-07 | Distinguish a download response from page navigation | Return a fixture attachment for an otherwise ordinary link. | The original document remains active and the receipt identifies one saved download. |
-| APEX-22-08 | Surface an unavailable local destination | Navigate to a closed fixture port from a known page. | The action reports a network failure and shows no successful destination observation. |
-| APEX-22-09 | Respect requested readiness on a slowly loading page | Delay a subresource after DOM content is ready. | DOM-ready and load-complete requests settle at their respective observed boundaries. |
-| APEX-22-10 | Keep a popup action attached to its opener | Open two fixture links into distinct child tabs simultaneously. | Each child receipt resolves to its actual opener and document marker. |
+| APEX-22-06 | Deduplicate overlapping pages of research evidence | Return posts A,B and B,C on successive synthetic pages under a three-source limit. | The source list contains A,B,C once and identifies the page at which coverage stopped. |
+| APEX-22-07 | Bound research when a continuation token repeats | Return the first research cursor again from the next page. | The adapter makes no third purchase and marks additional source coverage unresolved. |
+| APEX-22-08 | Resolve a source through its redirect chain | Cite an old loopback source URL that redirects twice to a marked document. | The receipt retains the requested URL and the final document identity used to support the claim. |
+| APEX-22-09 | Distinguish an attached source document from an HTML finding | Have a research link return a fixture PDF download. | The source list identifies the downloaded artifact and does not attribute the opener page's text to it. |
+| APEX-22-10 | Record a failed source lookup without losing sibling sources | Return one unavailable post ID and one valid item from independent lookups. | The reported denominator includes both attempts and only the valid ID supports a finding. |
 
 ## Live input
 
@@ -61,6 +65,8 @@
 **Dependencies** APEX-01-14
 
 **Risk** A retried viewer request can type or click twice.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/browser/live-action.test.ts`.
 
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-14
 
 **Risk** Download retention may evict another tab's artifact or publish partial bytes.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/browser/cdp/downloads.test.ts`.
 

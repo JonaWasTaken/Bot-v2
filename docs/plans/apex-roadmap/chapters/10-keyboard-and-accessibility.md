@@ -18,10 +18,14 @@
 
 **Risk** Native keyboard layouts and renderer zoom state can disagree.
 
+**Risk level** Medium
+
 **Automated verification** Run `corepack pnpm exec vitest run electron/menu.test.mjs` for menu wiring. On an isolated Windows x64 installation, dispatch the row’s chords using both recorded keyboard layouts and collect webContents.getZoomFactor() before and after each key event.
 
 **Manual verification** On a disposable installed Windows desktop use two keyboard layouts and record zoomFactor at each step.
-**GitHub** Unfiled in the fork. Related upstream report [#6861](https://github.com/milind-soni/OpenMausBot/issues/6861).
+**GitHub** Unfiled
+
+**Related GitHub** [#6861](https://github.com/milind-soni/OpenMausBot/issues/6861)
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -40,6 +44,8 @@
 **Dependencies** APEX-01-11
 
 **Risk** A shortcut hint can advertise the wrong platform binding.
+
+**Risk level** Low
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/keyboard-shortcuts.test.ts`.
 
@@ -63,6 +69,8 @@
 
 **Risk** Losing focus in the shortcut dialog leaves keyboard-only users stranded.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/components/KeyboardShortcutsModal.test.ts`.
 
 **Manual verification** Open the shortcut help using only the keyboard and walk the focus order.
@@ -84,6 +92,8 @@
 **Dependencies** APEX-06-11
 
 **Risk** Repeating a streamed response in a live region can make chat unusable.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/transcript-announcer.test.ts`.
 

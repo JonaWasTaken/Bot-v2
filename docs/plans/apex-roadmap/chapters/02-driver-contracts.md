@@ -18,6 +18,8 @@
 
 **Risk** A bad instance can hide otherwise usable engines in the picker.
 
+**Risk level** Medium
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/harness/registry.test.ts`.
 
 **Manual verification** Load the synthetic inventory in desktop Settings, then compare the listed engines with the registry snapshot.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** A partial provider frame can turn one approved operation into two tool calls.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/openai-chat-protocol.test.ts`.
 
@@ -62,10 +66,14 @@
 
 **Risk** Idle cleanup of a shared gateway can terminate a sibling conversation.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/session-idle.test.ts`.
 
 **Manual verification** In two fixture chats inspect the synthetic gateway PID, lease timestamps and settle events before and after each close.
-**GitHub** Unfiled in the fork. Related upstream report [#6898](https://github.com/milind-soni/OpenMausBot/issues/6898).
+**GitHub** Unfiled
+
+**Related GitHub** [#6898](https://github.com/milind-soni/OpenMausBot/issues/6898)
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
@@ -75,24 +83,26 @@
 | APEX-02-14 | Expose the effective idle policy | Route a small-memory profile and a per-engine override through diagnostics. | Each reports the same duration the fake clock actually uses to reap it. |
 | APEX-02-15 | Exclude unrelated gateway instances from shared cleanup | Configure two Hermes instances with distinct fixture homes and equal bot names. | Reaping one changes neither the PID nor the history of the other. |
 
-## Driver errors
+## Research catalogs and provider refusals
 
-**Current state** Engine failures carry a kind and may carry a retry interval used by health and recovery. Existing case “names a Grok account out of credits, keeping Grok's own short reason”.
+**Current state** The research tools perform separate catalog search, endpoint inspection and paid calls. The adapter distinguishes empty balance, rate limiting, unknown endpoints and relay availability.
 
-**Sources** [server/drivers/engine-errors.ts](../../../../server/drivers/engine-errors.ts) · [server/drivers/engine-errors.test.ts](../../../../server/drivers/engine-errors.test.ts)
+**Sources** [server/research.ts](../../../../server/research.ts) · [server/research.test.ts](../../../../server/research.test.ts) · [server/drivers/agents-research-tools.ts](../../../../server/drivers/agents-research-tools.ts)
 
-**Dependencies** APEX-01-04
+**Dependencies** APEX-01-07
 
-**Risk** Misclassified terminal failures can hide a billable retry or strand a turn.
+**Risk** A provider refusal can look like evidence that no matching information exists, or trigger a second charge.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/engine-errors.test.ts`.
+**Risk level** High
 
-**Manual verification** Read the terminal card alongside the fake provider's response and attempt counter.
+**Automated verification** Run the research suite against a recording loopback catalog and relay. Count catalog reads, paid calls, returned endpoint IDs and user-visible outcomes.
+
+**Manual verification** From a fixture research chat open the proposed endpoint and compare its parameters and quoted cost with the adapter request. Inspect failed requests alongside healthy empty results.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-02-16 | Separate exhausted credit from a temporary limit | Replay a no-credit response followed by a rate-limit response in a different chat. | Only the temporary case advertises a timed retry. |
-| APEX-02-17 | Retain retry timing without a provider detail leak | Put a synthetic request identifier and a retry delay in a fixture error. | The UI preserves the wait interval and exposes zero copies of the identifier. |
-| APEX-02-18 | Keep cancellation distinct from a transport error | Cancel immediately before the adapter returns a socket failure. | The transcript has one stopped outcome and zero automatic replacements. |
-| APEX-02-19 | Preserve an unclassified provider reason | Feed the fallback path a short unfamiliar synthetic error. | The operator can read its safe reason and the health record does not label it a quota failure. |
-| APEX-02-20 | Deduplicate terminal notices across adapter callbacks | Deliver matching error and close events for the same generation. | The transcript and health ledger each count the failure once. |
+| APEX-02-16 | Discover a research endpoint without buying a result | Search the synthetic catalog for a company-news dataset with two candidate endpoints. | The response lists both endpoint IDs and their parameters and the paid-call counter remains zero. |
+| APEX-02-17 | Validate the selected endpoint before collecting evidence | Inspect a synthetic POST endpoint requiring a JSON body and a separate query flag. | Only the selected endpoint receives the documented body and query combination. |
+| APEX-02-18 | Distinguish an empty research corpus from exhausted balance | Compare a valid empty dataset with a synthetic insufficient-balance response. | The former is a zero-result observation and the latter is an explicit unavailable source with no invented findings. |
+| APEX-02-19 | Preserve uncertainty during a research rate limit | Rate-limit one endpoint while a second independent source remains usable. | The report keeps the second source and marks the first deferred with no fabricated zero count. |
+| APEX-02-20 | Recover research availability after a disabled relay | Disable the synthetic plan relay, advance through its recheck interval and re-enable it. | Discovery becomes available after a successful probe and no paid call is made by the probe. |

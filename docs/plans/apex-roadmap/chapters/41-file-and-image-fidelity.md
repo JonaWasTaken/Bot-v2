@@ -18,6 +18,8 @@
 
 **Risk** Reopening a document after an edit can show bytes different from what the person originally supplied.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/attachment-originals.test.ts`.
 
 **Manual verification** Compare the original attachment opened from chat with the edited disposable working copy.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-05
 
 **Risk** A delayed media result can be attached to the wrong message or turn.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/turn-attachments.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A wrong media type or oversized image batch can exhaust input budget or mislead a model.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/drivers/chat-images.test.ts`.
 
 **Manual verification** Compare the original fixture image bytes, declared MIME and recorded driver payload.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-06-01
 
 **Risk** Pasting or removing an attachment can erase a draft or orphan uploaded bytes.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run src/lib/composer-attachments.test.ts`.
 

@@ -18,6 +18,8 @@
 
 **Risk** Counting cumulative tool-round tokens as fresh context can compact too early.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/context-budget.test.ts`.
 
 **Manual verification** Inspect the fixture's context readout, provider count and compaction trigger on a single turn.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Summarization can resurrect stale instructions or drop the person's final correction.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/compaction-summary.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** An inaccurate replay coverage claim can hide omitted history from the next model.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/context-rebuild.test.ts`.
 
 **Manual verification** Reopen a fixture session and compare the replay segment and represented IDs to the stored transcript.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-15
 
 **Risk** Category estimates shown as measured values can mislead model selection.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/context-breakdown.e2e.test.ts`.
 

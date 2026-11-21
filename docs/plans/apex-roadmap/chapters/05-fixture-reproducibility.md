@@ -18,6 +18,8 @@
 
 **Risk** A verification command that targets the wrong instance can alter a user's chat.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run scripts/control-omb.test.ts`.
 
 **Manual verification** Inspect the fixture launch banner, doctor output and temporary home before sending any synthetic input.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-04
 
 **Risk** Setup and health checks can contaminate the evidence attributed to a real turn.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/testing/fake-claude-dump.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A smoke that exits before its final interaction can look green despite missing UI coverage.
 
+**Risk level** Medium
+
 **Automated verification** Extend `scripts/testing/control-omb-ui.e2e.test.ts` and run it with the pinned fixture browser available. Save the final action and accessible snapshot for the case. An unavailable browser counts as skipped.
 
 **Manual verification** Use the fixture's accessibility tree to replay the control action and inspect the final active window.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-12
 
 **Risk** An assertion that cannot discriminate a broken run can hide a regression.
+
+**Risk level** Medium
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run --config evals/vitest.config.ts evals/scorers/assertions.test.ts`.
 

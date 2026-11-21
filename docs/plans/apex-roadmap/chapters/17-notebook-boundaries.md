@@ -18,6 +18,8 @@
 
 **Risk** Confusing admin access with personal notebook access exposes another person's history.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/audience.test.ts`.
 
 **Manual verification** Compare the fixture's member, room participant and admin views for the same synthetic entries.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-01-09
 
 **Risk** Pending edits can replace an approved team fact prematurely.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/team-memory.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** Same-path topics can mix personal and team answers.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/cloud-team-private.e2e.test.ts`.
 
 **Manual verification** Ask one synthetic desktop member about both notebooks and inspect the actual driver prompt.
@@ -74,24 +80,26 @@
 | APEX-17-14 | Enforce the global recall ceiling across many permitted layers | Seed six matching topics in personal, room and team scopes. | The final prompt obeys the configured global note limit. |
 | APEX-17-15 | Keep member edits visible only to authorized readers | Correct a personal note while another member polls the bot library. | The editor sees the revision and the poller receives neither old nor new value. |
 
-## Lent memory
+## Personal context on borrowed environments
 
-**Current state** Lending fingerprints notebook and instruction content, including same-size rewrites and eligible links. Existing case “fingerprints MEMORY.md, topic files and daily logs by content”.
+**Current state** Lending fingerprints notebook and instruction contents. The shared-user-profile fixture exercises user preferences through the server boundary.
 
-**Sources** [server/lending-memory.ts](../../../../server/lending-memory.ts) · [server/lending-memory.test.ts](../../../../server/lending-memory.test.ts)
+**Sources** [server/lending-memory.ts](../../../../server/lending-memory.ts) · [server/lending-memory.test.ts](../../../../server/lending-memory.test.ts) · [server/memory-store.ts](../../../../server/memory-store.ts) · [server/shared-user-profile.e2e.test.ts](../../../../server/shared-user-profile.e2e.test.ts)
 
 **Dependencies** APEX-01-09
 
-**Risk** A borrowed runtime can reuse instructions from a different folder revision.
+**Risk** A reused engine session can carry another person's profile or ignore a changed consent choice.
 
-**Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/lending-memory.test.ts`.
+**Risk level** Critical
 
-**Manual verification** Compare source fingerprints, lent-session identity and the fixture prompt at the next borrow.
+**Automated verification** Combine the lending fingerprint tests with two isolated fixture user profiles. Capture the effective profile marker and injected instructions at each borrow, return and revision.
+
+**Manual verification** Borrow the fixture resource as two different people and read the generated response and personal-context disclosure after editing or clearing one profile.
 
 | ID | Objective | Implementation plan | Acceptance |
 | --- | --- | --- | --- |
-| APEX-17-16 | Detect a same-size note rewrite between loans | Change a topic's bytes while preserving its length and timestamp. | The next fingerprint differs and the old context is not reused. |
-| APEX-17-17 | Include dated logs in loan identity | Modify only a synthetic daily log between identical borrowing requests. | The loan comparison reports changed memory. |
-| APEX-17-18 | Follow the declared handling for a swapped fixture link | Replace a fixture link target with another allowed fixture file. | The new source identity is observed before the next session is reused. |
-| APEX-17-19 | Identify a changed ancestor instruction | Edit only the synthetic parent folder's instructions between two loans. | The second context fingerprint differs from the first. |
-| APEX-17-20 | Keep unrelated file churn from invalidating memory | Touch an unrelated temporary output beside unchanged tracked inputs. | Both loans compute the same memory fingerprint. |
+| APEX-17-16 | Invalidate a loan after an equal-size preference rewrite | Change a person's preferred format from one equal-length marker to another without changing mtime. | The next eligible borrowed session uses only the new preference. |
+| APEX-17-17 | Separate two borrowers with identical local notebook names | Give A and B a preferences topic with different synthetic units and alternate loans. | Each turn receives its borrower's unit and zero occurrences of the other person's value. |
+| APEX-17-18 | Respect an opt-out while a borrowed session is parked | Remove permission for personal context before the fixture loan resumes. | Resumption injects no personal profile markers even though the prior session had them. |
+| APEX-17-19 | Propagate a project preference change to the next loan | Edit a project-scoped ancestor instruction while keeping the member's unrelated personal preference. | The new loan applies the updated project instruction and still uses the correct member's personal setting. |
+| APEX-17-20 | Ignore unrelated output churn when reusing a personalization snapshot | Modify only a generated scratch file beside a stable profile and request another eligible loan. | Reuse preserves the original profile identity and the stored preference bytes remain unchanged. |

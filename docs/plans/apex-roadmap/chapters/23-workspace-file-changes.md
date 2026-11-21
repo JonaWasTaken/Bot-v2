@@ -18,6 +18,8 @@
 
 **Risk** A write outside the intended fixture or a false success destroys confidence in file operations.
 
+**Risk level** High
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host-files.e2e.test.ts`.
 
 **Manual verification** Use only explicitly created temporary files and compare before/after bytes with the host-tool receipt.
@@ -39,6 +41,8 @@
 **Dependencies** APEX-17-01
 
 **Risk** Team ownership errors can permit replacing a colleague's shared upload.
+
+**Risk level** Critical
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/host/team-files.test.ts`.
 
@@ -62,6 +66,8 @@
 
 **Risk** A preview may read a different file than the chat actually presented.
 
+**Risk level** Critical
+
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/message-file.test.ts`.
 
 **Manual verification** Open the fixture message attachment from the transcript and compare the resolved source and payload.
@@ -83,6 +89,8 @@
 **Dependencies** APEX-01-03
 
 **Risk** A cache can reuse partial or obsolete content during rapid writes.
+
+**Risk level** High
 
 **Automated verification** Extend the fixture and run `corepack pnpm exec vitest run server/settled-file.test.ts`.
 
