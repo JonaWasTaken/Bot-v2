@@ -1,0 +1,3948 @@
+{
+  "mission": "APEX-001",
+  "observedUtcDate": "2026-11-21",
+  "revisions": {
+    "fork": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+    "originalForkPoint": "e5490f70de6b683465fb5b7a7ff43e7aa931c1f9",
+    "canonicalMainAtIntake": "362559603e8e5d12764253739f7a23888e52e7cb",
+    "forkOnlyCommits": 10,
+    "canonicalOnlyCommits": 184,
+    "recoveryMeasured": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "defaultAfterExternalMerges": "15dbd41437f8f3666480b8bdf5864e74eee11d8e",
+    "reviewedUpgradeCandidate": "549933b2a1300bfc9b219c680aed5a344857deb4",
+    "defaultAfterPrivacyMerge": "25c8123d966cb7df18a8b3338b21aed6cc2161a2"
+  },
+  "platform": {
+    "host": "Windows 11 Pro 10.0.26300 x64",
+    "cpu": "AMD Ryzen 9 9950X3D",
+    "logicalProcessors": 32,
+    "ramGiB": 61.7,
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "node": "24.22.0",
+    "pnpm": "10.33.0",
+    "electron": "43.7.9"
+  },
+  "baselineCommands": {
+    "typecheck": {
+      "exitCode": 0,
+      "wallSeconds": 26.6
+    },
+    "lint": {
+      "exitCode": 0,
+      "wallSeconds": 1.1
+    },
+    "build": {
+      "exitCode": 0,
+      "wallSeconds": 56.8
+    },
+    "check:electron": {
+      "exitCode": 0,
+      "wallSeconds": 44.7
+    },
+    "test (Windows host)": {
+      "exitCode": 1,
+      "wallSeconds": 1285.6
+    },
+    "broker:test": {
+      "exitCode": 0,
+      "wallSeconds": 8.4
+    },
+    "test:electron": {
+      "exitCode": 1,
+      "wallSeconds": 65.0
+    },
+    "test:packaged-server": {
+      "exitCode": 0,
+      "wallSeconds": 39.4
+    },
+    "package:win": {
+      "exitCode": 0,
+      "wallSeconds": 204.1
+    },
+    "node scripts/verify-server-recovery.mjs": {
+      "exitCode": 1,
+      "wallSeconds": 0.1
+    },
+    "bench:desktop (startup)": {
+      "exitCode": 1,
+      "wallSeconds": 38.7
+    },
+    "eval --golden": {
+      "exitCode": 0,
+      "wallSeconds": 7.8
+    },
+    "pnpm audit --prod": {
+      "exitCode": 1,
+      "wallSeconds": 0.8
+    }
+  },
+  "windowsHostVitest": {
+    "durationSeconds": 1282.69,
+    "workers": 6,
+    "files": {
+      "passed": 2754,
+      "failed": 46,
+      "skipped": 67
+    },
+    "tests": {
+      "passed": 39944,
+      "failed": 122,
+      "skipped": 1088,
+      "todo": 3
+    },
+    "failedFiles": [
+      {
+        "file": "scripts/prepare-duckdb.test.mjs",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "scripts/testing/duration-sequencer.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "scripts/testing/no-bitwarden-dependency.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "scripts/testing/verification-docs.test.ts",
+        "suiteSetup": 1,
+        "testCases": 0,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/app-settings/picture-file.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/bot-box/env.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/browser-upload.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/chat-apps.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-computer-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 4,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/cloud-lending.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/cloud-send-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-sync-store.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-sync.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/data/tools.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/drivers/chat-mcp-tools.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/drivers/codex-shared-home.test.ts",
+        "suiteSetup": 0,
+        "testCases": 12,
+        "directSymlinkPermissionErrors": 4
+      },
+      {
+        "file": "server/drivers/codex.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/email/client.test.ts",
+        "suiteSetup": 1,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/grok-local.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/host/delete-leftovers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 4,
+        "directSymlinkPermissionErrors": 4
+      },
+      {
+        "file": "server/host/handoff-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/host/netlify-sites.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/host/team-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/hosted-access.test.ts",
+        "suiteSetup": 0,
+        "testCases": 9,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/hosted-models-api.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/lending-memory.test.ts",
+        "suiteSetup": 0,
+        "testCases": 31,
+        "directSymlinkPermissionErrors": 31
+      },
+      {
+        "file": "server/lent-copies.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/mcp-bot-servers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/memory-store.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/message-file.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/pages/bundle.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/pages/published-pages.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/setup-import.test.ts",
+        "suiteSetup": 0,
+        "testCases": 5,
+        "directSymlinkPermissionErrors": 5
+      },
+      {
+        "file": "server/share.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/skills.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/team-computers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/testing/worker-port.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/themes/tool.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/turn-images.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/workspace-backup.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/workspace-links.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "src/components/PhoneDevicesSection.page.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/components/ServerList.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/components/SidebarThreadRow.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/lib/schedule-label.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/lib/transcript-derivations.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      }
+    ]
+  },
+  "electronNodeTest": {
+    "passed": 2184,
+    "failed": 6,
+    "skipped": 51,
+    "failures": [
+      {
+        "source": "electron/cloud-sync-engine.node-test.mjs:80:1",
+        "test": "shared: a missing folder, a link and a hard-linked file never read as deleted"
+      },
+      {
+        "source": "electron/cloud-sync-scan.node-test.mjs:15:1",
+        "test": "lists files as wire paths with hashes, keeping links and hard links as present, skipping litter and sync's own downloads"
+      },
+      {
+        "source": "electron/elevated-install.node-test.mjs:119:1",
+        "test": "nothing is run for a file or checksum that cannot be trusted"
+      },
+      {
+        "source": "electron/lent-staged.node-test.mjs:66:1",
+        "test": "the live write's rules hold: never .git, never through a link, never a damaged download"
+      },
+      {
+        "source": "electron/vendor-updater.node-test.mjs:91:1",
+        "test": "the shipped installer replaces the AppImage and queues its original path for relaunch"
+      },
+      {
+        "source": "electron/vendor-updater.node-test.mjs:147:1",
+        "test": "a rejected AppImage relaunch is reported without quitting the desktop"
+      }
+    ]
+  },
+  "focusedVitest": {
+    "passed": 402,
+    "files": [
+      {
+        "file": "server/agent-tool-policy.test.ts",
+        "passed": 44
+      },
+      {
+        "file": "server/browser/cdp/s4-actions.e2e.test.ts",
+        "passed": 32
+      },
+      {
+        "file": "server/browser/session-control.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "server/data/data.e2e.test.ts",
+        "passed": 1
+      },
+      {
+        "file": "server/host/sse-replay.test.ts",
+        "passed": 7
+      },
+      {
+        "file": "server/memory-routes.test.ts",
+        "passed": 16
+      },
+      {
+        "file": "server/memory-topic-corrections.test.ts",
+        "passed": 3
+      },
+      {
+        "file": "server/openai-tools.e2e.test.ts",
+        "passed": 3
+      },
+      {
+        "file": "server/permission-proxy.test.ts",
+        "passed": 19
+      },
+      {
+        "file": "server/recall.test.ts",
+        "passed": 22
+      },
+      {
+        "file": "server/request-auth.e2e.test.ts",
+        "passed": 2
+      },
+      {
+        "file": "server/request-auth.test.ts",
+        "passed": 69
+      },
+      {
+        "file": "server/routine-unattended-approval.e2e.test.ts",
+        "passed": 1
+      },
+      {
+        "file": "server/runtime/handoff-limits.test.ts",
+        "passed": 2
+      },
+      {
+        "file": "server/runtime/scenarios.test.ts",
+        "passed": 63
+      },
+      {
+        "file": "server/sse-fanout.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "server/turn-route.test.ts",
+        "passed": 27
+      },
+      {
+        "file": "src/components/BotProjects.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "src/components/ModelPicker.interaction.test.ts",
+        "passed": 15
+      },
+      {
+        "file": "src/components/PlacesRail.test.ts",
+        "passed": 46
+      }
+    ]
+  },
+  "brokerVitest": {
+    "passed": 139,
+    "files": 6
+  },
+  "packagedStartup": {
+    "installerBytes": 271043231,
+    "samples": [
+      {
+        "readyMs": 5026,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      },
+      {
+        "readyMs": 5209,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 1
+      },
+      {
+        "readyMs": 4972,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      },
+      {
+        "readyMs": 4385,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      }
+    ],
+    "sample2Note": "The readiness marker passed. Cleanup returned Windows taskkill code 128. Both fixture PIDs were separately confirmed gone."
+  },
+  "behaviorScenarios": {
+    "originalForkPoint": [
+      {
+        "id": "dispatch-supersede",
+        "pass": true,
+        "durationMs": 4923
+      },
+      {
+        "id": "lazy-claim-rejection",
+        "pass": true,
+        "durationMs": 6392
+      },
+      {
+        "id": "lazy-claim-screenless",
+        "pass": true,
+        "durationMs": 9735
+      },
+      {
+        "id": "lazy-computer-claim",
+        "pass": true,
+        "durationMs": 52473
+      },
+      {
+        "id": "routine-deferral",
+        "pass": true,
+        "durationMs": 13671
+      },
+      {
+        "id": "skill-assignment-visibility",
+        "pass": true,
+        "durationMs": 7003
+      }
+    ],
+    "fork": [
+      {
+        "id": "dispatch-supersede",
+        "pass": true,
+        "durationMs": 6330
+      },
+      {
+        "id": "lazy-claim-rejection",
+        "pass": true,
+        "durationMs": 6792
+      },
+      {
+        "id": "lazy-claim-screenless",
+        "pass": true,
+        "durationMs": 7692
+      },
+      {
+        "id": "lazy-computer-claim",
+        "pass": true,
+        "durationMs": 51981
+      },
+      {
+        "id": "routine-deferral",
+        "pass": true,
+        "durationMs": 14194
+      },
+      {
+        "id": "skill-assignment-visibility",
+        "pass": true,
+        "durationMs": 5060
+      }
+    ],
+    "goldenHandoffOnFork": {
+      "passed": true
+    }
+  },
+  "productionRegistryAudit": {
+    "severity": {
+      "info": 0,
+      "low": 2,
+      "moderate": 16,
+      "high": 6,
+      "critical": 0
+    },
+    "dependencies": 807,
+    "advisories": [
+      {
+        "package": "@vitest/mocker",
+        "installed": [
+          "4.1.11"
+        ],
+        "id": "GHSA-qxg6-89mg-rqv8",
+        "severity": "moderate",
+        "fixed": ">=4.1.12"
+      },
+      {
+        "package": "@vitest/mocker",
+        "installed": [
+          "4.1.11"
+        ],
+        "id": "GHSA-xp26-3454-mjgp",
+        "severity": "moderate",
+        "fixed": ">=4.1.12"
+      },
+      {
+        "package": "katex",
+        "installed": [
+          "0.16.47"
+        ],
+        "id": "GHSA-238p-pmpm-9mq7",
+        "severity": "low",
+        "fixed": ">=0.18.2"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-7qx7-33qx-rqx2",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-f3mh-rxg3-f5g2",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-mfr8-8qww-v76h",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-pc58-hwjq-p385",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-rhh4-g77r-r9qj",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-vc7v-qv4w-wrv8",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-vvgp-ww4w-46vf",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "source-map-js",
+        "installed": [
+          "1.2.1"
+        ],
+        "id": "GHSA-68fv-2mgg-jv7q",
+        "severity": "high",
+        "fixed": ">=1.2.2",
+        "reportedDependencyPaths": [
+          "apps__docs>fumadocs-mdx>vite>postcss>source-map-js"
+        ]
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-2m5v-pch6-74hx",
+        "severity": "high",
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-4qv8-2p9j-2685",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-4w7w-5xrc-9h26",
+        "severity": "high",
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-55wc-3pg8-jfw6",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-9fm3-97px-rjf6",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-f72v-6w45-q472",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-qrxm-fqhp-jwvm",
+        "severity": "high",
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-xjj6-f33q-929c",
+        "severity": "high",
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-587h-7wmj-h5pm",
+        "severity": "high",
+        "fixed": ">=7.3.7",
+        "reportedDependencyPaths": [
+          "apps__docs>fumadocs-mdx>vite"
+        ]
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-698v-4r3x-3vcv",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-9jrq-w75r-8gcw",
+        "severity": "low",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-r825-w8mm-5pxw",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-rq7h-c2jc-7f22",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      }
+    ]
+  },
+  "localModel": {
+    "model": "Qwen3-4B-Q4_K_M",
+    "weightsRevision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+    "weightsSha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "ollamaVersion": "0.40.17",
+    "temperature": 0,
+    "samplerSeed": 17,
+    "numCtx": 16384,
+    "trialOrder": {
+      "tools": [
+        "original-fork",
+        "fork-original",
+        "original-fork"
+      ],
+      "answers": [
+        "fork",
+        "original"
+      ]
+    },
+    "positiveLocalToolObservedOnBoth": true,
+    "originalForkPoint": {
+      "approvalTrials": [
+        {
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": true,
+          "durationMs": 19311
+        },
+        {
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18985
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 26846
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 30747
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 17151
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 17909
+        }
+      ],
+      "answerTrials": [
+        {
+          "trial": 1,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 11103,
+          "usage": {
+            "input": 991,
+            "output": 224,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 13899,
+          "usage": {
+            "input": 1062,
+            "output": 991,
+            "cachedInput": 945,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 9674,
+          "usage": {
+            "input": 1003,
+            "output": 465,
+            "cachedInput": 943,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 12346,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 19780,
+          "usage": {
+            "input": 1062,
+            "output": 972,
+            "cachedInput": 945,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 9157,
+          "usage": {
+            "input": 1003,
+            "output": 412,
+            "cachedInput": 943,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6877,
+          "usage": {
+            "input": 991,
+            "output": 224,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 20251,
+          "usage": {
+            "input": 1062,
+            "output": 1194,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 11661,
+          "usage": {
+            "input": 1003,
+            "output": 433,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        }
+      ]
+    },
+    "fork": {
+      "approvalTrials": [
+        {
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90067
+        },
+        {
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 16675
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 27631
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18353
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 15420
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90067
+        }
+      ],
+      "answerTrials": [
+        {
+          "trial": 1,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 10826,
+          "usage": {
+            "input": 991,
+            "output": 659,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 17942,
+          "usage": {
+            "input": 1062,
+            "output": 1620,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6273,
+          "usage": {
+            "input": 1003,
+            "output": 434,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 7893,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 15608,
+          "usage": {
+            "input": 1062,
+            "output": 1384,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6214,
+          "usage": {
+            "input": 1003,
+            "output": 427,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 8064,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "source-reconciliation",
+          "status": "timed-out",
+          "correct": false,
+          "durationMs": 120028,
+          "usage": null
+        },
+        {
+          "trial": 3,
+          "task": "code-review",
+          "status": "timed-out",
+          "correct": false,
+          "durationMs": 120031,
+          "usage": null
+        }
+      ]
+    },
+    "recoveryCandidate": {
+      "revision": "027f4dfbe55d0c20854c2394c0c99ff2335fb1bc",
+      "separateAcceptanceSeed": true,
+      "approvalTrials": [
+        {
+          "trial": 1,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": true,
+          "durationMs": 23398
+        },
+        {
+          "trial": 1,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18611
+        },
+        {
+          "trial": 2,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 20376
+        },
+        {
+          "trial": 2,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 21416
+        },
+        {
+          "trial": 3,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 21109
+        },
+        {
+          "trial": 3,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18576
+        }
+      ]
+    },
+    "legacyAliasRevision": {
+      "revision": "cfd5f1fb7f4785d0910e073bfd17560128a66013",
+      "seedMatchesOriginalPair": 1,
+      "approvalTrials": [
+        {
+          "trial": 1,
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 22846
+        },
+        {
+          "trial": 1,
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90055
+        }
+      ]
+    },
+    "countedBenchmark": {
+      "originalForkPoint": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 78498,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90038,
+          "toolObjectivePassed": false,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 40239,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90061,
+          "toolObjectivePassed": false,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 26699,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 9169,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        }
+      ],
+      "fork": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 19252,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 25924,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 17733,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 15642,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90254,
+          "toolObjectivePassed": false,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 10095,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        }
+      ],
+      "recoveryMeasured": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 11716,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 11546,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 20347,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 10342,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": true
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 9650,
+          "toolObjectivePassed": true,
+          "fullInstructionPassed": false
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90061,
+          "toolObjectivePassed": false,
+          "fullInstructionPassed": false
+        }
+      ]
+    },
+    "countedScoring": {
+      "recordedPassedField": "The frozen trials used passed for the independently counted tool objective. Full task scores below also require an allowed reply to consist of the exact receipt.",
+      "perRevision": {
+        "originalForkPoint": {
+          "trials": 6,
+          "toolObjectivePassed": 4,
+          "fullInstructionPassed": 1,
+          "grantsWithExactAnswer": 0
+        },
+        "fork": {
+          "trials": 6,
+          "toolObjectivePassed": 5,
+          "fullInstructionPassed": 3,
+          "grantsWithExactAnswer": 0
+        },
+        "recoveryMeasured": {
+          "trials": 6,
+          "toolObjectivePassed": 5,
+          "fullInstructionPassed": 2,
+          "grantsWithExactAnswer": 0
+        }
+      }
+    }
+  },
+  "additionalChecks": {
+    "windowsHostPrerequisites": {
+      "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+      "paths": "Git for Windows sh and openssl on PATH in fixture only",
+      "passed": 106,
+      "failed": 7,
+      "emailSuite": {
+        "passed": 8,
+        "failed": 1,
+        "failure": "Windows symlink fixture"
+      },
+      "remainingLocaleCases": 6
+    },
+    "legacyAliasRevision": {
+      "revision": "cfd5f1fb7f4785d0910e073bfd17560128a66013",
+      "affectedVitest": {
+        "files": 23,
+        "passed": 580
+      },
+      "changedOutcomeRuntime": {
+        "files": 2,
+        "passed": 85
+      },
+      "driverAndRuntime": {
+        "files": 4,
+        "passed": 255,
+        "failed": 1,
+        "failure": "Existing Windows symlink fixture in chat-mcp-tools.test.ts"
+      }
+    }
+  },
+  "changedFilesOriginalToFork": [
+    {
+      "change": "M",
+      "path": "docs/memory.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-first-cycle.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-local-answer-trials.csv"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-notebook-reader-trials.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-oss-baseline.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/local-answer-comparison.mjs"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/notebook-reader.mjs"
+    },
+    {
+      "change": "M",
+      "path": "server/cloud-team-private.e2e.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-routes.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-topic-corrections.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/routes/bot-memory.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/workspace.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlaceAddSheet.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlacesRail.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/MemoryPage.team.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/pages.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-settings/MemorySection.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/lib/memory.ts"
+    }
+  ],
+  "joinedWindowsHost": {
+    "recovery": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "privacy": "cccf44127f6af65e464af2ab8427524ef55934ed",
+    "tree": "7032a9d18bc4a6a2094f498820aa43ece48f2cd6",
+    "command": "pnpm test",
+    "selection": "Windows host, six workers",
+    "durationSeconds": 1368.83,
+    "files": {
+      "passed": 2753,
+      "failed": 47,
+      "skipped": 67
+    },
+    "tests": {
+      "passed": 39960,
+      "failed": 123,
+      "skipped": 1088,
+      "todo": 3
+    },
+    "sharedNamedFailuresIncludingSetup": 124,
+    "baselineOnlyFailures": [],
+    "candidateOnlyFailures": [
+      "shared/redact-linear.test.ts > redactSecretsInText on large text > still masks what it masked before, the blob around it unchanged"
+    ],
+    "pairedRedactionControl": {
+      "algorithm": "SHAKE256, 300000 bytes from apex-redaction- plus integer index, base64url",
+      "inputs": 64,
+      "equivalentOutputs": 64,
+      "changedSurroundingText": [
+        43
+      ],
+      "sameSourceAndTestBlobs": true
+    }
+  },
+  "candidateDesktopPackage": {
+    "revision": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "command": "pnpm package:win",
+    "exitCode": 0,
+    "elapsedSeconds": 245.307,
+    "launch": {
+      "ready": true,
+      "readyMs": 10401,
+      "edition": "oss",
+      "version": "0.1.175",
+      "features": [],
+      "preload": true,
+      "streamTicket": true
+    },
+    "archives": [
+      {
+        "archive": "OpenMausBot-0.1.175-setup.exe",
+        "bytes": 271046013,
+        "sha256": "eb95416b8681e22551d0ff7c01d28e07a04fdd7d8b250068f6a6f8996f924d05",
+        "enterprisePaths": 0
+      },
+      {
+        "archive": "OpenMausBot-0.1.175-x64.zip",
+        "bytes": 375155257,
+        "sha256": "8392f2ce71196954c225a4031c560e9691c72cce447477a1a47feaa247f460d5",
+        "enterprisePaths": 0
+      }
+    ],
+    "unpackedMatches": {
+      "zipPayloadFiles": 3129,
+      "identicalFileHashes": 3129,
+      "onlyInUnpacked": [
+        "resources/elevate.exe"
+      ]
+    },
+    "signed": false,
+    "installerLifecycleExercised": false
+  },
+  "rendererChatAcceptance": {
+    "viewport": [
+      1416,
+      808
+    ],
+    "before": {
+      "title": "Isolated OpenMaus Chat",
+      "url": "/__threads.html",
+      "viewport": [
+        1416,
+        808
+      ],
+      "overlay": false,
+      "errors": [],
+      "warnings": []
+    },
+    "after": {
+      "title": "Isolated OpenMaus Chat",
+      "url": "/__threads.html",
+      "overlay": false,
+      "errors": [],
+      "warnings": []
+    },
+    "verifiedPersistedRows": 2,
+    "backendWait": "settled",
+    "provider": "fixture",
+    "transport": "real React composer and keyboard, loopback verification server, Edge CDP, page reload",
+    "screenshot": "docs/verification/evidence/apex-001-windows/conversation.png",
+    "adapterLimitation": "Both tests in the agent-browser UI control fixture timed out opening the Windows daemon."
+  },
+  "reviewedRecovery": {
+    "revision": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "docs/runtime-contract.md"
+      },
+      {
+        "change": "M",
+        "path": "docs/verification/README.md"
+      },
+      {
+        "change": "M",
+        "path": "docs/verification/desktop-server-recovery.md"
+      },
+      {
+        "change": "A",
+        "path": "docs/verification/evidence/desktop-server-recovery/windows-2026-11-21.jsonl"
+      },
+      {
+        "change": "A",
+        "path": "docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl"
+      },
+      {
+        "change": "M",
+        "path": "scripts/mcp-server.ts"
+      },
+      {
+        "change": "A",
+        "path": "scripts/testing/recovery-handoff.mjs"
+      },
+      {
+        "change": "M",
+        "path": "scripts/verify-server-recovery.mjs"
+      },
+      {
+        "change": "M",
+        "path": "server/bot-link/link.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/chat-followups-restart.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/index.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/mcp-server.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/outbound-hold.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime-coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/store.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/tree.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/types.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/testing/fake-connected-apps.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.ts"
+      }
+    ],
+    "targetedTests": 535,
+    "targetedFiles": 23,
+    "electronCrashScenarios": 10,
+    "supervisorAndLeasePassed": 73,
+    "supervisorAndLeaseSkipped": 12,
+    "independentCrashScenarios": 10,
+    "olderSavedSendAndChildUpgrade": [
+      {
+        "scenario": "handoff-continue",
+        "executions": 2,
+        "receiverCalls": 0,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-notify",
+        "executions": 1,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "waiting",
+        "rootOutcome": null,
+        "wait": "timed-out",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-status",
+        "executions": 1,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-substantive",
+        "executions": 2,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      }
+    ],
+    "portableEvidence": "https://github.com/JonaWasTaken/Bot-v2/blob/348c044f8670eb0b387b2682310b9bd2751c5df4/docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl",
+    "freshApprovalRetry": {
+      "fixture": "Original pending approval, crash, reject expired card, explicit fresh request, approve only its fresh card.",
+      "events": [
+        {
+          "event": "before-crash",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "resultSeen": false
+        },
+        {
+          "event": "after-restart",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "status": "failed",
+          "state": "failed",
+          "busy": false
+        },
+        {
+          "event": "fresh-approved-retry",
+          "oldApproval": "unavailable",
+          "beforeFreshDecision": 0,
+          "freshOutcome": "allowed-once",
+          "receiverCallsAfter": 1,
+          "waitStatus": "settled",
+          "rootState": "completed"
+        }
+      ]
+    },
+    "afterMarkerBeforeTransmission": {
+      "fixture": "A disposable copy of the first server bundle pauses after recordOutboundDispatch returns, before the bridge returns to HTTP forwarding. The replacement runs the original archive-matched server bundle.",
+      "stockBackendSha256": "b099d5fbb204d251e053dc6bf75c2412eb9d0d81f94e9183e5e4c75e3e5f283b",
+      "events": [
+        {
+          "event": "before-crash",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "resultSeen": false
+        },
+        {
+          "event": "after-restart",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "status": "failed",
+          "state": "failed",
+          "busy": false
+        },
+        {
+          "event": "dispatch-cut-no-replay",
+          "receiverCalls": 0,
+          "terminalReceipt": "error: Interrupted by an OpenMausBot restart after it already started a connected-app request (GMAIL_SEND_EMAIL). It may have taken effect. Check the app before asking to continue.",
+          "followupCompleted": true,
+          "original": "interrupted"
+        }
+      ]
+    }
+  },
+  "privateActivityReview": {
+    "revision": "cccf44127f6af65e464af2ab8427524ef55934ed",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "docs/verification/question-cards.md"
+      },
+      {
+        "change": "M",
+        "path": "server/host/ask-cards.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/host/ask-cards.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/index.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/question-cards.e2e.test.ts"
+      }
+    ],
+    "workstreamChecks": 113,
+    "independentPrivacyCases": 39,
+    "joinedPrivacyAndChannelPassed": 40,
+    "joinedTrustPassed": 94,
+    "joinedTrustSkipped": 8,
+    "otherReaderSharedParentHttp": 200,
+    "otherReaderPrivateWorkHttp": 404,
+    "newPrivateDecisionUpdateAfterShare": false,
+    "previouslyAuthorizedHistoryRetained": true
+  },
+  "roadmapValidation": {
+    "revision": "034bc53e95472ffb89bd43ff398c94c7caa306cf",
+    "programs": 10,
+    "chapters": 50,
+    "missions": 1000,
+    "uniqueObjectivesPlansAndAcceptance": true,
+    "trackedSourcePaths": 505,
+    "individualImplementationPRs": 4,
+    "statusCounts": {
+      "Verified": 13,
+      "Integrated": 3,
+      "In progress": 1,
+      "Not started": 983
+    }
+  },
+  "changedFilesOriginalToExternalDefault": [
+    {
+      "change": "M",
+      "path": "docs/memory.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-first-cycle.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-local-answer-trials.csv"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-notebook-reader-trials.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-oss-baseline.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/README.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/01-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/02-driver-contracts.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/03-http-and-sse-event-continuity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/04-persisted-task-state.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/05-fixture-reproducibility.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/06-composer-and-stream.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/07-conversation-navigation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/08-workspace-connection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/09-model-selection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/10-keyboard-and-accessibility.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/11-intent-and-model-policy.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/12-planning-thresholds.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/13-context-allocation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/14-action-verification.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/15-controlled-comparisons.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/16-durable-formation-and-consent.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/17-notebook-boundaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/18-retrieval-evaluation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/19-corrections-and-forgetting.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/20-retention-and-inspection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/21-capability-grants.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/22-browser-action-confirmation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/23-workspace-file-changes.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/24-computer-ownership.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/25-tool-interoperability.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/26-delegation-economics.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/27-dependency-ordering.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/28-child-permissions.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/29-cancellation-and-recovery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/30-result-verification.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/31-trigger-and-timezone-semantics.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/32-receipts-and-idempotency.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/33-unattended-approval.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/34-restart-handling.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/35-history-and-result-delivery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/36-workspace-membership.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/37-project-knowledge.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/38-artifact-provenance.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/39-reviewed-workflows.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/40-health-summaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/41-file-and-image-fidelity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/42-voice-interaction.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/43-startup-and-navigation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/44-large-transcripts.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/45-sustained-process-profiling.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/46-electron-boundaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/47-credential-and-member-isolation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/48-dependency-and-attribution-review.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/49-native-installer-testing.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/50-release-acceptance.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/ledger.mjs"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/release-chapters.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/runtime-contract.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/verification/README.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/verification/desktop-server-recovery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/verification/evidence/desktop-server-recovery/windows-2026-11-21.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/local-answer-comparison.mjs"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/notebook-reader.mjs"
+    },
+    {
+      "change": "M",
+      "path": "scripts/mcp-server.ts"
+    },
+    {
+      "change": "A",
+      "path": "scripts/testing/recovery-handoff.mjs"
+    },
+    {
+      "change": "M",
+      "path": "scripts/verify-server-recovery.mjs"
+    },
+    {
+      "change": "M",
+      "path": "server/bot-link/link.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/chat-followups-restart.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/cloud-team-private.e2e.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/coordinator.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/index.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/mcp-server.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-routes.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-topic-corrections.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/outbound-hold.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/routes/bot-memory.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime-coordinator.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/runtime.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/runtime.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/tree.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/types.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/testing/fake-connected-apps.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/turn-outcome.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/turn-outcome.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/workspace.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlaceAddSheet.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlacesRail.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/MemoryPage.team.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/pages.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-settings/MemorySection.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/lib/memory.ts"
+    }
+  ],
+  "correctedRecovery": {
+    "pr": 10,
+    "revision": "549933b2a1300bfc9b219c680aed5a344857deb4",
+    "baseOnGitHub": "15dbd41437f8f3666480b8bdf5864e74eee11d8e",
+    "reviewedChangeParent": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "beforeProtocolFix": "PR 5 merged externally at its earlier head",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "docs/runtime-contract.md"
+      },
+      {
+        "change": "M",
+        "path": "docs/verification/desktop-server-recovery.md"
+      },
+      {
+        "change": "A",
+        "path": "docs/verification/evidence/desktop-server-recovery/windows-legacy-handoffs-2026-11-21.jsonl"
+      },
+      {
+        "change": "M",
+        "path": "scripts/testing/recovery-handoff.mjs"
+      },
+      {
+        "change": "M",
+        "path": "scripts/verify-server-recovery.mjs"
+      },
+      {
+        "change": "M",
+        "path": "server/bot-link/link.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/index.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime-coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/scenarios.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/types.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/testing/fake-claude-cli.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/testing/fake-connected-apps.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/testing/room-handoff-agent.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.ts"
+      }
+    ],
+    "targetedTests": 566,
+    "targetedFiles": 26,
+    "currentFormatWindowsScenarios": 10,
+    "legacyWindowsScenarios": [
+      {
+        "scenario": "handoff-status",
+        "sendsBeforeCrash": 1,
+        "sendsAfterRestart": 1,
+        "readsBeforeCrash": 0,
+        "readsAfterRestart": 0,
+        "rootStatus": "failed",
+        "rootOutcome": "interrupted",
+        "rootExecutions": 1,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "failed"
+      },
+      {
+        "scenario": "handoff-notify",
+        "sendsBeforeCrash": 1,
+        "sendsAfterRestart": 1,
+        "readsBeforeCrash": 0,
+        "readsAfterRestart": 0,
+        "rootStatus": "failed",
+        "rootOutcome": "interrupted",
+        "rootExecutions": 1,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "failed"
+      },
+      {
+        "scenario": "handoff-substantive",
+        "sendsBeforeCrash": 1,
+        "sendsAfterRestart": 1,
+        "readsBeforeCrash": 0,
+        "readsAfterRestart": 0,
+        "rootStatus": "failed",
+        "rootOutcome": "interrupted",
+        "rootExecutions": 1,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "failed"
+      },
+      {
+        "scenario": "handoff-bounded",
+        "sendsBeforeCrash": 1,
+        "sendsAfterRestart": 1,
+        "readsBeforeCrash": 39,
+        "readsAfterRestart": 39,
+        "rootStatus": "failed",
+        "rootOutcome": "interrupted",
+        "rootExecutions": 1,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "failed"
+      },
+      {
+        "scenario": "handoff-continue",
+        "sendsBeforeCrash": 0,
+        "sendsAfterRestart": 0,
+        "readsBeforeCrash": 0,
+        "readsAfterRestart": 0,
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "rootExecutions": 2,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "settled"
+      },
+      {
+        "scenario": "handoff-read",
+        "sendsBeforeCrash": 0,
+        "sendsAfterRestart": 0,
+        "readsBeforeCrash": 1,
+        "readsAfterRestart": 1,
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "rootExecutions": 2,
+        "childStatus": "completed",
+        "childOutcome": "done",
+        "waitStatus": "settled"
+      },
+      {
+        "scenario": "handoff-cancel",
+        "sendsBeforeCrash": 1,
+        "sendsAfterRestart": 1,
+        "readsBeforeCrash": 0,
+        "readsAfterRestart": 0,
+        "rootStatus": "failed",
+        "rootOutcome": "interrupted",
+        "rootExecutions": 1,
+        "childStatus": "cancelled",
+        "childOutcome": "stopped",
+        "waitStatus": "failed"
+      }
+    ],
+    "portableEvidence": "https://github.com/JonaWasTaken/Bot-v2/blob/549933b2a1300bfc9b219c680aed5a344857deb4/docs/verification/evidence/desktop-server-recovery/windows-legacy-handoffs-2026-11-21.jsonl",
+    "independentFreshApprovalRetry": [
+      {
+        "event": "before-crash",
+        "slug": "GMAIL_SEND_EMAIL",
+        "effects": 0,
+        "prompts": 1,
+        "resultSeen": false
+      },
+      {
+        "event": "after-restart",
+        "slug": "GMAIL_SEND_EMAIL",
+        "effects": 0,
+        "prompts": 1,
+        "status": "failed",
+        "state": "failed",
+        "busy": false
+      },
+      {
+        "event": "fresh-approved-retry",
+        "oldApproval": "unavailable",
+        "beforeFreshDecision": 0,
+        "freshOutcome": "allowed-once",
+        "receiverCallsAfter": 1,
+        "waitStatus": "settled",
+        "rootState": "completed"
+      }
+    ],
+    "independentAfterMarkerBeforeTransmission": [
+      {
+        "event": "before-crash",
+        "slug": "GMAIL_SEND_EMAIL",
+        "effects": 0,
+        "prompts": 1,
+        "resultSeen": false
+      },
+      {
+        "event": "after-restart",
+        "slug": "GMAIL_SEND_EMAIL",
+        "effects": 0,
+        "prompts": 1,
+        "status": "failed",
+        "state": "failed",
+        "busy": false
+      },
+      {
+        "event": "dispatch-cut-no-replay",
+        "receiverCalls": 0,
+        "terminalReceipt": "error: Interrupted by an OpenMausBot restart after it already started a connected-app request (GMAIL_SEND_EMAIL). It may have taken effect. Check the app before asking to continue.",
+        "followupCompleted": true,
+        "original": "interrupted"
+      }
+    ],
+    "localWindowsDesktop": {
+      "package": {
+        "exitCode": 1,
+        "wallSeconds": 199.8
+      },
+      "packagedServerSmoke": {
+        "exitCode": 0,
+        "wallSeconds": 22.3
+      },
+      "stockPackageStage": "Windows Code Integrity blocked the unsigned intermediate NSIS helper. The final ZIP and unpacked app were produced.",
+      "zip": {
+        "bytes": 375155439,
+        "sha256": "45972ed673b44924fdb639368b107c317c986b8d48a44731ba5fcb4bf4bc9ed8"
+      },
+      "launch": {
+        "ready": true,
+        "readyMs": 12795,
+        "edition": "oss",
+        "features": [],
+        "version": "0.1.175",
+        "preload": true,
+        "streamTicket": true
+      },
+      "unsentDraft": {
+        "sameTextAtEveryStage": true,
+        "stages": [
+          {
+            "stage": "before interruption",
+            "userMessages": 0,
+            "matchingMessages": 0
+          },
+          {
+            "stage": "after embedded backend crash and reconnect",
+            "userMessages": 0,
+            "matchingMessages": 0
+          },
+          {
+            "stage": "after full process-tree termination and packaged relaunch",
+            "userMessages": 0,
+            "matchingMessages": 0
+          }
+        ],
+        "verifiedWith": "Real unpacked executable, Electron renderer textarea, same disposable profile; separate embedded backend crash and full process-tree relaunch.",
+        "independentProfiles": [
+          {
+            "stages": [
+              {
+                "stage": "before interruption",
+                "userMessages": 0,
+                "matchingMessages": 0
+              },
+              {
+                "stage": "after embedded backend crash and reconnect",
+                "userMessages": 0,
+                "matchingMessages": 0
+              },
+              {
+                "stage": "after full process-tree termination and packaged relaunch",
+                "userMessages": 0,
+                "matchingMessages": 0
+              }
+            ],
+            "exactTextRetained": true
+          },
+          {
+            "stages": [
+              {
+                "stage": "before interruption",
+                "userMessages": 0,
+                "matchingMessages": 0
+              },
+              {
+                "stage": "after embedded backend crash and reconnect",
+                "userMessages": 0,
+                "matchingMessages": 0
+              },
+              {
+                "stage": "after full process-tree termination and packaged relaunch",
+                "userMessages": 0,
+                "matchingMessages": 0
+              }
+            ],
+            "exactTextRetained": true
+          }
+        ]
+      },
+      "identicalZipPayloadFileHashes": 3129,
+      "localCodeIntegrityEvents": [
+        {
+          "Id": 3077,
+          "RecordId": 265779
+        },
+        {
+          "Id": 3033,
+          "RecordId": 265777
+        }
+      ]
+    },
+    "independentReview": {
+      "focused": {
+        "passed": 203,
+        "skipped": 0,
+        "exitCode": 0
+      },
+      "supervisor": {
+        "passed": 47,
+        "skipped": 0,
+        "exitCode": 0
+      },
+      "privacy": {
+        "passed": 39,
+        "skipped": 0,
+        "exitCode": 0
+      },
+      "composedTree": "d164a70a52251ab88b4b17036b187a9be2f5d424",
+      "joinedChecks": {
+        "passed": 137,
+        "skipped": 8,
+        "exitCode": 0
+      }
+    },
+    "hostedWindowsInstaller": {
+      "workflow": "https://github.com/JonaWasTaken/Bot-v2/actions/runs/44936790127",
+      "artifact": "https://github.com/JonaWasTaken/Bot-v2/actions/runs/44936790127/artifacts/14720731533",
+      "commit": "549933b2a1300bfc9b219c680aed5a344857deb4",
+      "version": "0.1.175",
+      "os": "Microsoft Windows Server 2025 Datacenter, build 26100",
+      "user": "hosted runner administrator",
+      "started": "2026-11-21T18:49:38.874Z",
+      "finished": "2026-11-21T18:54:57.373Z",
+      "installer": {
+        "bytes": 271155560,
+        "sha256": "7D6E235128D31C3782D72418659FE01342426C6E5DDD23EE285E7DFAA3DF4C04",
+        "signature": "NotSigned",
+        "stillThere": true
+      },
+      "shellLaunchHeld": true,
+      "directInstallerExitCode": 0,
+      "installed": true,
+      "defenderRealTimeOn": true,
+      "installerScanClean": true,
+      "installedAppScanClean": true,
+      "detectedThreats": 0,
+      "screenControlAnswer": {
+        "enabled": true,
+        "status": "ready"
+      },
+      "running120SecondsAfterOpen": true,
+      "limitations": [
+        "Unsigned setup; shell launch waited for interaction on the hosted machine.",
+        "No standard-user Windows 10 or 11 upgrade or uninstall in this run."
+      ]
+    }
+  },
+  "memoryAcrossRestarts": {
+    "stimulus": "After creating and correcting two notes, restart, request Undo on the first creation and delete the second from its stale reviewed version. Verify the actual desktop request shape of each revision. Immediately restart again after an accepted delete and compare its returned journal ID with stored history.",
+    "fixtures": {
+      "original": {
+        "revision": "e5490f70de6b683465fb5b7a7ff43e7aa931c1f9",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "path in query",
+        "staleUndoHttp": 200,
+        "staleDeleteHttp": 200,
+        "correctedNotesRetainedAfterStaleOperations": 0,
+        "confirmedDeleteHttp": null,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": false,
+        "deleteEntries": 1,
+        "acknowledgedDeleteRecorded": true,
+        "journalReadBeforeFinalCrash": false
+      },
+      "canonicalMainAtIntake": {
+        "revision": "362559603e8e5d12764253739f7a23888e52e7cb",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "path in query",
+        "staleUndoHttp": 200,
+        "staleDeleteHttp": 200,
+        "correctedNotesRetainedAfterStaleOperations": 0,
+        "confirmedDeleteHttp": null,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": false,
+        "deleteEntries": 1,
+        "acknowledgedDeleteRecorded": true,
+        "journalReadBeforeFinalCrash": false
+      },
+      "fork": {
+        "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "reviewed hash in body",
+        "staleUndoHttp": 409,
+        "staleDeleteHttp": 409,
+        "correctedNotesRetainedAfterStaleOperations": 2,
+        "confirmedDeleteHttp": 200,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": true,
+        "deleteEntries": 0,
+        "acknowledgedDeleteRecorded": false,
+        "journalReadBeforeFinalCrash": false
+      },
+      "forkWithHistoryReadBeforeCrash": {
+        "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "reviewed hash in body",
+        "staleUndoHttp": 409,
+        "staleDeleteHttp": 409,
+        "correctedNotesRetainedAfterStaleOperations": 2,
+        "confirmedDeleteHttp": 200,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": true,
+        "deleteEntries": 1,
+        "acknowledgedDeleteRecorded": true,
+        "journalReadBeforeFinalCrash": true
+      }
+    },
+    "firstObservedForkFailure": "0 stored deletion rows immediately following a successful reviewed deletion and process kill.",
+    "journalWriteErrorFork": {
+      "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+      "blockedJournalHttp": 200,
+      "serverClaimedSuccess": true,
+      "replacementVisibleAfterFailure": true,
+      "restoredJournalHttp": 200,
+      "restoredReceiptVerified": true
+    },
+    "correctedJournal": {
+      "pr": 12,
+      "revision": "813101106f8f0d18965f73e8973a0c363541f998",
+      "changedFiles": [
+        {
+          "change": "M",
+          "path": "docs/verification/memory-layer.md"
+        },
+        {
+          "change": "A",
+          "path": "server/memory-journal-restart.e2e.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/memory-journal.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/memory-journal.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/memory-routes.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/routes/bot-memory.test.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/routes/bot-memory.ts"
+        },
+        {
+          "change": "M",
+          "path": "server/testing/restartable-server.ts"
+        }
+      ],
+      "immediateRestart": {
+        "revision": "813101106f8f0d18965f73e8973a0c363541f998",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "reviewed hash in body",
+        "staleUndoHttp": 409,
+        "staleDeleteHttp": 409,
+        "correctedNotesRetainedAfterStaleOperations": 2,
+        "confirmedDeleteHttp": 200,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": true,
+        "deleteEntries": 1
+      },
+      "acknowledgedIdLookup": {
+        "revision": "813101106f8f0d18965f73e8973a0c363541f998",
+        "restarts": 2,
+        "checkedProcessIdentities": 3,
+        "deleteClient": "reviewed hash in body",
+        "staleUndoHttp": 409,
+        "staleDeleteHttp": 409,
+        "correctedNotesRetainedAfterStaleOperations": 2,
+        "confirmedDeleteHttp": 200,
+        "confirmedAbsentAfterSecondRestart": true,
+        "undoNoteRetainedAfterSecondRestart": true,
+        "deleteEntries": 1,
+        "acknowledgedDeleteRecorded": true,
+        "journalReadBeforeFinalCrash": false
+      },
+      "unwritableJournal": {
+        "revision": "813101106f8f0d18965f73e8973a0c363541f998",
+        "blockedJournalHttp": 500,
+        "serverClaimedSuccess": false,
+        "replacementVisibleAfterFailure": true,
+        "restoredJournalHttp": 200,
+        "restoredReceiptVerified": true
+      },
+      "limits": "The note may already be changed when the journal cannot be written. The server reports the partial write and asks for a reload. Storage failure and power loss were not simulated."
+    }
+  },
+  "matchedCrashBenchmark": {
+    "originalForkPoint": {
+      "revision": "e5490f70de6b683465fb5b7a7ff43e7aa931c1f9",
+      "indexSha256": "8414d68735625d1ac3ae0002fb75c37d9988ce6a671219402029bffdde5c6b7d",
+      "observations": [
+        {
+          "scenario": "continue",
+          "tool": "GMAIL_FETCH_EMAILS",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "in-flight",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": false,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "recover",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        }
+      ],
+      "publishedRunnerRepeat": {
+        "sameObservations": 3,
+        "exitCode": 0
+      }
+    },
+    "canonicalMainAtIntake": {
+      "revision": "362559603e8e5d12764253739f7a23888e52e7cb",
+      "indexSha256": "09c2ed2eb611a5e2d4c68636afaedf3cc14ade3ee3ab5e9baea6f89ed0fffe4a",
+      "observations": [
+        {
+          "scenario": "continue",
+          "tool": "GMAIL_FETCH_EMAILS",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "in-flight",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": false,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "recover",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        }
+      ],
+      "publishedRunnerRepeat": {
+        "sameObservations": 3,
+        "exitCode": 0
+      }
+    },
+    "fork": {
+      "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+      "indexSha256": "e6147acb664d45310d3b322fea96b962de4d89f226615b1240ab606da7107a9c",
+      "observations": [
+        {
+          "scenario": "continue",
+          "tool": "GMAIL_FETCH_EMAILS",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "in-flight",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": false,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "recover",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        }
+      ],
+      "publishedRunnerRepeat": {
+        "sameObservations": 3,
+        "exitCode": 0
+      }
+    },
+    "reviewedUpgradeCandidate": {
+      "revision": "549933b2a1300bfc9b219c680aed5a344857deb4",
+      "indexSha256": "f40efaccd0ec89405ed093e0b1ff422af083d29e2496abee543152d93adaaeaf",
+      "observations": [
+        {
+          "scenario": "continue",
+          "tool": "GMAIL_FETCH_EMAILS",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 2,
+          "receiverCalls": 2,
+          "status": "settled",
+          "rootStatus": "completed",
+          "rootOutcome": "done",
+          "executions": 2,
+          "terminalReceipts": 0
+        },
+        {
+          "scenario": "in-flight",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": false,
+          "providerPrompts": 1,
+          "receiverCalls": 1,
+          "status": "failed",
+          "rootStatus": "failed",
+          "rootOutcome": "interrupted",
+          "executions": 1,
+          "terminalReceipts": 1
+        },
+        {
+          "scenario": "recover",
+          "tool": "GMAIL_SEND_EMAIL",
+          "resultPresentAtCrash": true,
+          "providerPrompts": 1,
+          "receiverCalls": 1,
+          "status": "failed",
+          "rootStatus": "failed",
+          "rootOutcome": "interrupted",
+          "executions": 1,
+          "terminalReceipts": 1
+        }
+      ],
+      "publishedRunnerRepeat": {
+        "sameObservations": 3,
+        "exitCode": 0
+      }
+    }
+  },
+  "matchedCrashMethod": "Four stock server bundles, three matching scenarios in new isolated profiles per bundle. Same real Electron supervisor, bridge, scripted provider and counted loopback service for all arms. Health verified the replacement PID. The reference execution tool recorded effects independently of the task status.",
+  "currentIntegration": {
+    "tree": "60e6579e9d905132994fc262e181cc25a2874f55",
+    "includes": {
+      "default": "15dbd41437f8f3666480b8bdf5864e74eee11d8e",
+      "recovery": "549933b2a1300bfc9b219c680aed5a344857deb4",
+      "privacy": "cccf44127f6af65e464af2ab8427524ef55934ed",
+      "audit": "309994c70715e7dd031f79ac2765b5b33f427771"
+    },
+    "directSuiteTests": 332,
+    "directSuiteFiles": 10,
+    "outcome": {
+      "exitCode": 0,
+      "wallSeconds": 57.5
+    },
+    "standaloneEvaluationTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 2.3
+    },
+    "roadmapValidation": {
+      "exitCode": 0,
+      "wallSeconds": 0.3
+    }
+  },
+  "standaloneEvaluationVerification": {
+    "node24RunnerImport": {
+      "exitCode": 0,
+      "wallSeconds": 0.1
+    },
+    "rootTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 14.2
+    },
+    "evalsTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 1.8
+    },
+    "lint": {
+      "exitCode": 0,
+      "wallSeconds": 0.8
+    },
+    "vitest": {
+      "exitCode": 0,
+      "wallSeconds": 140.2
+    },
+    "suites": 18,
+    "passed": 103
+  },
+  "finalWindowsHost": {
+    "revision": "549933b2a1300bfc9b219c680aed5a344857deb4",
+    "command": "pnpm test with OMB_VITEST_E2E=host and six workers",
+    "passed": 39955,
+    "failed": 128,
+    "skipped": 1087,
+    "todo": 3,
+    "failedSuitesDuringSetup": 2,
+    "filesFailed": 50,
+    "filesPassed": 2751,
+    "filesSkipped": 66,
+    "durationSeconds": 1358.54,
+    "failureNamesSharedWithBaseline": 124,
+    "additionalFailuresInThisRun": [
+      "shared/redact-linear.test.ts > redactSecretsInText on large text > still masks what it masked before, the blob around it unchanged",
+      "server/independent-threads-api.test.ts > independent bot tasks through the isolated control surface > tells a room's coordinator that a member's approval went unanswered, so the step did not run",
+      "server/portable-hermes.e2e.test.ts > saves a portable Hermes CLI and probes version and ACP models in an isolated server",
+      "server/drivers/antigravity-turn-outcome.test.ts > an Antigravity turn whose reply was an upstream failure > shows the usage limit with its reset, and the next turn answers once the limit is gone",
+      "server/drivers/antigravity-turn-outcome.test.ts > an Antigravity turn whose reply was an upstream failure > leaves a normal reply, and a runtime that keeps no log, alone",
+      "server/drivers/codex.test.ts > CodexDriver turns (fake app-server) > blocks new ChatGPT turns and sign-in while active tasks stop and credentials revoke"
+    ],
+    "failingNamesExclusiveToBaseline": [],
+    "pairedReruns": {
+      "fork": {
+        "passed": 6,
+        "failed": 1,
+        "skippedBySelection": 355,
+        "failedNames": [
+          "server/portable-hermes.e2e.test.ts > saves a portable Hermes CLI and probes version and ACP models in an isolated server"
+        ],
+        "failure": "ENOENT starting the fixture embedded Python executable",
+        "wallSeconds": 28.2
+      },
+      "correctedRecovery": {
+        "passed": 6,
+        "failed": 1,
+        "skippedBySelection": 355,
+        "failedNames": [
+          "server/portable-hermes.e2e.test.ts > saves a portable Hermes CLI and probes version and ACP models in an isolated server"
+        ],
+        "failure": "ENOENT starting the fixture embedded Python executable",
+        "wallSeconds": 26.2
+      }
+    },
+    "redactionControl": "Identical paired results on both revisions for all 64 fixed inputs, with the old surrounding-text assertion failing for seed 43 on both."
+  },
+  "matchedCrashRunner": "docs/verification/evidence/apex-001-windows/compare-restart-bundle.mjs",
+  "changedFilesOriginalToDefaultWithPrivacy": [
+    {
+      "change": "M",
+      "path": "docs/memory.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-first-cycle.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-local-answer-trials.csv"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-notebook-reader-trials.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-oss-baseline.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/README.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/01-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/02-driver-contracts.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/03-http-and-sse-event-continuity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/04-persisted-task-state.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/05-fixture-reproducibility.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/06-composer-and-stream.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/07-conversation-navigation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/08-workspace-connection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/09-model-selection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/10-keyboard-and-accessibility.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/11-intent-and-model-policy.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/12-planning-thresholds.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/13-context-allocation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/14-action-verification.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/15-controlled-comparisons.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/16-durable-formation-and-consent.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/17-notebook-boundaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/18-retrieval-evaluation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/19-corrections-and-forgetting.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/20-retention-and-inspection.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/21-capability-grants.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/22-browser-action-confirmation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/23-workspace-file-changes.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/24-computer-ownership.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/25-tool-interoperability.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/26-delegation-economics.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/27-dependency-ordering.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/28-child-permissions.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/29-cancellation-and-recovery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/30-result-verification.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/31-trigger-and-timezone-semantics.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/32-receipts-and-idempotency.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/33-unattended-approval.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/34-restart-handling.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/35-history-and-result-delivery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/36-workspace-membership.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/37-project-knowledge.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/38-artifact-provenance.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/39-reviewed-workflows.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/40-health-summaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/41-file-and-image-fidelity.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/42-voice-interaction.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/43-startup-and-navigation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/44-large-transcripts.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/45-sustained-process-profiling.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/46-electron-boundaries.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/47-credential-and-member-isolation.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/48-dependency-and-attribution-review.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/49-native-installer-testing.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/chapters/50-release-acceptance.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/ledger.mjs"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/apex-roadmap/release-chapters.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/runtime-contract.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/verification/README.md"
+    },
+    {
+      "change": "M",
+      "path": "docs/verification/desktop-server-recovery.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/verification/evidence/desktop-server-recovery/windows-2026-11-21.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl"
+    },
+    {
+      "change": "M",
+      "path": "docs/verification/question-cards.md"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/local-answer-comparison.mjs"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/notebook-reader.mjs"
+    },
+    {
+      "change": "M",
+      "path": "scripts/mcp-server.ts"
+    },
+    {
+      "change": "A",
+      "path": "scripts/testing/recovery-handoff.mjs"
+    },
+    {
+      "change": "M",
+      "path": "scripts/verify-server-recovery.mjs"
+    },
+    {
+      "change": "M",
+      "path": "server/bot-link/link.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/chat-followups-restart.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/cloud-team-private.e2e.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/coordinator.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/host/ask-cards.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/host/ask-cards.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/index.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/mcp-server.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-routes.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-topic-corrections.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/outbound-hold.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/question-cards.e2e.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/routes/bot-memory.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime-coordinator.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/runtime.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/runtime.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/tree.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/runtime/types.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/testing/fake-connected-apps.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/turn-outcome.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/turn-outcome.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/workspace.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlaceAddSheet.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlacesRail.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/MemoryPage.team.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/pages.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-settings/MemorySection.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/lib/memory.ts"
+    }
+  ],
+  "deterministicFixtures": {
+    "pr": 11,
+    "revision": "4f54d7d1f713fddc15d720b30db926774db8841c",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "server/lending-memory.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "shared/redact-linear.test.ts"
+      }
+    ],
+    "controls": {
+      "linux-neutral-base": {
+        "numPassedTests": 60,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      },
+      "linux-neutral-head": {
+        "numPassedTests": 61,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      },
+      "linux-collision-base": {
+        "numPassedTests": 59,
+        "numFailedTests": 1,
+        "numPendingTests": 0,
+        "success": false
+      },
+      "linux-collision-head": {
+        "numPassedTests": 61,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      },
+      "linux-merge-collision": {
+        "numPassedTests": 61,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "success": true
+      },
+      "win-head-controls": {
+        "numPassedTests": 5,
+        "numFailedTests": 0,
+        "numPendingTests": 45,
+        "success": true
+      },
+      "windows-base": {
+        "numPassedTests": 28,
+        "numFailedTests": 31,
+        "numPendingTests": 1,
+        "success": false
+      },
+      "windows-head": {
+        "numPassedTests": 28,
+        "numFailedTests": 32,
+        "numPendingTests": 1,
+        "success": false
+      }
+    }
+  },
+  "sprintComposition": {
+    "tree": "40f9a1877e09c2281541f6a51a739e644bdd57ff",
+    "default": "25c8123d966cb7df18a8b3338b21aed6cc2161a2",
+    "heads": {
+      "6": "10048606d27c0c20670da5a4c394602af52ea202",
+      "10": "549933b2a1300bfc9b219c680aed5a344857deb4",
+      "11": "4f54d7d1f713fddc15d720b30db926774db8841c",
+      "12": "813101106f8f0d18965f73e8973a0c363541f998"
+    },
+    "mergedInDefault": [
+      5,
+      7,
+      8
+    ],
+    "core": {
+      "passed": 283,
+      "files": 11,
+      "exitCode": 0,
+      "wallSeconds": 57.2
+    },
+    "rootTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 12.2
+    },
+    "evalTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 2.0
+    },
+    "lint": {
+      "exitCode": 0,
+      "wallSeconds": 1.0
+    },
+    "roadmap": {
+      "exitCode": 0,
+      "wallSeconds": 0.2
+    },
+    "nativeLendingControls": {
+      "failedAtSymlinkSetup": 2,
+      "exitCode": 1,
+      "wallSeconds": 3.2
+    }
+  }
+}
