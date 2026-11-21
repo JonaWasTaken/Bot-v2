@@ -188,15 +188,27 @@ export function buildRecall(input: RecallInput): RecallResult | null {
   const query = recallQuery(input.message);
   if (!query) return null;
   const memoryIds = input.memoryIds?.length ? input.memoryIds : [input.botId];
-  const topics = memoryIds.flatMap((id) => topicPassages(id, query));
-  const notes = selectMemoryPassages(memoryIds.flatMap((id) => memoryPassages(id, query)), topics);
+  const notes = selectMemoryPassages(memoryIds.map((id) => ({
+    topics: topicPassages(id, query),
+    matches: memoryPassages(id, query),
+  })));
   return renderRecall([...notes, ...conversationPassages(input, query)]);
 }
 
-export function selectMemoryPassages(matches: readonly RecallPassage[], topics: readonly RecallPassage[]): RecallPassage[] {
-  const named = topics.map(topic => matches.find(match => match.label === topic.label) ?? topic);
-  const namedFiles = new Set(named.map(passage => passage.label));
-  return [...named, ...matches.filter(passage => !namedFiles.has(passage.label))].slice(0, MEMORY_HITS);
+interface LayerPassages {
+  topics: readonly RecallPassage[];
+  matches: readonly RecallPassage[];
+}
+
+export function selectMemoryPassages(layers: readonly LayerPassages[]): RecallPassage[] {
+  const named: RecallPassage[] = [];
+  const other: RecallPassage[] = [];
+  for (const { topics, matches } of layers) {
+    const namedFiles = new Set(topics.map(topic => topic.label));
+    for (const topic of topics) named.push(matches.find(match => match.label === topic.label) ?? topic);
+    other.push(...matches.filter(match => !namedFiles.has(match.label)));
+  }
+  return [...named, ...other].slice(0, MEMORY_HITS);
 }
 
 export function withRecalled(recalled: string, text: string): string {

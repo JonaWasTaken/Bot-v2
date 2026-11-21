@@ -26,7 +26,7 @@ let owner = "", admin = "", bob = "";
 let bot: { id: string; mainThreadId: string };
 let bobThread = "", bobFile = "", bobDoc = "", bobUnsent = "", adminThread = "";
 
-const dump = () => JSON.parse(readFileSync(join(team.home, "dump.json"), "utf8")) as { systemPrompt: string };
+const dump = () => JSON.parse(readFileSync(join(team.home, "dump.json"), "utf8")) as { systemPrompt: string; prompt: unknown };
 const scriptToolCalls = (calls: unknown[] | null) => {
   const file = join(team.home, "tool-calls.json");
   if (calls) writeFileSync(file, JSON.stringify(calls)); else rmSync(file, { force: true });
@@ -123,6 +123,15 @@ it("Bob reads and writes his own private chat, with its words, its file, his sea
   expect((await team.as(bob, "PATCH", `/api/bots/${mausBot.id}`, { color: "blue" })).status).toBe(200);
   // The session says which conversations are his.
   expect((await team.as(bob, "GET", "/api/auth/session")).body.openedThreads).toContain(bobThread);
+}, hostTimeout(60_000));
+
+it("recalls both departure terminals from identically named personal and team topics in Bob's turn", async () => {
+  const memory = `/api/bots/${bot.id}/memory`;
+  const path = "memory/travel.md";
+  expect((await team.as(bob, "PUT", `${memory}/mine/file`, { path, text: "- My departure terminal is Birch." })).status).toBe(200);
+  expect((await team.as(owner, "PUT", `${memory}/file`, { path, text: "- The team departure terminal is Cedar." })).status).toBe(200);
+  const received = await turn(bob, bobThread, "Which departure terminals are on the travel plan?");
+  expect(JSON.stringify(received.prompt).match(/Birch|Cedar/g)).toEqual(["Birch", "Cedar"]);
 }, hostTimeout(60_000));
 
 it("Bob opens, edits and deletes what the bot remembers about him, and nobody else reaches it", async () => {
