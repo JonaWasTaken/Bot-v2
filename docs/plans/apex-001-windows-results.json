@@ -699,7 +699,10 @@
         ],
         "id": "GHSA-68fv-2mgg-jv7q",
         "severity": "high",
-        "fixed": ">=1.2.2"
+        "fixed": ">=1.2.2",
+        "reportedDependencyPaths": [
+          "apps__docs>fumadocs-mdx>vite>postcss>source-map-js"
+        ]
       },
       {
         "package": "undici",
@@ -708,7 +711,10 @@
         ],
         "id": "GHSA-2m5v-pch6-74hx",
         "severity": "high",
-        "fixed": ">=8.12.2"
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
       },
       {
         "package": "undici",
@@ -726,7 +732,10 @@
         ],
         "id": "GHSA-4w7w-5xrc-9h26",
         "severity": "high",
-        "fixed": ">=8.12.2"
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
       },
       {
         "package": "undici",
@@ -762,7 +771,10 @@
         ],
         "id": "GHSA-qrxm-fqhp-jwvm",
         "severity": "high",
-        "fixed": ">=8.12.2"
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
       },
       {
         "package": "undici",
@@ -771,7 +783,10 @@
         ],
         "id": "GHSA-xjj6-f33q-929c",
         "severity": "high",
-        "fixed": ">=8.12.2"
+        "fixed": ">=8.12.2",
+        "reportedDependencyPaths": [
+          ".>undici"
+        ]
       },
       {
         "package": "vite",
@@ -780,7 +795,10 @@
         ],
         "id": "GHSA-587h-7wmj-h5pm",
         "severity": "high",
-        "fixed": ">=7.3.7"
+        "fixed": ">=7.3.7",
+        "reportedDependencyPaths": [
+          "apps__docs>fumadocs-mdx>vite"
+        ]
       },
       {
         "package": "vite",
@@ -1321,6 +1339,71 @@
           "durationMs": 18576
         }
       ]
+    },
+    "legacyAliasRevision": {
+      "revision": "cfd5f1fb7f4785d0910e073bfd17560128a66013",
+      "seedMatchesOriginalPair": 1,
+      "approvalTrials": [
+        {
+          "trial": 1,
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 22846
+        },
+        {
+          "trial": 1,
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90055
+        }
+      ]
+    }
+  },
+  "additionalChecks": {
+    "windowsHostPrerequisites": {
+      "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+      "paths": "Git for Windows sh and openssl on PATH in fixture only",
+      "passed": 106,
+      "failed": 7,
+      "emailSuite": {
+        "passed": 8,
+        "failed": 1,
+        "failure": "Windows symlink fixture"
+      },
+      "remainingLocaleCases": 6
+    },
+    "legacyAliasRevision": {
+      "revision": "cfd5f1fb7f4785d0910e073bfd17560128a66013",
+      "affectedVitest": {
+        "files": 23,
+        "passed": 580
+      },
+      "changedOutcomeRuntime": {
+        "files": 2,
+        "passed": 85
+      },
+      "driverAndRuntime": {
+        "files": 4,
+        "passed": 255,
+        "failed": 1,
+        "failure": "Existing Windows symlink fixture in chat-mcp-tools.test.ts"
+      }
     }
   }
 }
