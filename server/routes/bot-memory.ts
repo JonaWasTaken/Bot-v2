@@ -11,6 +11,7 @@ import {
   readMemoryDoc,
 } from "../memory-store.ts";
 import {
+  confirmMemoryJournalWrite,
   flushMemoryJournal,
   journalMemoryDelete,
   journalMemoryWrite,
@@ -60,6 +61,10 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
   return async ({ req, res, url, path, method, auth, json, readBody }) => {
     let m: RegExpMatchArray | null = null;
     const write = <T>(botId: string, change: () => T): T => deps.ownersWrite ? deps.ownersWrite(auth, botId, change) : change();
+    const replyAfterJournal = async (id: string, file: string, body: unknown) => {
+      await confirmMemoryJournalWrite(id, file);
+      return json(res, 200, body);
+    };
     /** One memory file of `id`, a bot's own folder or a layer of it. */
     const serveFile = async (id: string, guarded: <T>(change: () => T) => T) => {
       if (method === "GET") {
@@ -80,7 +85,7 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
             via: "ui",
             expectedHash: parsed.data.expectedHash,
           }));
-          return json(res, 200, { ok: true, ...doc, entry: entry ? journalEntryForClient(id, entry) : null, overview: memoryOverview(id) });
+          return replyAfterJournal(id, doc.path, { ok: true, ...doc, entry: entry ? journalEntryForClient(id, entry) : null, overview: memoryOverview(id) });
         } catch (error) {
           return replyMemoryError(res, error);
         }
@@ -97,7 +102,7 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
       }
       try {
         const entry = guarded(() => journalMemoryDelete(id, file, { actor: "person", via: "ui", expectedHash }));
-        return json(res, 200, { ok: true, path: file, entry: entry ? journalEntryForClient(id, entry) : null, overview: memoryOverview(id) });
+        return replyAfterJournal(id, file, { ok: true, path: file, entry: entry ? journalEntryForClient(id, entry) : null, overview: memoryOverview(id) });
       } catch (error) {
         return replyMemoryError(res, error);
       }
@@ -123,7 +128,7 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
       try {
         const botId = m[1];
         const { doc } = write(botId, () => journalMemoryWrite(botId, MEMORY_INDEX, parsed.data.text, { actor: "person", via: "api" }));
-        return json(res, 200, { ok: true, hash: doc.hash, truncated: memoryCapacity(doc.text).truncated });
+        return replyAfterJournal(botId, doc.path, { ok: true, hash: doc.hash, truncated: memoryCapacity(doc.text).truncated });
       } catch (error) {
         // The old route answered 400 for an oversized body; its callers keep that.
         if (error instanceof MemoryStoreError && error.code === "too-large") return json(res, 400, { error: error.message });
@@ -175,7 +180,7 @@ export function createBotMemoryRoutes(deps: BotMemoryRouteDeps): RouteHandler {
       const botId = m[1], changeId = m[2];
       const result = write(botId, () => revertMemoryChange(botId, changeId));
       if (!result.ok) return json(res, result.status, { error: result.error });
-      return json(res, 200, { ok: true, ...result.doc, entry: result.entry ? journalEntryForClient(m[1], result.entry) : null, overview: memoryOverview(m[1]) });
+      return replyAfterJournal(botId, result.doc.path, { ok: true, ...result.doc, entry: result.entry ? journalEntryForClient(botId, result.entry) : null, overview: memoryOverview(botId) });
     }
     if (method === "GET" && path === "/api/profile/learned") {
       return json(res, 200, { learned: listLearnedFacts() });

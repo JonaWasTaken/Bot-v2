@@ -8,7 +8,9 @@ import {
   BEFORE_CAP,
   DIFF_CAP,
   JOURNAL_DIR,
+  adoptMemoryJournal,
   beginMemoryTurn,
+  confirmMemoryJournalWrite,
   endMemoryTurn,
   forgetBotMemoryJournal,
   flushMemoryJournal,
@@ -154,6 +156,20 @@ describe("journalMemoryWrite / readMemoryJournal", () => {
     const bot = freshBot();
     journalMemoryWrite(bot, "memory/same.md", "x", { actor: "person", via: "ui" });
     expect(journalMemoryWrite(bot, "memory/same.md", "x", { actor: "person", via: "ui" }).entry).toBeNull();
+  });
+
+  it("keeps the acknowledged rows on both sides of a queued journal import", async () => {
+    const bot = freshBot();
+    const path = "memory/local.md";
+    const first = journalMemoryWrite(bot, path, "one", { actor: "person", via: "ui" }).entry!;
+    const remote = { ...first, id: "remote", at: first.at - 1 };
+    const imported = adoptMemoryJournal(bot, [first, remote]);
+    const second = journalMemoryWrite(bot, path, "two", { actor: "person", via: "ui" }).entry!;
+    await confirmMemoryJournalWrite(bot, path);
+    expect(await imported).toBe(1);
+    const rows = readMemoryJournal(bot);
+    expect(rows.map((row) => row.id)).toEqual([second.id, first.id, remote.id]);
+    expect(rows[2]).toMatchObject({ before: null, canRevert: false });
   });
 
   it("lets the store's refusals through untouched", () => {

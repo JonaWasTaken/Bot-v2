@@ -3,7 +3,51 @@
 Automatic recall, the topic index and until dates only read memory. Memory
 upkeep (background capture into MEMORY.md and topic files, About me learned
 from the person's words, and the nightly tidy-up) is on unless a bot's switch
-is off, and every memory write is a journaled, undoable row. See [the memory guide](../memory.md).
+is off. Memory history identifies the changes whose earlier content can be restored. See [the memory guide](../memory.md).
+
+## Personal edits across a server restart
+
+```sh
+pnpm exec vitest run server/routes/bot-memory.test.ts server/memory-routes.test.ts server/memory-journal.test.ts server/memory-journal-restart.e2e.test.ts
+```
+
+The route-table fixture holds the real NDJSON append at the filesystem boundary.
+It checks the HTTP response headers while the append is held, then releases it
+and reads the journal directly. This covers bot and personal notebook saves
+and deletes, the legacy whole-file save, the query-path delete and Undo.
+On `f0bf6f7c`, all seven changed requests had already sent success.
+
+The restart fixture saves two notes and corrects them. It introduces a typo,
+undoes it and kills the owned server immediately after the Undo response.
+On restart both corrections are readable. A stale Undo and a stale conditional
+delete each return 409. After reading the current hash, deleting the reviewed
+file returns 200. The fixture kills the server again immediately. Each startup
+checks the health PID against the child it launched. After the second restart,
+the surviving note still contains its correction, the deleted file is absent,
+and the journal has exactly one delete with the returned ID. Undoing that ID
+restores the reviewed text.
+
+A separate Windows run delayed the reviewed delete append by 1.2 seconds.
+Each row used a fresh home, two hard restarts and the same two-note sequence.
+
+| Revision | Journal read between delete acknowledgement and kill | Delete rows with the acknowledged ID after restart |
+| --- | --- | --- |
+| `f0bf6f7c` | No | 0 |
+| `f0bf6f7c` | Yes | 1 |
+| With the acknowledgement fix | No | 1 |
+
+A real server whose journal filename is a directory returns HTTP 500. The
+note file has already changed. A separate fault writes part of a journal line
+and throws. The changed request and a concurrent identical save both receive
+500. An independent notebook can save during the fault, and the next queued
+change in the affected notebook produces a readable row.
+
+The note mutation and journal append are separate filesystem operations. A
+crash between them can leave a changed file without a history entry before
+the client receives success. After a failure, reload the file. A later save
+of identical content creates no row and cannot rebuild missing history.
+These fixtures establish process-restart behavior on Windows and Linux.
+Power loss and storage-device failure were outside the test.
 
 ## Exercise the real path
 
