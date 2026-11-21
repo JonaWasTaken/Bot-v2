@@ -25,6 +25,7 @@ async function serve(auth: RequestAuth = owner, enabled = true) {
   const service = { list: vi.fn(() => []), create: vi.fn(() => ({ id })), command: vi.fn(() => ({ id })),
     artifact: vi.fn(async () => "# Report") };
   const route = createMissionRoutes({ service: service as unknown as MissionControl, enabled: () => enabled, live: () => live,
+    conversationProject: (_bot, thread) => thread === "discussion" ? "owned" : undefined,
     hasBot: bot => bot === "lead", hasProject: (_bot, project) => project === "owned" });
   const server = createServer(async (req, res) => {
     const url = new URL(req.url!, "http://localhost");
@@ -61,6 +62,18 @@ it("rechecks authority after receiving the body and rejects invented grants and 
   expect((await f.post(input, "", true)).status).toBe(403);
   expect(f.service.create).not.toHaveBeenCalled();
   expect(f.service.command).not.toHaveBeenCalled();
+});
+
+it("checks the project for scoped lists and the conversation membership before creation", async () => {
+  const f = await serve();
+  expect((await fetch(f.base + "?projectId=foreign")).status).toBe(404);
+  expect(f.service.list).not.toHaveBeenCalled();
+  expect((await fetch(f.base + "?projectId=owned")).status).toBe(200);
+  expect(f.service.list).toHaveBeenCalledWith("lead", "owned");
+  expect((await f.post({ ...input, conversationId: "discussion" })).status).toBe(404);
+  expect((await f.post({ ...input, projectId: "owned", conversationId: "foreign" })).status).toBe(404);
+  expect(f.service.create).not.toHaveBeenCalled();
+  expect((await f.post({ ...input, projectId: "owned", conversationId: "discussion" })).status).toBe(201);
 });
 
 it("checks the current specialist's tool grants, engine, holds and workspace on each operation", () => {

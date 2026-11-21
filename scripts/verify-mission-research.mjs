@@ -11,8 +11,9 @@ import { removeTempDir, waitForExit } from "../server/testing/cleanup.ts";
 import { openHeadlessChrome } from "./testing/headless-chrome.ts";
 import { fixtureApi, mountPreview } from "./testing/preview-fixture.ts";
 
-const { values } = parseArgs({ options: { baseline: { type: "string" }, endpoint: { type: "string" },
+const { values } = parseArgs({ options: { baseline: { type: "string" }, project: { type: "boolean" }, endpoint: { type: "string" },
   model: { type: "string" }, out: { type: "string" }, metric: { type: "string" }, electron: { type: "string" }, "no-screenshots": { type: "boolean" } } });
+assert(!(values.project && values.baseline), "Project qualification requires the mission implementation.");
 const endpoint = new URL(values.endpoint ?? "");
 assert(endpoint.protocol === "http:" && ["127.0.0.1", "[::1]"].includes(endpoint.hostname) && !endpoint.username && !endpoint.password,
   "Provide a dedicated local OpenAI-compatible verification model.");
@@ -34,7 +35,7 @@ const base = fixture.info.url;
 const api = fixtureApi(base, { headers: { origin: base } });
 const cli = (...args) => runControlOmb([...args, "--url", base]);
 const profile = await mkdtemp(join(tmpdir(), "omb-mission-ui-"));
-let restarted, preview, page;
+let restarted, preview, page, project, conversation, emptyProject;
 const capture = async name => { if (!values["no-screenshots"]) await writeFile(join(out, name), await page.capture()); };
 const buttons = "[...document.querySelectorAll('button,[role=tab]')]";
 const byText = name => buttons + ".find(b => b.textContent.trim() === " + JSON.stringify(name) + ")";
@@ -49,6 +50,18 @@ async function openControl() {
     const bot = "[...document.querySelectorAll('button,[role=button]')].find(b => b.innerText?.split('\\n').some(t => t.trim() === 'Research') || b.getAttribute('title') === 'Research')";
     await page.until(bot);
     await page.evaluate(bot + ".click()");
+  }
+  if (project) {
+    const folder = "document.querySelector('[data-sidebar-folder-row=" + JSON.stringify(project.id) + "] button[aria-haspopup=menu]')";
+    if (!(await page.evaluate("Boolean(" + folder + ")"))) {
+      await page.until("document.querySelector('[aria-label=\"Expand Research threads\"]') || " + folder);
+      await page.evaluate("document.querySelector('[aria-label=\"Expand Research threads\"]')?.click()");
+    }
+    await page.until(folder);
+    await page.evaluate(folder + ".click()");
+    await click("Mission Control");
+    await page.until("document.querySelector('#mission-control-title')?.parentElement.textContent.includes('Validation tools')");
+    return;
   }
   if (!(await page.evaluate("Boolean(" + byText("Details") + ")"))) await page.evaluate("document.querySelector('[data-chathead-pill]')?.click()");
   await click("Details");
@@ -82,6 +95,12 @@ try {
   await cli("set-model", "--bot", bot.id, "--instance", "openaiCompat", "--model", values.model);
   await api("PATCH", "/api/bots/" + bot.id, { toolScope, approvalMode: "ask" });
   const botPath = "/api/bots/" + bot.id;
+  if (values.project) {
+    project = (await api("POST", botPath + "/projects", { name: "Validation tools" })).project;
+    emptyProject = (await api("POST", botPath + "/projects", { name: "Later", emoji: "📚" })).project;
+    conversation = (await api("POST", botPath + "/tasks", { title: "Package decision", projectId: project.id })).task;
+    await api("POST", botPath + "/tasks/" + bot.threadId, {});
+  }
   if (values.baseline) {
     const start = performance.now();
     await cli("send", "--bot", bot.id, "--text", objective);
@@ -108,12 +127,18 @@ try {
     }
     await page.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
     await page.send("Page.navigate", { url: preview.previewUrl });
+    if (project) {
+      await page.evaluate("localStorage.setItem('omb-advanced-mode','1')");
+      await page.send("Page.reload");
+    }
     await openControl();
     await page.until("document.querySelector('form textarea')");
     await page.evaluate("(() => {const e=document.querySelector('form textarea');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(e,"
       + JSON.stringify(objective) + ");e.dispatchEvent(new Event('input',{bubbles:true}));})()");
     await page.evaluate("(() => { const e = [...document.querySelectorAll('form select')].find(s => [...s.options].some(o => o.textContent === 'Registry reader'));"
       + "Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e," + JSON.stringify(reader.id) + ");e.dispatchEvent(new Event('change',{bubbles:true})); })()");
+    if (project) await page.evaluate("(() => {const e = [...document.querySelectorAll('form select')].find(s => [...s.options].some(o => o.value === "
+      + JSON.stringify(conversation.threadId) + ")); e.value = " + JSON.stringify(conversation.threadId) + "; e.dispatchEvent(new Event('change',{bubbles:true}));})()");
     const start = performance.now();
     await click("Prepare plan");
     await page.until(byText("Approve and start") + "?.disabled === false || document.querySelector('[role=dialog] [role=alert]') || document.querySelector('[role=dialog] article [role=status]')", 100_000);
@@ -122,6 +147,10 @@ try {
     assert.equal(reviewed.state, "review", reviewed.issue);
     assert.deepEqual([...reviewed.plan.packages].sort(), ["superstruct", "valibot", "zod"]);
     assert.equal(reviewed.plan.metric, metric);
+    if (project) {
+      assert.equal(reviewed.projectId, project.id);
+      assert.equal(reviewed.conversationId, conversation.threadId);
+    }
     assert.equal(reviewed.researcherId, reader.id);
     assert.equal(reviewed.usage.toolCalls, 0);
     assert.equal(reviewed.usage.modelCalls, 1);
@@ -198,6 +227,22 @@ try {
     await page.until("document.body.innerText.includes('Saved to this bot')");
     assert((await api("GET", noteUrl)).text.includes(restored.artifact.sha256));
     result.noteSavedByOwner = true;
+    if (project) {
+      assert.deepEqual((await api("GET", path + "?projectId=" + project.id)).missions.map(m => m.id), [restored.id]);
+      const savedBot = (await api("GET", "/api/bots")).bots.find(b => b.id === bot.id);
+      assert.deepEqual(savedBot.projects.find(p => p.id === emptyProject.id), emptyProject);
+      assert(!savedBot.tasks.some(task => task.projectId === emptyProject.id));
+      assert.deepEqual((await api("GET", path + "?projectId=" + emptyProject.id)).missions, []);
+      const firstThread = (await api("POST", botPath + "/tasks", { projectId: emptyProject.id, title: "First conversation" })).task;
+      assert.equal(firstThread.projectId, emptyProject.id);
+      result.reopenedEmptyProject = { ...emptyProject, firstThreadId: firstThread.threadId };
+      await page.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
+      await click("Open conversation · Package decision");
+      await page.until("!document.querySelector('#mission-control-title')");
+      await page.until("document.querySelector('[aria-current=page][data-sidebar-thread-row=" + JSON.stringify(conversation.threadId) + "]')");
+      result.projectId = project.id;
+      result.conversationId = conversation.threadId;
+    }
   }
   const name = values.baseline ? "baseline.json" : "mission.json";
   await writeFile(join(out, name), JSON.stringify(result, null, 2) + "\n");

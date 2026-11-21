@@ -20,7 +20,7 @@ const storedLimits = limitsSchema.extend({ maxSpecialists: limitsSchema.shape.ma
 export const defaultLimits: MissionLimits = { maxSteps: 8, maxSpecialists: 2, maxDepth: 3, concurrency: 3, retries: 1, toolCalls: 12, modelCalls: 1, timeoutMs: 60000 };
 export const missionSchema = z.strictObject({
   owner: z.literal("workspace-owner"), creationHash: z.string().length(64), name: z.string().max(100), researcherId: z.string().min(1),
-  projectId: z.string().optional(), memoryTopic: memoryTopic.optional(), limits: storedLimits, plan: researchPlan.nullable(),
+  projectId: z.string().optional(), conversationId: z.string().optional(), memoryTopic: memoryTopic.optional(), limits: storedLimits, plan: researchPlan.nullable(),
   phase: z.enum(["draft", "review", "active", "paused", "blocked"]),
   revision: z.number().int().positive(), version: z.number().int().positive().max(5),
   artifactId: z.uuid(), modelCalls: z.number().int().nonnegative(),

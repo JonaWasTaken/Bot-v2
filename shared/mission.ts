@@ -49,6 +49,7 @@ export interface MissionView {
   memoryTopic?: string;
   history: Array<{ version: number; objective: string; plan: ResearchPlan | null; limits: MissionLimits; replacedAt: number }>;
   projectId?: string;
+  conversationId?: string;
   state: MissionState;
   version: number;
   revision: number;

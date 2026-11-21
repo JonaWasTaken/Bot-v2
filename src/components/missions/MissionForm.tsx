@@ -11,13 +11,14 @@ export interface FormData {
   objective: string;
   researcherId: string;
   projectId?: string;
+  conversationId?: string;
   memoryTopic?: string;
   plan?: ResearchPlan;
   limits: Partial<MissionLimits>;
 }
 
-export function MissionForm({ bot, bots, previous, busy, onSave, onBack }: {
-  bot: Bot; bots: Bot[]; previous?: MissionView; busy: boolean; onSave: (data: FormData) => Promise<void>; onBack: () => void;
+export function MissionForm({ bot, bots, previous, fixedProjectId, busy, onSave, onBack }: {
+  bot: Bot; bots: Bot[]; previous?: MissionView; fixedProjectId?: string; busy: boolean; onSave: (data: FormData) => Promise<void>; onBack: () => void;
 }) {
   const [id] = useState(() => crypto.randomUUID());
   const [name, setName] = useState("");
@@ -26,13 +27,15 @@ export function MissionForm({ bot, bots, previous, busy, onSave, onBack }: {
   const [names, setNames] = useState(previous?.plan?.packages.join(", ") ?? "");
   const [metric, setMetric] = useState<ResearchPlan["metric"]>(previous?.plan?.metric ?? "dependencies");
   const [researcherId, setResearcher] = useState(previous?.researcherId ?? bot.id);
-  const [projectId, setProject] = useState(previous?.projectId ?? "");
+  const [projectId, setProject] = useState(fixedProjectId ?? previous?.projectId ?? "");
+  const [conversationId, setConversation] = useState("");
+  const conversations = projectId ? bot.tasks?.filter(task => task.projectId === projectId) ?? [] : [];
   const [concurrency, setConcurrency] = useState(previous?.limits.concurrency ?? 3);
   const [toolCalls, setToolCalls] = useState(previous?.limits.toolCalls ?? 12);
   async function submit(event: FormEvent) {
     event.preventDefault();
     const packages = names.trim().split(/[\s,]+/).filter(Boolean);
-    await onSave({ id, name: name.trim() || (objective.trim().length <= 70 ? objective.trim() : t("mission.defaultName")), objective: objective.trim(), researcherId, projectId: projectId || undefined, memoryTopic: !packages.length && topic.trim() || undefined,
+    await onSave({ id, name: name.trim() || (objective.trim().length <= 70 ? objective.trim() : t("mission.defaultName")), objective: objective.trim(), researcherId, projectId: projectId || undefined, conversationId: conversationId || undefined, memoryTopic: !packages.length && topic.trim() || undefined,
       plan: packages.length ? { packages, metric } : undefined, limits: { concurrency, toolCalls } });
   }
   return <form className="mx-auto flex w-full max-w-xl flex-col gap-5" onSubmit={submit}>
@@ -54,9 +57,14 @@ export function MissionForm({ bot, bots, previous, busy, onSave, onBack }: {
     {!previous && bots.length > 1 && <label className="text-[13px] font-medium">{t("mission.researcher")}
       <Select className="mt-1 w-full" value={researcherId} onChange={e => setResearcher(e.target.value)}>
         {bots.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</Select></label>}
-    {!previous && !!bot.projects?.length && <label className="text-[13px] font-medium">{t("mission.project")}
-      <Select className="mt-1 w-full" value={projectId} onChange={e => setProject(e.target.value)}>
+    {!previous && !fixedProjectId && !!bot.projects?.length && <label className="text-[13px] font-medium">{t("mission.project")}
+      <Select className="mt-1 w-full" value={projectId} onChange={e => { setProject(e.target.value); setConversation(""); }}>
         <option value="">{t("mission.noProject")}</option>{bot.projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</Select></label>}
+    {!previous && conversations.length > 0 && <label className="text-[13px] font-medium">{t("mission.conversation")}
+      <Select className="mt-1 w-full" value={conversationId} disabled={busy} onChange={e => setConversation(e.target.value)}>
+        <option value="">{t("mission.noConversation")}</option>
+        {conversations.map(task => <option key={task.threadId} value={task.threadId}>{task.title || t("task.newShort")}</option>)}
+      </Select></label>}
     <details><summary className="cursor-pointer text-[13px] font-medium text-ink-secondary">{t("mission.limits")}</summary>
       <div className="mt-3 grid grid-cols-2 gap-3 text-[13px]">
         <label>{t("mission.concurrency")}<input className={field} type="number" min={1} max={4} required value={concurrency} onChange={e => setConcurrency(e.target.valueAsNumber || 0)} /></label>

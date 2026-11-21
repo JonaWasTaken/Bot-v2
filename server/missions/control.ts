@@ -11,7 +11,7 @@ import { sha256 } from "./research.ts";
 
 const botKey = z.string().min(1).max(120).regex(/^[\w-]+$/);
 export const createRequest = z.strictObject({ id: z.uuid(), name: z.string().trim().min(1).max(100), objective: z.string().trim().min(1).max(1600),
-  researcherId: botKey.optional(), projectId: botKey.optional(), memoryTopic: memoryTopic.optional(), plan: researchPlan.optional(), limits: limitsSchema.partial().optional() });
+  researcherId: botKey.optional(), projectId: botKey.optional(), conversationId: z.string().min(1).max(200).regex(/^[\w-]+$/).optional(), memoryTopic: memoryTopic.optional(), plan: researchPlan.optional(), limits: limitsSchema.partial().optional() });
 export const actionRequest = z.strictObject({ action: z.enum(["start", "decline", "pause", "resume", "cancel", "retry", "revise"]),
   revision: z.number().int().positive(), objective: z.string().trim().min(1).max(1600).optional(), step: z.string().max(160).optional(), plan: researchPlan.optional(), limits: limitsSchema.partial().optional() });
 export type CreateMission = z.infer<typeof createRequest>;
@@ -39,8 +39,8 @@ export class MissionControl {
     this.host = host;
   }
 
-  list(botId: string) {
-    return this.store.all({ missions: true, botId }).filter(hasMission).reverse().map(root => ({ id: root.id, name: root.mission.name,
+  list(botId: string, projectId?: string) {
+    return this.store.all({ missions: true, botId, projectId }).filter(hasMission).reverse().map(root => ({ id: root.id, name: root.mission.name,
       state: missionState(root, root.mission.phase === "blocked" ? this.store.children(root.id) : []) }));
   }
 
@@ -72,7 +72,7 @@ export class MissionControl {
     if (redactSecretsInText(name) !== name || redactSecretsInText(objective) !== objective) throw conflict("Remove credentials from the mission text.");
     const limits = { ...defaultLimits, ...input.limits };
     if (researcherId !== botId && limits.maxSpecialists < 2) throw conflict("The plan needs a second specialist slot.");
-    const creationHash = sha256(JSON.stringify([botId, name, objective, researcherId, projectId, limits, plan?.packages, plan?.metric, input.memoryTopic]));
+    const creationHash = sha256(JSON.stringify([botId, name, objective, researcherId, projectId, limits, plan?.packages, plan?.metric, input.memoryTopic, ...(input.conversationId ? [input.conversationId] : [])]));
     const exists = this.store.get(id);
     if (exists) {
       const existing = this.root(botId, id);
@@ -88,7 +88,7 @@ export class MissionControl {
     }
     if (this.store.all({ missions: true, nonTerminal: true }).length >= 30) throw conflict("Finish or cancel an open mission before creating another.");
     const result = this.runtime.enqueue({ mission: { id, record: {
-      owner: "workspace-owner", creationHash, name, researcherId, projectId, memoryTopic: input.memoryTopic, limits, plan: approvedPlan, phase: plan ? "review" : "draft",
+      owner: "workspace-owner", creationHash, name, researcherId, projectId, conversationId: input.conversationId, memoryTopic: input.memoryTopic, limits, plan: approvedPlan, phase: plan ? "review" : "draft",
       revision: 1, version: 1, artifactId: randomUUID(), modelCalls: 0,
     } }, origin: { kind: "person", source: "chat" }, requester: { kind: "person" },
       assignee: { botId, destination: { kind: "work_thread", threadId: "mission/" + id } }, brief: objective, levels: { own: "ask" } });

@@ -8,11 +8,12 @@ interface MissionRoutes {
   enabled(): boolean;
   live(auth: RequestAuth): boolean;
   hasProject(botId: string, projectId: string): boolean;
+  conversationProject(botId: string, threadId: string): string | undefined;
   hasBot(botId: string): boolean;
 }
 
 export function createMissionRoutes(deps: MissionRoutes): RouteHandler {
-  return async ({ req, res, path, method, auth, json, readBody }) => {
+  return async ({ req, res, url, path, method, auth, json, readBody }) => {
     const match = /^\/api\/bots\/([\w-]+)\/missions(?:\/([a-f0-9-]{36})(?:\/(artifact|export|summary))?)?$/.exec(path);
     if (!match) return PASS;
     const allowed = () => deps.enabled() && ownerOrAdmin(auth) && deps.live(auth);
@@ -22,7 +23,11 @@ export function createMissionRoutes(deps: MissionRoutes): RouteHandler {
     const stillAllowed = () => allowed() && deps.hasBot(botId!);
     try {
       if (method === "GET") {
-        if (!id) return json(res, 200, { missions: deps.service.list(botId!) });
+        if (!id) {
+          const projectId = url.searchParams.get("projectId");
+          if (projectId !== null && !deps.hasProject(botId!, projectId)) return json(res, 404, { error: "Project not found." });
+          return json(res, 200, { missions: deps.service.list(botId!, projectId ?? undefined) });
+        }
         if (!file) return json(res, 200, deps.service.get(botId!, id));
         const text = file === "summary" ? missionSummary(deps.service.get(botId!, id)) : await deps.service.artifact(botId!, id);
         if (!stillAllowed()) return json(res, 403, { error: "Access to this mission ended." });
@@ -43,6 +48,9 @@ export function createMissionRoutes(deps: MissionRoutes): RouteHandler {
       const parsed = createRequest.safeParse(input);
       if (!parsed.success) return json(res, 400, { error: "Invalid mission objective, shortlist or limits." });
       if (parsed.data.projectId && !deps.hasProject(botId!, parsed.data.projectId)) return json(res, 404, { error: "Project not found." });
+      const { projectId, conversationId } = parsed.data;
+      if (conversationId && (!projectId || deps.conversationProject(botId!, conversationId) !== projectId))
+        return json(res, 404, { error: "Conversation not found in this project." });
       return json(res, 201, deps.service.create(botId!, parsed.data));
     } catch (cause) {
       const status = (cause as { status?: number })?.status;

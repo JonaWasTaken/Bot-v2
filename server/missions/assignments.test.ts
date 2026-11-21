@@ -56,6 +56,20 @@ function fixture(overrides: Partial<MissionHost> = {}, path = ":memory:") {
 }
 
 describe("reviewed research missions on the assignment runtime", () => {
+  it("reopens only missions owned by the requested folder and preserves creation retry identity", () => {
+    const f = fixture();
+    f.create();
+    const input = { ...f.input, id: randomUUID(), projectId: "work", conversationId: "thread", plan: shortlist };
+    f.service.create(f.bot, input);
+    expect(f.service.create(f.bot, input)).toMatchObject({ projectId: "work", conversationId: "thread" });
+    expect(() => f.service.create(f.bot, { ...input, conversationId: "different" })).toThrow("already belongs");
+    f.service.create(f.bot, { ...input, id: randomUUID(), projectId: "other", conversationId: undefined });
+    expect(f.service.list(f.bot, "work").map(m => m.id)).toEqual([input.id]);
+    expect(f.service.list(f.bot, "empty")).toEqual([]);
+    expect(f.service.list("another", "work")).toEqual([]);
+    expect(f.service.list(f.bot)).toHaveLength(3);
+  });
+
   it("rejects excess size, depth, repeated nodes, missing dependencies, cycles and model-selected tool arguments", () => {
     expect(() => checkedPlan(shortlist, { ...defaultLimits, maxSteps: 4 })).toThrow();
     expect(() => checkedPlan(shortlist, { ...defaultLimits, maxDepth: 2 })).toThrow();

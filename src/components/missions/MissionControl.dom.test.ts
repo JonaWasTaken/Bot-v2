@@ -8,7 +8,7 @@ import type { Bot } from "@/state/store";
 import { MissionControl } from "./MissionControl";
 
 const data = vi.hoisted(() => ({ name: "Reviewed comparison", state: "planning", calls: 0 }));
-vi.mock("@/state/store-select", () => ({ useStoreSelector: () => [{ id: "lead", name: "Research" }] }));
+vi.mock("@/state/store-select", () => ({ useStoreDispatch: () => vi.fn(), useStoreSelector: () => [{ id: "lead", name: "Research" }] }));
 vi.mock("@/state/api", () => ({ api: async (path: string) => {
   data.calls++;
   const m = { id: "study", name: data.name, state: data.state, botId: "lead", objective: "Compare packages", version: 1,
