@@ -130,7 +130,11 @@ describe("outwardActions", () => {
     const batch = (name: string, slugs: string[], ok = true) => call(name, ok, { input: JSON.stringify({
       tools: slugs.map(tool_slug => ({ tool_slug, arguments: { query: "GMAIL_SEND_EMAIL" } })),
     }) });
-    for (const name of ["COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__composio__COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__own_apps__COMPOSIO_MULTI_EXECUTE_TOOL"]) {
+    for (const name of [
+      "COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__composio__COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__own_apps__COMPOSIO_MULTI_EXECUTE_TOOL",
+      "composio_composio_multi_execute_tool", "own_apps_composio_multi_execute_tool",
+      "composio_composio_multi_execute_tool_2", "own_apps_composio_multi_execute_tool_10",
+    ]) {
       expect(restartEffects([batch(name, ["GMAIL_FETCH_EMAILS", "GMAIL_SEND_EMAIL"])], true)).toEqual({ dispatched: "GMAIL_SEND_EMAIL" });
       expect(restartEffects([batch(name, ["GMAIL_FETCH_EMAILS"])], true)).toEqual([]);
       const refused = batch(name, ["GMAIL_SEND_EMAIL"], false);
@@ -138,6 +142,8 @@ describe("outwardActions", () => {
       expect(restartEffects([refused], true)).toEqual({ dispatched: "GMAIL_SEND_EMAIL" });
     }
     expect(restartEffects([batch("mcp__other__COMPOSIO_MULTI_EXECUTE_TOOL", ["GMAIL_SEND_EMAIL"])], true)).toEqual([]);
+    expect(restartEffects([batch("other_composio_multi_execute_tool", ["GMAIL_SEND_EMAIL"])], true)).toEqual([]);
+    expect(restartEffects([batch("own_apps_composio_multi_execute_tool_preview", ["GMAIL_SEND_EMAIL"])], true)).toEqual([]);
     const clipped = call("COMPOSIO_MULTI_EXECUTE_TOOL", true, { input: '{"tools": [' });
     expect(restartEffects([clipped], true)).toEqual({ dispatched: "COMPOSIO_MULTI_EXECUTE_TOOL" });
     expect(restartEffects([clipped], false)).toEqual([]);

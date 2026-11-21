@@ -58,6 +58,15 @@ failure. The read-only assignment resumed once on both revisions. The
 include requests received by the loopback service and total provider prompts
 through the end of reconciliation.
 
+Saved work from an older release can identify the same batch by the
+lowercase name exposed by the OpenAI-compatible and Pi drivers. Reopening a
+pre-marker SQLite assignment originally sent the request twice for both
+the team and personal app servers. With the driver aliases recognized,
+the receiver counted one request for each, and neither assignment reran.
+The matching read-only batch and an unrelated server keep their existing
+recovery behavior. The last four rows in the evidence file record the
+upgrade check.
+
 This fixture exercises Electron main and its server child. Renderer draft
 preservation, native failure dialogs and cleanup of real provider processes
 require separate tests. A real connected app may have received a request

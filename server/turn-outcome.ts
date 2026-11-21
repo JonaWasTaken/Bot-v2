@@ -1,4 +1,5 @@
 import { errorTranscript } from "../shared/client-cancel.ts";
+import { OWN_APPS_SERVER } from "../shared/own-apps.ts";
 import { isOutboundTool, outboundCallsIn } from "../shared/outbound.ts";
 import { COMPOSIO_MULTI_EXECUTE_TOOL } from "./connector-verdict.ts";
 import type { RuntimeEvent } from "./contracts.ts";
@@ -94,6 +95,15 @@ const GIT_OUTWARD = /\bgit\s+(commit|push)\b/g;
 const MONEY_OUTWARD = /\b(pay|payment|charge|refund|transfer)\b/gi;
 const ERROR_CHARS = 200;
 const ERRORS_KEPT = 3;
+const connectedAppServers = ["composio", OWN_APPS_SERVER];
+const chatBatchTool = COMPOSIO_MULTI_EXECUTE_TOOL.toLowerCase();
+
+function isLegacyConnectedBatch(name: string): boolean {
+  if (name === COMPOSIO_MULTI_EXECUTE_TOOL) return true;
+  const chatName = name.replace(/_(?:[2-9]|[1-9]\d+)$/, "");
+  return connectedAppServers.some(server =>
+    name === `mcp__${server}__${COMPOSIO_MULTI_EXECUTE_TOOL}` || chatName === `${server}_${chatBatchTool}`);
+}
 
 const toolRows = (rows: readonly Message[]) =>
   rows.filter((row) => row.role === "bot" && row.kind === "activity" && row.tool !== undefined);
@@ -117,7 +127,7 @@ export function restartEffects(rows: readonly Message[], checkLegacyBatches: boo
   if (!checkLegacyBatches) return outwardActions(rows);
   for (const row of toolRows(rows)) {
     const tool = row.tool!;
-    if (tool.name.replace(/^mcp__(?:composio|own_apps)__/, "") !== COMPOSIO_MULTI_EXECUTE_TOOL) continue;
+    if (!isLegacyConnectedBatch(tool.name)) continue;
     let input: unknown;
     try {
       input = JSON.parse(tool.input ?? "");
