@@ -1,13 +1,16 @@
 import { errorTranscript } from "../shared/client-cancel.ts";
+import { failedTurnTool } from "../shared/failed-turn.ts";
 import { OWN_APPS_SERVER } from "../shared/own-apps.ts";
-import { isOutboundTool, outboundCallsIn } from "../shared/outbound.ts";
+import { connectorCallsIn, isOutboundTool } from "../shared/outbound.ts";
 import { COMPOSIO_MULTI_EXECUTE_TOOL } from "./connector-verdict.ts";
 import type { RuntimeEvent } from "./contracts.ts";
+import type { HandoffView } from "./coordinator.ts";
 import { buildTurnDigest, digestTools } from "./digest.ts";
 import { stopCause } from "./drivers/engine-errors.ts";
 import { outboundDispatchLabel } from "./runtime/tree.ts";
 import type { RestartEffects, TurnEvidence } from "./runtime/types.ts";
 import type { Message } from "./store.ts";
+import { previewIsPartial } from "./tool-summary.ts";
 
 const REASON_CHARS = 600;
 
@@ -96,17 +99,24 @@ const MONEY_OUTWARD = /\b(pay|payment|charge|refund|transfer)\b/gi;
 const ERROR_CHARS = 200;
 const ERRORS_KEPT = 3;
 const connectedAppServers = ["composio", OWN_APPS_SERVER];
-const chatBatchTool = COMPOSIO_MULTI_EXECUTE_TOOL.toLowerCase();
-
-function isLegacyConnectedBatch(name: string): boolean {
-  if (name === COMPOSIO_MULTI_EXECUTE_TOOL) return true;
+function isConnectedToolName(name: string, slug: string): boolean {
+  if (name === slug) return true;
   const chatName = name.replace(/_(?:[2-9]|[1-9]\d+)$/, "");
   return connectedAppServers.some(server =>
-    name === `mcp__${server}__${COMPOSIO_MULTI_EXECUTE_TOOL}` || chatName === `${server}_${chatBatchTool}`);
+    name === `mcp__${server}__${slug}` || name === `${server}_${slug.toLowerCase()}` || chatName === `${server}_${slug.toLowerCase()}`);
 }
 
 const toolRows = (rows: readonly Message[]) =>
   rows.filter((row) => row.role === "bot" && row.kind === "activity" && row.tool !== undefined);
+
+export function interruptedRootReceipt(root: Pick<HandoffView, "requestMessageId" | "createdAt">, rows: readonly Message[], cause: string) {
+  const latest = rows.findLast(row => row.role === "user");
+  const requestMessageId = root.requestMessageId ?? rows.findLast(row => row.role === "user" && row.at <= root.createdAt)?.id;
+  return { requestMessageId, tool: { ...failedTurnTool(cause), terminal: !latest || latest.id === requestMessageId } };
+}
+
+const missingFields = (value: unknown): boolean =>
+  typeof value === "object" && value !== null && "…" in value && typeof value["…"] === "string" && previewIsPartial(value["…"]);
 
 export function outwardActions(rows: readonly Message[]): string[] {
   const labels: string[] = [];
@@ -124,18 +134,31 @@ export function outwardActions(rows: readonly Message[]): string[] {
 }
 
 export function restartEffects(rows: readonly Message[], checkLegacyBatches: boolean): RestartEffects {
-  if (!checkLegacyBatches) return outwardActions(rows);
+  if (!checkLegacyBatches) {
+    const holds = rows.flatMap(({ kind, role, card }) => {
+      if (role !== "bot" || kind !== "options" || !card?.requestId || card.heldCode !== "approval.held.outbound" || !card.outboundRequest) return [];
+      const unavailable = card.answered === "unavailable" && card.expired && card.dismissed;
+      return unavailable || (!card.answered && !card.expired && !card.dismissed) ? [card.outboundRequest.tool] : [];
+    });
+    if (!holds.length) return outwardActions(rows);
+    const other = outwardActions(rows.filter(({ tool }) => !tool || tool.ok !== undefined || !holds.some(slug => isConnectedToolName(tool.name, slug))));
+    return other.length ? other : { unapproved: outboundDispatchLabel(holds[0]!) };
+  }
   for (const row of toolRows(rows)) {
     const tool = row.tool!;
-    if (!isLegacyConnectedBatch(tool.name)) continue;
+    if (!isConnectedToolName(tool.name, COMPOSIO_MULTI_EXECUTE_TOOL)) continue;
     let input: unknown;
     try {
       input = JSON.parse(tool.input ?? "");
     } catch {
       return { dispatched: COMPOSIO_MULTI_EXECUTE_TOOL };
     }
-    const dispatch = outboundCallsIn(COMPOSIO_MULTI_EXECUTE_TOOL, input)[0];
-    if (dispatch) return { dispatched: outboundDispatchLabel(dispatch.slug) };
+    const items = typeof input === "object" && input !== null && "tools" in input && Array.isArray(input.tools) ? input.tools : [];
+    if (missingFields(input) || items.some(missingFields)) return { dispatched: COMPOSIO_MULTI_EXECUTE_TOOL };
+    for (const { slug } of connectorCallsIn(COMPOSIO_MULTI_EXECUTE_TOOL, input)) {
+      if (previewIsPartial(slug)) return { dispatched: COMPOSIO_MULTI_EXECUTE_TOOL };
+      if (isOutboundTool(slug)) return { dispatched: outboundDispatchLabel(slug) };
+    }
   }
   return outwardActions(rows);
 }

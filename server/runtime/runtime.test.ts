@@ -1166,6 +1166,40 @@ describe("Runtime: a root's later executions (every turn a root)", () => {
 });
 
 describe("Runtime: a cut turn that already acted outward (contract §5)", () => {
+  it.each(["work", "notify"] as const)("keeps a marked requester interrupted after its %s child completes and reports once", async mode => {
+    const before = world();
+    const root = before.runtime.begin(beginReq());
+    const child = ok(before.runtime.enqueue(toBot("builder", root.id, "FYI: sent receipt", { mode })));
+    before.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    before.runtime.close();
+    const after = world(() => ({ kind: "completed", text: "Noted.", statusOnly: true }), {}, before.store);
+    expect(after.store.get(root.id)).toMatchObject({ status: "failed", outcome: "interrupted", executions: 1 });
+    after.runtime.tick(); await flush(); after.runtime.tick();
+    expect(after.runner.runs.map(run => run.a.id)).toEqual([child.id]);
+    expect(after.store.get(child.id)).toMatchObject({ status: "completed", outcome: "done", reportedAt: expect.any(Number) });
+    expect(after.store.get(root.id)?.outcomeDetail).toContain("may have taken effect");
+    expect(after.store.events(root.id).filter(e => e.kind === "reported")).toHaveLength(1);
+    expect(after.store.inbox({ threadId: "chief-chat" })).toHaveLength(mode === "notify" ? 0 : 1);
+    invariants(after);
+    after.store.close();
+  });
+
+  it("a person can still stop the work issued by an interrupted requester", async () => {
+    const before = world();
+    const root = before.runtime.begin(beginReq());
+    const child = ok(before.runtime.enqueue(toBot("builder", root.id)));
+    before.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    before.runtime.close();
+    const after = world(() => "hold", {}, before.store);
+    after.runtime.tick();
+    after.runtime.stopRequester({ threadId: "chief-chat" });
+    await flush();
+    expect(after.store.get(root.id)).toMatchObject({ status: "failed", outcome: "interrupted" });
+    expect(after.store.get(child.id)).toMatchObject({ status: "cancelled", outcome: "stopped" });
+    invariants(after);
+    after.store.close();
+  });
+
   it("keeps the first outbound dispatch when the server dies before any provider result and reports the interruption once", () => {
     const store = openRuntimeStore(":memory:");
     const first = world(undefined, {}, store);
@@ -1174,10 +1208,12 @@ describe("Runtime: a cut turn that already acted outward (contract §5)", () => 
     first.runtime.recordOutboundDispatch(root.id, "SLACK_SEND_MESSAGE");
     first.runtime.close();
 
-    const second = world(undefined, {}, store);
+    const inspected: string[] = [];
+    const second = world(undefined, {}, store, { outward: n => { inspected.push(n.id); return ["queued follow-up waiting"]; } });
     second.runtime.tick();
     expect(store.get(root.id)).toMatchObject({ status: "failed", outcome: "interrupted", executions: 1, restarts: 0,
       outcomeDetail: expect.stringContaining("GMAIL_SEND_EMAIL") });
+    expect(inspected).toEqual([]);
     expect(store.get(root.id)?.outcomeDetail).toContain("may have taken effect");
     expect(second.runner.runs).toHaveLength(0);
     expect(second.runner.reports).toHaveLength(1);

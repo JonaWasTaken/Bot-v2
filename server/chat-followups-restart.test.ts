@@ -227,7 +227,11 @@ it("survives a real server crash: queued sends keep receipts, cancellation and u
     });
     expect((await api("POST", `/api/groups/${channel.id}/messages`, channelCancelledBody, 409)).error).toContain("cancelled");
     const channelSettled = await runControlOmb(["wait", "--channel", channel.id, "--url", url]);
+    const channelMessages = await messages(channel.threadId);
+    evidence.push({ channelSettled, channelMessages });
     expect(channelSettled).toMatchObject({ status: "settled" });
+    expect(channelMessages.filter(m => m.requestMessageId === initial.message.id && m.tool?.ok === false)).toHaveLength(1);
+    expect(channelMessages.some(m => m.turnSucceeded === true && m.at > channelMessages.find(row => row.sendId === channelBody.sendId).at)).toBe(true);
     await expect.poll(() => journal().some((row) => row.id === queued.queueId || row.id === channelQueued.queueId)).toBe(false);
     const interrupted = await messages(later.threadId);
     expect(interrupted.filter((message) => message.queueId === claimed.queueId)).toEqual([

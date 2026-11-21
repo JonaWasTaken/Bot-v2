@@ -113,6 +113,7 @@ export function view(a: Assignment, parent?: Assignment): HandoffView {
   if (a.cards !== undefined) node.cards = a.cards;
   if (a.continuation !== undefined) node.continuation = { ...a.continuation };
   if (a.goalRunId !== undefined) node.goalRunId = a.goalRunId;
+  if (a.requestMessageId !== undefined) node.requestMessageId = a.requestMessageId;
   if (a.parentId !== undefined) node.parentId = a.parentId;
   if (groupId !== undefined) node.groupId = groupId;
   if (a.batchKey !== undefined) node.requestBatchKey = a.batchKey;
@@ -375,6 +376,7 @@ export class RuntimeCoordinator implements Coordinator {
       assignee: { botId: address.botId, destination: { kind: address.groupId ? "room_thread" : "standing_thread", threadId: address.threadId,
         ...(address.groupId ? { groupId: address.groupId } : {}) } },
       brief: req.brief.slice(0, BRIEF_MAX),
+      requestMessageId: req.requestMessageId,
       level: req.level,
       ...(opener?.requester.kind === "external_runtime" ? { reply: "poll" as const } : {}),
       ...(req.goalRunId ? { goalRunId: req.goalRunId } : {}),

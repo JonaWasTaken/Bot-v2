@@ -91,6 +91,7 @@ export interface Assignment {
   reply: Reply;
   /** The request, harness-stored (at most 12 000 characters). */
   brief: string;
+  requestMessageId?: string;
   /** The requester's own completion criterion, if it gave one. */
   doneWhen?: string;
   /** A root that is one step of a room goal run (the run's id): it neither parks nor continues in
@@ -184,7 +185,7 @@ export interface TurnEvidence {
   outward?: string[];
 }
 
-export type RestartEffects = string[] | { dispatched: string };
+export type RestartEffects = string[] | { dispatched: string } | { unapproved: string };
 
 export type EventKind =
   | "enqueued" | "refused" | "admitted" | "started" | "progress" | "parked" | "answered"

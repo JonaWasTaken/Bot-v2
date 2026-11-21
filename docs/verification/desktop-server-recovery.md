@@ -17,7 +17,7 @@ the invoking shell has `ELECTRON_RUN_AS_NODE` set.
 It never launches `electron/main.mjs`, a real computer/browser driver, the
 operator's installed app, or their data directory. It accepts no server URL.
 
-Five separate Electron parents exercise the production supervisor, PID health
+Ten separate Electron parents exercise the production supervisor, PID health
 probe, parent-held data-directory lease, private approval coordinator, and built
 server:
 
@@ -29,17 +29,26 @@ server:
 - Repeat while the service holds its reply, after counting the send. The
   transcript has no successful tool result at the crash. Require the same
   counts and terminal outcome.
+- Crash at the actual approval card for a direct Gmail send. Verify that the
+  dead card expires and a late Allow is unavailable. The failed turn says the
+  request was never sent. Explicitly request it again, deny the fresh card,
+  and check that the receiver count stays at zero.
 - Repeat with a read-only Gmail grant and a fetch. The replacement must
   continue the same assignment once and finish it. A subsequent send attempt
   under the same grant must fail before reaching the service. Stop that turn
   and check the cancelled assignment and idle conversation.
+- Crash the requester after sending and handing off to a teammate. Exercise
+  a status-only acknowledgment, a one-way notification, and a running child
+  stopped from the requester's conversation. Each keeps its own outcome and
+  the original send reaches the service once. A fourth handoff with no send
+  resumes the requester to report the teammate's substantive reply.
 - Quit through Electron's actual `before-quit` event during the first backoff.
   Wait beyond that retry deadline and verify no replacement was spawned.
 - Crash the initial child and every replacement. Verify exactly three retries
   with the production 1/2/4-second delays, then a terminal exhausted state.
 
 The printed evidence directory retains each scenario's JSON receipt and log.
-The turn scenarios also check the replacement's PID, port, parent and child
+The send and fetch scenarios also check the replacement's PID, port, parent and child
 leases, rejection of an outstanding approval, a fresh approval, authorized
 mutations and a 403 for a write without the desktop capability. The receipt
 includes the bounded transcript, wait response and counts at the crash and
@@ -66,6 +75,20 @@ the receiver counted one request for each, and neither assignment reran.
 The matching read-only batch and an unrelated server keep their existing
 recovery behavior. The last four rows in the evidence file record the
 upgrade check.
+
+At `cfd5f1fb7`, a legacy preview with 39 reads followed by a send was still
+valid JSON even though the preview budget had replaced its final action name.
+The team and personal connectors each delivered twice. Both now interrupt
+after one delivery. A known read with only its argument shortened can resume.
+The same revision left an unanswered outbound card open after restart and
+misreported the marked requester when a child acknowledged or needed no reply.
+The [review fixture counts](evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl)
+record the measured outcomes.
+
+`pnpm exec vitest run server/chat-followups-restart.test.ts` exercises a queued
+channel request across a server crash. It checks that the follow-up runs
+successfully and that the earlier interruption stays attached to the earlier
+user message.
 
 This fixture exercises Electron main and its server child. Renderer draft
 preservation, native failure dialogs and cleanup of real provider processes

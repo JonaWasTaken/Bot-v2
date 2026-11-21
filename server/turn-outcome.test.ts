@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { RuntimeEvent } from "./contracts.ts";
 import { classifyError } from "./drivers/retry.ts";
 import type { Message } from "./store.ts";
-import { TurnStops, outwardActions, restartEffects, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
+import { toolDetailPreview } from "./tool-summary.ts";
+import { TurnStops, interruptedRootReceipt, outwardActions, restartEffects, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
 
 const event = (fields: Record<string, unknown>): RuntimeEvent =>
   ({ eventId: "e", provider: "fake", threadId: "t1", createdAt: "", ...fields }) as unknown as RuntimeEvent;
@@ -125,7 +126,46 @@ const row = (tool: NonNullable<Message["tool"]>, extra: Partial<Message> = {}): 
   ({ id: `m-${Math.random()}`, role: "bot", kind: "activity", at: 1, tool, ...extra }) as Message;
 const call = (name: string, ok: boolean, fields: Partial<NonNullable<Message["tool"]>> = {}) => row({ name, ok, itemId: `i-${Math.random()}`, ...fields });
 
+it("attributes an interruption to its original user, including roots stored before request ids", () => {
+  const original: Message = { id: "old", at: 1, role: "user", kind: "text", text: "First request" };
+  const next = { ...original, id: "next", at: 4 };
+  for (const root of [{ createdAt: 2, requestMessageId: original.id }, { createdAt: 2 }]) {
+    expect(interruptedRootReceipt(root, [original], "interrupted")).toMatchObject({ requestMessageId: "old", tool: { terminal: true } });
+    expect(interruptedRootReceipt(root, [original, next], "interrupted")).toMatchObject({ requestMessageId: "old", tool: { terminal: false } });
+  }
+});
+
 describe("outwardActions", () => {
+  it("only resumes a legacy connected-app batch when every action name survives the stored preview", () => {
+    const reads = Array.from({ length: 39 }, (_, index) => ({ tool_slug: "GMAIL_FETCH_EMAILS", arguments: { query: `label:${index}`, max_results: 1 } }));
+    const truncated = toolDetailPreview({ tools: [...reads, { arguments: { to: "test@example.test", body: "once" }, tool_slug: "GMAIL_SEND_EMAIL" }] })!;
+    expect(JSON.parse(truncated).tools.at(-1).tool_slug).toBe("[additional data omitted]");
+    const readOnly = toolDetailPreview({ tools: [{ tool_slug: "GMAIL_FETCH_EMAILS", arguments: { query: "x".repeat(256_001) } }] })!;
+    expect(JSON.parse(readOnly).tools[0].arguments.query).toBe("[large content omitted]");
+    for (const name of ["composio_composio_multi_execute_tool", "own_apps_composio_multi_execute_tool_2"]) {
+      expect(restartEffects([call(name, true, { input: truncated })], true)).toEqual({ dispatched: "COMPOSIO_MULTI_EXECUTE_TOOL" });
+      expect(restartEffects([call(name, true, { input: truncated })], false)).toEqual([]);
+      expect(restartEffects([call(name, true, { input: readOnly })], true)).toEqual([]);
+    }
+  });
+
+  it("distinguishes an expired send approval from a dispatched tool without dropping other outward activity", () => {
+    const slug = "GMAIL_SEND_EMAIL";
+    const expired: Message = { id: "approval", at: 2, role: "bot", kind: "options", card: {
+      title: "Send on your behalf?", subtitle: "Gmail", options: [], requestId: "held", heldCode: "approval.held.outbound",
+      tool: slug, outboundRequest: { tool: slug, app: "gmail" }, answered: "unavailable", dismissed: true, expired: true,
+    } };
+    for (const name of [slug, `mcp__composio__${slug}`, "own_apps_gmail_send_email_2"]) {
+      const attempted = row({ name, itemId: "started" });
+      expect(restartEffects([attempted, expired], false)).toEqual({ unapproved: slug });
+      expect(restartEffects([call("Bash", true, { input: "git push" }), attempted, expired], false)).toEqual(["git push"]);
+    }
+    expect(restartEffects([call(slug, true), expired], false)).toEqual([slug]);
+    expect(restartEffects([row({ name: slug }), expired], true)).toEqual([slug]);
+    expect(restartEffects([row({ name: slug }), { ...expired, role: "user" }], false)).toEqual([slug]);
+    expect(restartEffects([row({ name: "mcp__other__GMAIL_SEND_EMAIL" }), expired], false)).toEqual(["mcp__other__GMAIL_SEND_EMAIL"]);
+  });
+
   it("recovers a completed batch in an older transcript from its slugs, never from the mail body or an unrelated tool", () => {
     const batch = (name: string, slugs: string[], ok = true) => call(name, ok, { input: JSON.stringify({
       tools: slugs.map(tool_slug => ({ tool_slug, arguments: { query: "GMAIL_SEND_EMAIL" } })),

@@ -12,6 +12,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { createServerSupervisor } from "../electron/server-supervisor.mjs";
 import { pollServerIdentity } from "../electron/server-boot-probe.mjs";
 import { acquireDataDirLease } from "../electron/data-dir-lease.mjs";
+import { verifyRecoveryHandoff } from "./testing/recovery-handoff.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const flag = "--omb-server-recovery-fixture";
@@ -45,6 +46,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
   const { app, utilityProcess } = await import("electron");
   const [scenario, output, runtime] = process.argv.slice(process.argv.indexOf(flag) + 1);
   const home = join(output, scenario, "home");
+  const handoff = scenario.startsWith("handoff-");
   app.setPath("home", home);
   app.setPath("userData", join(home, "profile"));
   app.setPath("sessionData", join(home, "profile"));
@@ -84,6 +86,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
     quitting = true;
     event.preventDefault();
     void (async () => {
+      if (handoff) for (const gate of ["root-finish", "child-finish"]) writeFileSync(join(home, gate), "finish");
       assert.equal(await supervisor?.shutdown(), true);
       if (fakePid) { try { process.kill(fakePid, "SIGKILL"); } catch {} fakePid = null; }
       replyGate.resolve();
@@ -117,15 +120,16 @@ if (process.versions.electron && process.argv.includes(flag)) {
     lease = acquireDataDirLease(dataDir);
     const leaseFile = join(dataDir, "openmausbot-server.lease");
     const parentLease = readFileSync(leaseFile, "utf8");
-    const outbound = scenario === "recover" || scenario === "in-flight";
+    const pendingSend = scenario === "pending-approval";
+    const outbound = scenario === "recover" || scenario === "in-flight" || pendingSend;
     const withTurn = outbound || scenario === "continue";
     const slug = outbound ? "GMAIL_SEND_EMAIL" : "GMAIL_FETCH_EMAILS";
     const callsFile = join(home, "calls.json");
     const finishGate = join(home, "finish");
-    const requestAppTool = (tool_slug, args) => writeFileSync(callsFile, JSON.stringify([{
-      server: "composio", name: "COMPOSIO_MULTI_EXECUTE_TOOL", input: { tools: [{ tool_slug, arguments: args }] },
-    }]));
-    if (withTurn) {
+    const requestAppTool = (tool_slug, args) => writeFileSync(callsFile, JSON.stringify([pendingSend
+      ? { server: "composio", name: tool_slug, input: args }
+      : { server: "composio", name: "COMPOSIO_MULTI_EXECUTE_TOOL", input: { tools: [{ tool_slug, arguments: args }] } }]));
+    if (withTurn || handoff) {
       const { startFakeConnectedApps } = await import("../server/testing/fake-connected-apps.ts");
       apps = await startFakeConnectedApps(scenario === "in-flight" ? () => replyGate.promise : undefined);
       requestAppTool(slug, outbound ? { to: "fixture@example.test", body: "receipt" } : { user_id: "me" });
@@ -142,6 +146,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
           FAKE_CLAUDE_MODE: "slow", FAKE_CLAUDE_TOOL_CALLS_FILE: callsFile, FAKE_CLAUDE_SLOW_FINISH_GATE: finishGate,
           FAKE_CLAUDE_PROMPTS: join(home, "prompts.jsonl"),
           FAKE_CLAUDE_DUMP: join(home, "fake.json"),
+          ...(handoff ? { FAKE_CLAUDE_ROOM_PLAN: join(home, "handoffs.json"), FAKE_CLAUDE_TEXT_ROUTES: join(home, "classify.json") } : {}),
         },
       });
       children.push(proc);
@@ -196,7 +201,17 @@ if (process.versions.electron && process.argv.includes(flag)) {
       return result;
     };
 
-    if (withTurn) {
+    if (handoff) {
+      const receipt = await verifyRecoveryHandoff({ scenario, home, dataDir, fetcher, control, apps, until, record,
+        replace: async () => {
+          process.kill(initialPid, "SIGKILL");
+          await exits.get(initial.proc);
+          writeFileSync(join(home, "root-finish"), "finish");
+          await until(() => active && active.pid !== initialPid, "replacement PID verified");
+          return active.pid;
+        } });
+      finalReceipt = { passed: true, scenario, initialPid, commands, ...receipt };
+    } else if (withTurn) {
       assert.deepEqual(await fetcher("/api/edition"), { edition: "oss", features: [] });
       const { bot } = await control("create_bot", { name: "Recovery fixture" });
       const { bot: approvalProbe } = await control("create_bot", { name: "Approval probe" });
@@ -204,15 +219,23 @@ if (process.versions.electron && process.argv.includes(flag)) {
       const target = { bot_id: bot.id, task_id: bot.activeTaskId };
       await fetcher(`/api/bots/${bot.id}`, { method: "PATCH", body: JSON.stringify({
         composio: true, connectorScopes: { apps: { gmail: outbound ? "write" : "read" } },
-        connectorTools: { gmail: { tools: [slug] } }, outbound: { policy: "allow" },
+        connectorTools: { gmail: { tools: [slug] } }, outbound: { policy: pendingSend ? "ask" : "allow" },
       }) });
       let since = (await fetcher(`/api/threads/${bot.activeTaskId}/job`)).now;
       await control("send_bot_message", { ...target, text: outbound ? "Send the fixture receipt once." : "Read the fixture inbox." });
       const transcript = () => fetcher(`/api/threads/${bot.activeTaskId}/messages`).then(page => page.messages);
       const effectCount = () => apps.calls.filter(call => call.tool === slug).length;
-      const hasToolResult = async () => (await transcript()).some(message => message.tool?.name.includes("MULTI_EXECUTE_TOOL") && message.tool.ok === true);
-      await until(() => effectCount() === 1, "one call reached the connected app");
-      if (scenario !== "in-flight") await until(hasToolResult, "successful connected-app result before crash");
+      const hasToolResult = async () => (await transcript()).some(message => (message.tool?.name === slug || message.tool?.name.includes("MULTI_EXECUTE_TOOL")) && message.tool.ok === true);
+      const pendingCard = async () => (await transcript()).find(message => message.card?.outboundRequest?.tool === slug && !message.card.answered);
+      let oldRequest;
+      if (pendingSend) {
+        await until(pendingCard, "send awaiting its original approval");
+        oldRequest = (await pendingCard()).card.requestId;
+        assert.equal(effectCount(), 0);
+      } else {
+        await until(() => effectCount() === 1, "one call reached the connected app");
+        if (scenario !== "in-flight") await until(hasToolResult, "successful connected-app result before crash");
+      }
       fakePid = JSON.parse(readFileSync(join(home, "fake.json"), "utf8")).pid;
       const prompts = readFileSync(join(home, "prompts.jsonl"), "utf8");
       assert.equal(prompts.trim().split("\n").length, 1);
@@ -222,7 +245,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
       );
       await until(() => heldReply, "real approval reply held in transit");
       const resultSeen = await hasToolResult();
-      assert.equal(resultSeen, scenario !== "in-flight");
+      assert.equal(resultSeen, !pendingSend && scenario !== "in-flight");
       const cut = await fetcher(`/api/threads/${bot.activeTaskId}/job?since=${since}`);
       assert.equal(cut.nodes.length, 1);
       assert.equal(cut.nodes[0].status, "running");
@@ -243,7 +266,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
       const wait = await waitForTurn();
       const promptCount = () => readFileSync(join(home, "prompts.jsonl"), "utf8").trim().split("\n").length;
       record("after-restart", { slug, effects: effectCount(), prompts: promptCount(), status: wait.status, state: wait.state, busy: wait.target.busy });
-      assert.equal(effectCount(), outbound ? 1 : 2);
+      assert.equal(effectCount(), pendingSend ? 0 : outbound ? 1 : 2);
       assert.equal(promptCount(), outbound ? 1 : 2);
       assert.equal(wait.state, outbound ? "failed" : "completed");
       assert.equal(wait.status, outbound ? "failed" : "settled");
@@ -256,17 +279,38 @@ if (process.versions.electron && process.argv.includes(flag)) {
       const savedBot = (await fetcher("/api/bots?messages=0")).bots.find(candidate => candidate.id === bot.id);
       assert.equal(savedBot.approvalMode, "ask");
       assert.equal(savedBot.connectorScopes.apps.gmail, outbound ? "write" : "read");
+      assert.equal(savedBot.outbound.policy, pendingSend ? "ask" : "allow");
       const messages = await control("get_bot_messages", { bot_id: bot.id, task_id: bot.activeTaskId, limit: 10 });
       assert.equal(messages.messages.filter((message) => message.role === "user").length, 1);
       if (outbound) {
         const failed = messages.messages.filter(message => message.tool?.ok === false && message.tool.name.includes(slug));
         assert.equal(failed.length, 1, "one visible interruption naming the outward action");
         assert.equal(failed[0].tool.terminal, true);
-        writeFileSync(callsFile, "[]");
         since = (await fetcher(`/api/threads/${bot.activeTaskId}/job`)).now;
-        await control("send_bot_message", { ...target, text: "Summarize what remains." });
-        assert.equal((await waitForTurn()).state, "completed");
-        assert.equal(effectCount(), 1, "fresh request does not duplicate the send");
+        if (pendingSend) {
+          assert.match(failed[0].tool.name, /waiting for your approval.*never sent/i);
+          const expired = (await transcript()).find(message => message.card?.requestId === oldRequest).card;
+          assert.ok(expired.dismissed && expired.expired && expired.answered === "unavailable");
+          const answer = (requestId, behavior) => fetcher(`/api/threads/${bot.activeTaskId}/respond`, { method: "POST", body: JSON.stringify({ requestId, behavior }) });
+          assert.equal((await answer(oldRequest, "allow")).outcome, "unavailable");
+          await control("send_bot_message", { ...target, text: "Ask again before sending that receipt." });
+          await until(pendingCard, "fresh outbound approval");
+          const fresh = (await pendingCard()).card.requestId;
+          assert.notEqual(fresh, oldRequest);
+          assert.equal((await waitForTurn()).status, "needs-user");
+          assert.equal(effectCount(), 0);
+          assert.equal((await answer(fresh, "deny")).outcome, "rejected");
+          await until(async () => !(await pendingCard()), "fresh denial settled its card");
+          const denied = await waitForTurn();
+          assert.equal(denied.target.busy, false);
+          assert.equal(effectCount(), 0);
+          record("approval-expired", { staleAnswer: "unavailable", freshAnswer: "rejected", effects: effectCount(), busy: denied.target.busy });
+        } else {
+          writeFileSync(callsFile, "[]");
+          await control("send_bot_message", { ...target, text: "Summarize what remains." });
+          assert.equal((await waitForTurn()).state, "completed");
+          assert.equal(effectCount(), 1, "fresh request does not duplicate the send");
+        }
       } else {
         rmSync(finishGate);
         requestAppTool("GMAIL_SEND_EMAIL", { to: "fixture@example.test", body: "restricted" });
@@ -288,7 +332,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
       assert.equal(refused.status, 403, "replacement remains fail-closed without the private token");
       finalReceipt = { passed: true, scenario, url, initialPid, replacementPid, commands,
         checks: ["PID verified replacement", "same port", "unchanged parent lease", "replacement child lease", "immediate unavailable", "pending approval rejected", "new approval accepted", "private mutation capability restored", "unauthorized write refused",
-          outbound ? "one send, visible interruption and explicit follow-up" : "read-only turn resumed once and completed"],
+          pendingSend ? "zero sends, expired approval, fresh card denied" : outbound ? "one send, visible interruption and explicit follow-up" : "read-only turn resumed once and completed"],
         limitation: "Headless Electron main with the production supervisor, probe, lease, approval protocol and built server. The engine and connected-app service are local fakes." };
     } else {
       process.kill(initialPid, "SIGKILL");
@@ -315,7 +359,7 @@ if (process.versions.electron && process.argv.includes(flag)) {
   console.log(JSON.stringify({ evidence: output }));
   const cleanup = { recursive: true, force: true, maxRetries: 5, retryDelay: 250 };
   try {
-    for (const scenario of ["recover", "in-flight", "continue", "quit", "exhausted"]) {
+    for (const scenario of ["recover", "in-flight", "pending-approval", "continue", "handoff-status", "handoff-notify", "handoff-continue", "handoff-cancel", "quit", "exhausted"]) {
       const home = join(output, scenario, "home");
       mkdirSync(home, { recursive: true });
       const child = spawn(electron, [fileURLToPath(import.meta.url), flag, scenario, output, process.execPath], {

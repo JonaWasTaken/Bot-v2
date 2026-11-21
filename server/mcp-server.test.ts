@@ -599,6 +599,16 @@ describe("waiting on a conversation's job", () => {
     expect(Object.fromEntries(reads[0]!)).toMatchObject({ scope: "turn", since: "42", version: "v1", wait: expect.any(String) });
   });
 
+  it("keeps a superseded interruption out of the current wait, even when the user line is outside its tail", async () => {
+    const old = { id: "e1", role: "bot", kind: "activity", requestMessageId: "u1", tool: { name: "error: previous request interrupted", ok: false, terminal: false } };
+    const latest = { id: "u2", role: "user", kind: "text", text: "Continue" };
+    for (const tail of [[old], [latest, old], [latest, { ...old, tool: { ...old.tool, terminal: true } }]]) {
+      const end = server({ fleet: bot(), tail, jobs: [{ state: "completed", version: "v1" }] });
+      expect(await handleToolCall("wait_for_conversation", { target_type: "bot", target_id: "bot-1", timeout_seconds: 1 }, end.fetcher))
+        .toMatchObject({ status: "settled", state: "completed" });
+    }
+  });
+
   it("reads what the transcript shows: an open card, or a dispatch that failed after the last message", async () => {
     const card = server({ fleet: { bots: [{ id: "bot-1", activity: "waiting-on-you" }],
       groups: [{ id: "channel-1", name: "Launch", memberIds: ["bot-1"], threadId: "task-1", tasks: [], busyBotId: "bot-1" }] },

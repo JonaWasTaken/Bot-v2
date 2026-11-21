@@ -35,6 +35,7 @@ export const RERUN_SUPERSEDED = "cut by a restart; newer work in this conversati
 export interface BeginRequest {
   /** The host's own id for the requesting turn (its generation); default a fresh uuid. */
   id?: string;
+  requestMessageId?: string;
   origin: Origin;
   /** person | routine_run | external_runtime */
   requester: Requester;
@@ -120,16 +121,19 @@ export class Runtime {
         if (n.status !== "running") continue;
         const carried = n.carrying ?? [];
         const handedOut = childrenSince(this.store, n).length > 0;
-        const effects = handedOut ? [] : this.safe("outward", () => this.runner.outward?.(n)) ?? [];
+        const effects = n.outboundDispatch || handedOut ? [] : this.safe("outward", () => this.runner.outward?.(n)) ?? [];
         const outward = Array.isArray(effects) ? effects.filter(label => typeof label === "string" && label.trim()) : [];
-        const dispatched = n.outboundDispatch ?? (Array.isArray(effects) ? undefined : effects.dispatched);
-        if (handedOut) {
+        const dispatched = n.outboundDispatch ?? ("dispatched" in effects ? effects.dispatched : undefined);
+        if (dispatched) {
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward dispatch" });
+          this.settle(n, "failed", "interrupted", `${INTERRUPTED_OUTWARD} started a connected-app request (${dispatched}). It may have taken effect. Check the app before asking to continue.`);
+        } else if (handedOut) {
           n.status = "waiting"; n.restart = "cut"; n.lastActivityAt = now;
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "waiting: cut after handing out work" });
           this.touch(n);
-        } else if (dispatched) {
-          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward dispatch" });
-          this.settle(n, "failed", "interrupted", `${INTERRUPTED_OUTWARD} started a connected-app request (${dispatched}). It may have taken effect. Check the app before asking to continue.`);
+        } else if ("unapproved" in effects) {
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outbound approval expired" });
+          this.settle(n, "failed", "interrupted", `OpenMausBot restarted while waiting for your approval for ${effects.unapproved}. That request was never sent. Ask again to request a fresh approval.`);
         } else if (outward.length > 0) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward action done" });
           this.settle(n, "failed", "interrupted", outwardDetail(outward));
@@ -164,6 +168,7 @@ export class Runtime {
       level: req.level, levelSource: "own", executions: 1, restarts: 0, createdAt: now, startedAt: now, lastActivityAt: now,
       result: "", rework: false, outboundDispatch: null, budgets: { since: now, requests: 0, executions: 1, wakes: 0, total: 1 }, version: 1,
       ...(req.goalRunId ? { goalRunId: req.goalRunId } : {}),
+      ...(req.requestMessageId ? { requestMessageId: req.requestMessageId } : {}),
     };
     this.store.transaction(() => {
       this.store.insert(root, { kind: "enqueued", at: now, detail: "queued: root" });
@@ -682,9 +687,14 @@ export class Runtime {
   stopRequester(owner: Owner, reason = "Stopped by user"): void {
     this.withBatch(() => {
       for (const snapshot of this.store.all({ nonTerminal: true })) {
-        if (!ownsConversation(snapshot, owner)) continue;
         const n = this.store.get(snapshot.id);
         if (!n || isTerminal(n)) continue;
+        if (!ownsConversation(n, owner)) {
+          if (n.parentId && path(this.store, n).some(a => a.outcome === "interrupted" && a.outboundDispatch && ownsConversation(a, owner))) {
+            this.cancelTree(n, STOPPED_WITH_REQUEST, "cancelled", "stopped");
+          }
+          continue;
+        }
         for (const child of this.store.children(n.id)) {
           if (isTerminal(child)) continue;
           const unstarted = child.status === "queued" && (child.executions === 0 || child.restart === "rerun");
