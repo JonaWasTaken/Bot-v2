@@ -21,9 +21,9 @@ process.env.FAKE_CLAUDE_ROOM_PLAN = dir + "/room-plan.json";`;
 const TOKEN = `ops_fake-team-${randomBytes(8).toString("hex")}`;
 
 type Card = { requestId?: string; requestType?: string; options?: string[]; subtitle?: string; answered?: string; answeredText?: string; stopped?: boolean };
-type Row = { id: string; role: string; kind: string; at: number; text?: string; card?: Card; replyToId?: string; tool?: { name: string };
+type Row = { id: string; role: string; kind: string; at: number; text?: string; card?: Card; replyToId?: string; tool?: { name: string; nameCode?: string }; threadRef?: { threadId: string };
   inbox?: { kind: string; from: { name: string }; origin?: { threadId: string } } };
-type Task = { threadId: string; title: string; inbox?: true; openedBy?: { botId: string } };
+type Task = { threadId: string; title: string; busy?: boolean; inbox?: true; openedBy?: { botId: string } };
 type Bot = { id: string; name: string; threadId: string; busy?: boolean; activity?: string; tasks?: Task[] };
 type Frame = { kind: string; notification?: { kind: string; botId: string; threadId: string; title: string; body: string; forPerson?: string } };
 
@@ -117,7 +117,7 @@ beforeAll(async () => {
   ledger = await create({ name: "Ledger", reportsTo: CLEO.email });
   // Questions reach the person on "Ask for approval"; at Full access, the default, the requesting bot decides them instead.
   for (const bot of [scout, ledger]) expect((await team.as(cleo, "PATCH", `/api/bots/${bot.id}`, { approvalMode: "ask", applyToAllThreads: true })).status).toBe(200);
-  const opened = await team.as(cleo, "POST", `/api/bots/${scout.id}/tasks`, { title: "Cleo and Scout" });
+  const opened = await team.as(cleo, "POST", `/api/bots/${scout.id}/tasks`, { title: "Brief" });
   expect(opened.status, JSON.stringify(opened.body)).toBe(201);
   inbox = opened.body.task.threadId as string;
   frames = listen(cleo);
@@ -227,3 +227,37 @@ it("closes the open question as stopped when Cleo stops Ledger's work, in its ch
   await until(async () => (await messages(inbox)).find((line) => line.card?.requestId === row.card!.requestId)?.card?.stopped === true);
   await until(idle);
 }, hostTimeout(120_000));
+
+it("keeps later questions and their decisions in Cleo's private work after she shares the requesting chat", async () => {
+  const opened = await team.as(cleo, "POST", `/api/bots/${scout.id}/tasks`, { title: "Footer review" });
+  expect(opened.status).toBe(201);
+  const parent = opened.body.task.threadId as string;
+  script(scout.id, ...handOn("QC5"));
+  const first = askWithCard("QC5");
+  script(ledger.id, { ...first, steps: [...first.steps, { server: "ogb", tool: "ask_user", arguments: { question: OPEN, choices: CHOICES } }] });
+  const since = Date.now();
+  await say(scout, parent, "QC5-JOB: Have Ledger review the footer.");
+  const { work, row } = await cardIn(since, (card) => card.subtitle === QUESTION);
+  const chips = async () => (await messages(parent)).filter((line) => line.tool?.nameCode === "chat.notice.waitingAnswerElsewhere");
+  const original = await chips();
+  expect(original).toMatchObject([{ threadRef: { threadId: work }, tool: { name: "Waiting on your answer in @Ledger" } }]);
+
+  await until(async () => (await bots()).find((bot) => bot.id === scout.id)!.tasks!.some((task) => task.threadId === parent && !task.busy));
+  const shared = await team.as(cleo, "POST", `/api/bots/${scout.id}/tasks/${parent}/share`, { with: "team" });
+  expect(shared.status, JSON.stringify(shared.body)).toBe(200);
+  const reader = (await team.pair({ email: "reader@acme.test", role: "admin" })).token!;
+  expect((await team.as(reader, "GET", `/api/threads/${parent}/messages?limit=1`)).status).toBe(200);
+  expect((await team.as(reader, "GET", `/api/threads/${work}/messages?limit=1`)).status).toBe(404);
+
+  const answer = async (asked: Row) => {
+    const result = await team.as(cleo, "POST", `/api/threads/${work}/respond`, { requestId: asked.card!.requestId, behavior: "answer", message: CHOICES[0] });
+    expect(result.status, JSON.stringify(result.body)).toBe(200);
+  };
+  await answer(row);
+  const next = await cardIn(since, (card) => card.subtitle === OPEN);
+  expect(next.work).toBe(work);
+  expect(await chips()).toEqual(original);
+  await answer(next.row);
+  await until(async () => (await messages(work)).some((line) => line.text === `QC5-B: Done with: ${CHOICES[0]}`));
+  expect(await chips()).toEqual(original);
+}, hostTimeout(150_000));

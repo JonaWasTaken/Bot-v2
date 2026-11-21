@@ -18,6 +18,7 @@ import { withDefault } from "../runtime/questions.ts";
 import type { BotRecord, Message, Store } from "../store.ts";
 import { conversationLanguage, serverLine } from "../server-lines.ts";
 import { settledWaitingChip } from "../waiting-on-person.ts";
+import { keptPrivate } from "./acting-person.ts";
 
 const OPEN_QUESTION = "needs-input-";
 const DAY_MS = 24 * 60 * 60_000;
@@ -29,6 +30,7 @@ export interface AskCardsDeps {
   node(id: string): HandoffView | undefined;
   /** The conversation that handed this one its work, while that work is live. */
   delegatorOf(threadId: string): { threadId: string; botId?: string } | undefined;
+  privateTo(threadId: string): string | null;
   notify(notification: Notification | null): void;
   /** On a Team Cloud: what `botId` asks in `threadId` reaches the inbox conversation `inboxThreadId` as a copy. */
   copiedInto(inboxThreadId: string, botId: string, threadId: string): boolean;
@@ -77,10 +79,12 @@ export function createAskCards(deps: AskCardsDeps) {
   const { store, delegatorOf, notify } = deps;
   const now = deps.now ?? Date.now;
   const waitingOnPersonChips = new Map<string, { threadId: string; messageId: string; name: string; kind: string }>();
+  const withholdChip = (child: string, parent: string) => keptPrivate({ child: deps.privateTo(child), parent: deps.privateTo(parent) });
 
   function showWaitingOnPersonChip(threadId: string, requestId: string, asker: BotRecord, kind: "approval" | "answer") {
     const delegator = delegatorOf(threadId);
-    if (!delegator || delegator.threadId === threadId || deps.copiedInto(delegator.threadId, asker.id, threadId)) return;
+    if (!delegator || delegator.threadId === threadId) return;
+    if (withholdChip(threadId, delegator.threadId) || deps.copiedInto(delegator.threadId, asker.id, threadId)) return;
     const chip = store.appendMessage(delegator.threadId, { role: "bot", kind: "activity",
       from: { botId: asker.id, name: asker.name, color: asker.color },
       tool: { name: `Waiting on your ${kind} in @${asker.name}`, nameCode: kind === "approval" ? "chat.notice.waitingApprovalElsewhere" : "chat.notice.waitingAnswerElsewhere", nameParams: { name: asker.name } },
@@ -93,6 +97,7 @@ export function createAskCards(deps: AskCardsDeps) {
     for (const [key, chip] of waitingOnPersonChips) {
       if (resolved ? key !== `${threadId}:${resolved.requestId}` : !key.startsWith(`${threadId}:`)) continue;
       waitingOnPersonChips.delete(key);
+      if (withholdChip(threadId, chip.threadId)) continue;
       const existing = store.messagesFor(chip.threadId).find((message) => message.id === chip.messageId);
       if (!existing?.tool) continue;
       store.patchMessage(chip.threadId, chip.messageId, {
