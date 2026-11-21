@@ -1,0 +1,209 @@
+{
+  "revision": "6e4686ee9bcc207b7a9c82553f01497a4431716d",
+  "model": "qwen-mission",
+  "metric": "dependencies",
+  "objective": "Compare zod, valibot and superstruct for a TypeScript application by direct runtime dependency count. Check current registry sources and save a Markdown report.",
+  "toolScope": {
+    "allow": [
+      "mcp:agents:coordinate_bots",
+      "mcp:agents:wait_until",
+      "mcp:agents:attach_file"
+    ]
+  },
+  "startedAt": "2026-11-21T17:07:14.250Z",
+  "readerScope": {
+    "allow": [
+      "mcp:agents:wait_until"
+    ]
+  },
+  "planMs": 2629,
+  "executionMs": 2389,
+  "elapsedMs": 5092,
+  "verifiedReport": true,
+  "mission": {
+    "id": "d119d7b0-f5c5-4b46-ac81-e66f735e8682",
+    "botId": "4fe63b59-cb8c-47f5-b41d-be6cab3c6598",
+    "owner": "workspace-owner",
+    "researcherId": "6b67c621-f668-4f08-b498-3844e3e98dba",
+    "name": "TypeScript package comparison",
+    "objective": "Compare zod, valibot and superstruct for a TypeScript application by direct runtime dependency count. Check current registry sources and save a Markdown report.",
+    "originalObjective": "Compare zod, valibot and superstruct for a TypeScript application by direct runtime dependency count. Check current registry sources and save a Markdown report.",
+    "history": [],
+    "state": "completed",
+    "version": 1,
+    "revision": 4,
+    "plan": {
+      "packages": [
+        "zod",
+        "valibot",
+        "superstruct"
+      ],
+      "metric": "dependencies"
+    },
+    "limits": {
+      "maxSpecialists": 2,
+      "maxSteps": 8,
+      "maxDepth": 3,
+      "concurrency": 3,
+      "retries": 1,
+      "toolCalls": 12,
+      "modelCalls": 1,
+      "timeoutMs": 60000
+    },
+    "steps": [
+      {
+        "key": "npm:zod",
+        "kind": "source",
+        "name": "zod",
+        "dependsOn": [],
+        "botId": "6b67c621-f668-4f08-b498-3844e3e98dba",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "f8f9199c-6d3f-4110-a01e-5b391d6fa169",
+        "startedAt": 1795280856898,
+        "finishedAt": 1795280857308,
+        "observation": {
+          "name": "zod",
+          "version": "4.6.7",
+          "source": "https://registry.npmjs.org/zod/4.6.7",
+          "readAt": 1795280857307,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 6148944,
+          "types": true
+        }
+      },
+      {
+        "key": "npm:valibot",
+        "kind": "source",
+        "name": "valibot",
+        "dependsOn": [],
+        "botId": "6b67c621-f668-4f08-b498-3844e3e98dba",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "ed185116-a533-4a3f-8a76-8263ec1cc4dd",
+        "startedAt": 1795280856901,
+        "finishedAt": 1795280857517,
+        "observation": {
+          "name": "valibot",
+          "version": "1.5.0",
+          "source": "https://registry.npmjs.org/valibot/1.5.0",
+          "readAt": 1795280857516,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 1865457,
+          "types": true
+        }
+      },
+      {
+        "key": "npm:superstruct",
+        "kind": "source",
+        "name": "superstruct",
+        "dependsOn": [],
+        "botId": "6b67c621-f668-4f08-b498-3844e3e98dba",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "eb36bd93-18a7-4ed7-abd2-011f592fe428",
+        "startedAt": 1795280856904,
+        "finishedAt": 1795280857539,
+        "observation": {
+          "name": "superstruct",
+          "version": "2.0.2",
+          "source": "https://registry.npmjs.org/superstruct/2.0.2",
+          "readAt": 1795280857538,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 182337,
+          "types": true
+        }
+      },
+      {
+        "key": "report:1",
+        "kind": "report",
+        "name": "report.md",
+        "dependsOn": [
+          "npm:zod",
+          "npm:valibot",
+          "npm:superstruct"
+        ],
+        "botId": "4fe63b59-cb8c-47f5-b41d-be6cab3c6598",
+        "status": "verified",
+        "toolCalls": 1,
+        "attempts": 1,
+        "assignmentId": "26c2733b-507b-4f50-839b-ce046f85426d",
+        "startedAt": 1795280857947,
+        "finishedAt": 1795280857958
+      },
+      {
+        "key": "verify:1",
+        "kind": "verify",
+        "name": "report.md",
+        "dependsOn": [
+          "report:1"
+        ],
+        "botId": "4fe63b59-cb8c-47f5-b41d-be6cab3c6598",
+        "status": "verified",
+        "toolCalls": 1,
+        "attempts": 1,
+        "assignmentId": "b41cf32e-37b3-4a2e-8a6c-1262f9adc2f4",
+        "startedAt": 1795280858475,
+        "finishedAt": 1795280858482
+      }
+    ],
+    "actions": [],
+    "retryKeys": [],
+    "createdAt": 1795280853928,
+    "updatedAt": 1795280858742,
+    "finishedAt": 1795280858742,
+    "usage": {
+      "toolCalls": 8,
+      "modelCalls": 1,
+      "input": 193,
+      "output": 27,
+      "cachedInput": 192
+    },
+    "artifact": {
+      "name": "report.md",
+      "bytes": 1101,
+      "sha256": "6195f4cb966190761f2f602243a536951e100d68896a9e3312ebafd9756b551f",
+      "assignmentId": "26c2733b-507b-4f50-839b-ce046f85426d",
+      "verifiedAt": 1795280858482
+    },
+    "activity": [
+      {
+        "at": 1795280853942,
+        "text": "Planning call attempted"
+      },
+      {
+        "at": 1795280856198,
+        "text": "Plan ready for review"
+      },
+      {
+        "at": 1795280856628,
+        "text": "start"
+      },
+      {
+        "at": 1795280858742,
+        "text": "completed: done"
+      }
+    ]
+  },
+  "usage": {
+    "key": "total",
+    "label": "total",
+    "turns": 1,
+    "input": 193,
+    "output": 27,
+    "cachedInput": 192,
+    "costUsd": null,
+    "estimatedUsd": null,
+    "unpriced": 1,
+    "billableUsd": null,
+    "barTokens": 28
+  },
+  "reopenedAfterRestart": true,
+  "noteSavedByOwner": true
+}

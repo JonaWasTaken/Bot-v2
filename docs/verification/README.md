@@ -239,6 +239,8 @@ The [chat and settings polish fixture](chat-polish.md) exercises attachment
 galleries, opt-in video playback, persisted tool details, and responsive settings
 through the real renderer in an isolated fake-engine workspace.
 
+The [Mission Control fixture](mission-research.md) runs a reviewed package comparison, checks the saved report and reopens the mission after restart.
+
 The [rich tables fixture](rich-tables.md) checks Markdown tables and message-scoped
 CSV/TSV previews, large-file virtualization, sorting, search, export and keyboard
 interaction in a disposable workspace.

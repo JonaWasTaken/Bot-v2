@@ -1,0 +1,43 @@
+{
+  "revision": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+  "model": "qwen-mission",
+  "metric": "dependencies",
+  "objective": "Compare zod, valibot and superstruct for a TypeScript application by direct runtime dependency count. Check current registry sources and save a Markdown report.",
+  "toolScope": {
+    "allow": [
+      "mcp:agents:coordinate_bots",
+      "mcp:agents:wait_until",
+      "mcp:agents:attach_file"
+    ]
+  },
+  "startedAt": "2026-11-21T17:07:49.674Z",
+  "readerScope": {
+    "allow": [
+      "mcp:agents:wait_until"
+    ]
+  },
+  "elapsedMs": 15234,
+  "turnStatus": "settled",
+  "messages": [
+    "bot",
+    "user",
+    "bot",
+    "bot"
+  ],
+  "toolRows": 0,
+  "attachments": 0,
+  "verifiedReport": false,
+  "usage": {
+    "key": "total",
+    "label": "total",
+    "turns": 1,
+    "input": 5384,
+    "output": 55,
+    "cachedInput": 5,
+    "costUsd": null,
+    "estimatedUsd": null,
+    "unpriced": 1,
+    "billableUsd": null,
+    "barTokens": 5434
+  }
+}
