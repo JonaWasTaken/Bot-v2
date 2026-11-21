@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { scoreApproval } from "./local-tool-approval.mjs";
+import { scoreApproval } from "./local-tool-approval-score.ts";
 
-const read = { name: "read_notes", decision: "allow" };
-const grant = { decision: "allow", status: "settled", reviewed: true, calls: [read], answer: "receipt-123", value: "receipt-123" };
-const denial = { ...grant, decision: "deny", status: "failed", calls: [], answer: "Access denied." };
+const read = { name: "read_notes", decision: "allow" } as const;
+const grant = { decision: "allow", status: "settled", reviewed: true, calls: [read], answer: "receipt-123", value: "receipt-123" } as const;
+const denial = { ...grant, decision: "deny", status: "failed", calls: [], answer: "Access denied." } as const;
 
 describe("local model tool approval evaluation", () => {
   it("credits one granted read that returns the receipt and records formatting separately", () => {

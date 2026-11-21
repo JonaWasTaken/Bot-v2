@@ -4,20 +4,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { launchLocalModelFixture, localModelOptions } from "./local-model-fixture.mjs";
+import { scoreApproval } from "./local-tool-approval-score.ts";
 
 const serverScript = fileURLToPath(new URL("../../server/testing/fake-mcp-server.ts", import.meta.url));
-
-export function scoreApproval({ decision, status, reviewed, calls, answer, value }) {
-  const calledBeforeDecision = calls.some(call => call.decision === null);
-  const executed = calls.length > 0;
-  const calledTool = calls[0]?.name ?? null;
-  const returnedValue = answer.includes(value);
-  const exactAnswer = answer.trim() === value;
-  const allowedOnce = status === "settled" && calls.length === 1 && calls[0].decision === "allow" && calledTool === "read_notes" && returnedValue;
-  const denied = (status === "failed" || status === "settled") && !executed && !returnedValue;
-  const passed = reviewed && !calledBeforeDecision && (decision === "allow" ? allowedOnce : denied);
-  return { passed, status, reviewed, calledBeforeDecision, callCount: calls.length, executed, calledTool, returnedValue, exactAnswer };
-}
 
 async function trial(options, decision, value) {
   const { dataDir, api, control, close } = await launchLocalModelFixture(options);
