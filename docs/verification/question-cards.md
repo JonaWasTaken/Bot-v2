@@ -28,6 +28,10 @@ person's. Expected:
   Scout is resumed once with the question and told not to repeat it; Cleo's reply on the copy reaches Ledger's next
   turn as `The person answered: "…"`.
 - Stopping Ledger's thread closes an open question as stopped, in the thread and in the inbox.
+- In a private requesting chat outside her inbox, Cleo sees a waiting chip linking to Ledger's private work. When
+  she shares the requesting chat with the team, another reader can open that chat and gets a 404 for Ledger's work.
+  Cleo answers both questions in Ledger's chat. The shared history retains the original chip as written and receives no new chip
+  or decision update from that work.
 
 ## Who answers: Full access and Ask for approval
 

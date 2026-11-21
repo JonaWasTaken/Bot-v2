@@ -9,7 +9,7 @@ import { askToolName, createAskCards, type AskCardsDeps } from "./ask-cards.ts";
 const AUTH = { kind: "session", scopes: ["client"], session: { id: "s", email: "cleo@acme.test" } } as unknown as RequestAuth;
 const QUESTION = "What wording should the new footer text use?";
 
-function world(options: { inboxThread?: string; live?: string[] } = {}) {
+function world(options: { inboxThread?: string; live?: string[]; owners?: Record<string, string | null> } = {}) {
   const threads = new Map<string, Message[]>();
   let ids = 0;
   const bots = [
@@ -48,6 +48,7 @@ function world(options: { inboxThread?: string; live?: string[] } = {}) {
     store: store as unknown as AskCardsDeps["store"],
     node: (id) => nodes.get(id),
     delegatorOf: (threadId) => (threadId === "work" ? { threadId: "inbox", botId: "scout" } : undefined),
+    privateTo: (threadId) => options.owners?.[threadId] ?? null,
     notify: (notification) => { if (notification) notified.push(notification); },
     copiedInto: (inboxThreadId) => inboxThreadId === options.inboxThread,
     live: (_threadId, requestId) => (options.live ?? []).includes(requestId),
@@ -386,6 +387,8 @@ describe("a reminder of work parked on the person", () => {
 
 describe("the chip in the conversation that handed the work on", () => {
   const asker = { id: "ledger", name: "Ledger", color: "teal" } as BotRecord;
+  const resolved = { type: "request.resolved", eventId: "event-1", provider: "fixture", threadId: "work",
+    requestId: "req-1", createdAt: "2026-01-01T00:00:00Z", behavior: "allow", source: "user" } as const;
 
   it("says the work waits on the person, unless that conversation is the person's inbox, which has the card", () => {
     const desk = world();
@@ -394,6 +397,40 @@ describe("the chip in the conversation that handed the work on", () => {
     const team = world({ inboxThread: "inbox" });
     team.cards.showWaitingOnPersonChip("work", "req-1", asker, "answer");
     expect(team.rows("inbox")).toEqual([]);
+  });
+
+  it.each(["answer", "approval"] as const)("keeps the %s reference out of a shared chat and another person's chat", (kind) => {
+    for (const inbox of [null, "ben"]) {
+      const w = world({ owners: { work: "cleo", inbox } });
+      w.cards.showWaitingOnPersonChip("work", "req-1", asker, kind);
+      w.cards.settleWaitingOnPersonChips("work", resolved);
+      expect(w.rows("inbox")).toEqual([]);
+    }
+  });
+
+  it.each([
+    { work: "cleo", inbox: "cleo" },
+    { work: null, inbox: null },
+    { work: null, inbox: "cleo" },
+  ])("shows and settles an entitled approval reference (work: $work, requester: $inbox)", (owners) => {
+    const w = world({ owners });
+    w.cards.showWaitingOnPersonChip("work", "req-1", asker, "approval");
+    expect(w.rows("inbox")).toMatchObject([{ threadRef: { botId: "ledger", threadId: "work", title: "Pricing page: fix" } }]);
+    w.cards.settleWaitingOnPersonChips("work", resolved);
+    expect(w.rows("inbox")).toMatchObject([{ tool: { name: "@Ledger got your approval", ok: true } }]);
+  });
+
+  it.each([{ when: "the request resolves", event: resolved }, { when: "the turn ends", event: undefined }])("rechecks the original destination when $when", ({ event }) => {
+    const owners = { work: "cleo", inbox: "cleo" };
+    const w = world({ owners });
+    w.cards.showWaitingOnPersonChip("work", "req-1", asker, "approval");
+    expect(w.rows("inbox")).toHaveLength(1);
+    const patch = vi.spyOn(w.store, "patchMessage");
+    owners.inbox = "ben";
+    w.cards.settleWaitingOnPersonChips("work", event);
+    owners.inbox = "cleo";
+    w.cards.settleWaitingOnPersonChips("work");
+    expect(patch).not.toHaveBeenCalled();
   });
 });
 
