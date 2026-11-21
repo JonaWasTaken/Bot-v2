@@ -117,3 +117,36 @@ jobs:
           cat "$RUNNER_TEMP/server.log" || true
           kill $pid 2>/dev/null || true
           exit 1
+
+      - name: Install and start the desktop in a disposable profile
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          $installer = @(Get-ChildItem release -File -Filter '*.exe')
+          if ($installer.Count -ne 1) { throw "Expected one NSIS installer" }
+          $destination = Join-Path $env:RUNNER_TEMP "omb-installed"
+          $setup = Start-Process $installer[0].FullName -ArgumentList "/S /currentuser /D=$destination" -PassThru -Wait
+          if ($setup.ExitCode -ne 0) { throw "Installer exited with $($setup.ExitCode)" }
+          $exe = Join-Path $destination "OpenMausBot.exe"
+          if (!(Test-Path $exe)) { throw "Installed executable missing" }
+          $env:OMB_DATA_DIR = Join-Path $env:RUNNER_TEMP "omb-desktop-data"
+          $env:OMB_SMOKE_TEST = "1"
+          $profile = Join-Path $env:RUNNER_TEMP "omb-desktop-profile"
+          $out = Join-Path $env:RUNNER_TEMP "desktop-stdout.log"
+          $err = Join-Path $env:RUNNER_TEMP "desktop-stderr.log"
+          $app = Start-Process $exe -ArgumentList "--user-data-dir=$profile" -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+          try {
+            $deadline = (Get-Date).AddSeconds(120)
+            do {
+              if (Select-String -Path $out,$err -SimpleMatch '[smoke] renderer-ready' -Quiet) {
+                Write-Output "Installed renderer loaded its preload, reached the local server, and obtained its stream ticket"
+                return
+              }
+              if ($app.HasExited) { break }
+              Start-Sleep -Seconds 1
+            } while ((Get-Date) -lt $deadline)
+            Select-String -Path $out,$err -SimpleMatch '[smoke] renderer-failed' | ForEach-Object { Write-Output $_.Line }
+            throw "Installed application did not report renderer-ready"
+          } finally {
+            if (!$app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
