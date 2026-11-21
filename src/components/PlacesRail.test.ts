@@ -242,6 +242,40 @@ it("a pasted link main can't open says so and keeps the sheet; cancelling main's
 
 const settle = () => act(async () => { await new Promise((done) => setTimeout(done, 450)); });
 
+it.each(["address", "code"])("editing the %s after finding a server waits for the new check before connecting", async (field) => {
+  const next = deferred<unknown>();
+  const found = (label: string) => ({ outcome: "found", label, version: "1", transport: "https" });
+  const probe = vi.fn().mockResolvedValueOnce(found("Office")).mockReturnValueOnce(next.promise);
+  Object.assign(window, { ogb: { workspaces: { ...workspaces, probe }, cloudAdd } });
+  await mount(createElement(PlacesRail));
+  await click(host.querySelector("[data-rail-add]"));
+  await click(document.querySelector('[data-place-add-choice="server"]'));
+  const form = document.querySelector('[data-place-add="own-server"]')!;
+  const address = form.querySelector("[data-own-server-link]");
+  const button = form.querySelector<HTMLButtonElement>("[data-own-server-connect]")!;
+  await type(address, "office.example.test");
+  await settle();
+  expect(button.textContent).toBe("Connect to Office");
+
+  const newAddress = field === "address" ? "studio.example.test" : "office.example.test";
+  const newCode = field === "code" ? "ABCD-EFGH-JKLM" : "";
+  await type(field === "address" ? address : form.querySelector("[data-own-server-code]"), field === "address" ? newAddress : newCode);
+  expect(button.disabled).toBe(true);
+  expect(form.querySelector("[data-connect-found]")).toBeNull();
+  expect(form.querySelector("[data-connect-checking]")).toBeTruthy();
+  await settle();
+  await submit(form);
+  expect(workspaces.add).not.toHaveBeenCalled();
+  expect(probe).toHaveBeenLastCalledWith(newAddress, newCode);
+
+  const name = field === "address" ? "Studio" : "Office";
+  await act(async () => { next.resolve(found(name)); });
+  expect(button.textContent).toBe(`Connect to ${name}`);
+  expect(button.disabled).toBe(false);
+  await click(button);
+  expect(workspaces.add.mock.calls).toEqual([["link", newAddress, newCode]]);
+});
+
 it("Connect to a server never sits grey without saying why: it says it is looking, and says so when the check itself fails", async () => {
   let answer: (value: unknown) => void = () => {};
   const probe = vi.fn((): Promise<unknown> => new Promise((resolve, reject) => { answer = resolve; void reject; }));
