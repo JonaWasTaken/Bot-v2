@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -117,6 +117,25 @@ describe("memory routes through an isolated HTTP fixture", () => {
   it("refuses an oversized save with 413", async () => {
     const big = await api("PUT", `/api/bots/${botId}/memory/file`, { path: "memory/big.md", text: "x".repeat(256 * 1024 + 1) });
     expect(big.status).toBe(413);
+  });
+
+  it("exposes a journal write failure after the note changed, then accepts a new edit when storage is writable", async () => {
+    const created = await api("POST", "/api/bots", { name: "History unavailable" });
+    expect(created.status).toBe(201);
+    const id = created.body.bot.id;
+    const file = `/api/bots/${id}/memory/file`;
+    const path = "memory/receipt.md";
+    const journal = join(fixture.info.dataDir, "memory-journal", `${id}.ndjson`);
+    mkdirSync(journal, { recursive: true });
+    const failed = await api("PUT", file, { path, text: "first" });
+    expect(failed.status).toBe(500);
+    expect(failed.body).toEqual({ error: expect.stringContaining("history could not be saved") });
+    expect(failed.body.error).not.toContain(fixture.info.dataDir);
+    expect((await api("GET", `${file}?path=${path}`)).body).toMatchObject({ exists: true, text: "first" });
+    rmdirSync(journal);
+    const next = await api("PUT", file, { path, text: "second", expectedHash: hashMemoryText("first") });
+    expect(next.status).toBe(200);
+    expect(JSON.parse(readFileSync(journal, "utf8"))).toMatchObject({ id: next.body.entry.id, kind: "edited", before: "first" });
   });
 
   it("deletes a topic or log but never MEMORY.md", async () => {

@@ -1,8 +1,7 @@
 // Kept outside the workspace on purpose: an audit trail the audited bot can rewrite is not an audit trail.
-// A journal write must never fail the change it records.
 import { randomUUID } from "node:crypto";
 import { closeSync, fstatSync, mkdirSync, openSync, readFileSync, readSync } from "node:fs";
-import { appendFile } from "node:fs/promises";
+import { appendFile, open } from "node:fs/promises";
 import { join } from "node:path";
 
 import { writeFileAtomic } from "./atomic.ts";
@@ -159,30 +158,55 @@ export function unifiedDiff(before: string, after: string, path: string, cap = D
 }
 
 
-const writeQueues = new Map<string, Promise<void>>();
+interface JournalQueue {
+  drained: Promise<void>;
+  files: Map<string, Promise<unknown>>;
+}
 
-function enqueue(botId: string, entry: MemoryJournalEntry): void {
-  const previous = writeQueues.get(botId) ?? Promise.resolve();
-  const queued = previous
-    .then(async () => {
-      mkdirSync(JOURNAL_DIR, { recursive: true, mode: 0o700 });
-      await appendFile(journalFile(botId), `${JSON.stringify(entry)}\n`, { mode: 0o600 });
-    })
-    .catch((error: unknown) => {
-      console.error(`memory-journal: could not append for ${botId}:`, error instanceof Error ? error.message : error);
-    });
-  writeQueues.set(botId, queued);
-  void queued.finally(() => {
-    if (writeQueues.get(botId) === queued) writeQueues.delete(botId);
-  });
+const writeQueues = new Map<string, JournalQueue>();
+
+async function appendEntry(entry: MemoryJournalEntry): Promise<void> {
+  mkdirSync(JOURNAL_DIR, { recursive: true, mode: 0o700 });
+  const file = await open(journalFile(entry.botId), "a+", 0o600);
+  try {
+    const { size } = await file.stat();
+    const last = Buffer.alloc(1);
+    if (size) await file.read(last, 0, 1, size - 1);
+    const separator = size > 0 && last[0] !== 0x0a ? "\n" : "";
+    await appendFile(file, `${separator}${JSON.stringify(entry)}\n`);
+  } finally {
+    await file.close();
+  }
+}
+
+function queueJournalWrite<T>(botId: string, write: () => T | Promise<T>, path?: string): Promise<T> {
+  const queue: JournalQueue = writeQueues.get(botId) ?? { drained: Promise.resolve(), files: new Map() };
+  const pending = queue.drained.then(write);
+  if (path !== undefined) queue.files.set(path, pending);
+  const finish = () => {
+    if (path !== undefined && queue.files.get(path) === pending) queue.files.delete(path);
+    if (queue.drained === drained) writeQueues.delete(botId);
+  };
+  const drained = pending.then(finish, finish);
+  queue.drained = drained;
+  writeQueues.set(botId, queue);
+  return pending;
+}
+
+export async function confirmMemoryJournalWrite(botId: string, path: string): Promise<void> {
+  try {
+    await writeQueues.get(botId)?.files.get(path);
+  } catch {
+    throw new Error("The memory file changed, but its history could not be saved. Reload the file before making another change.");
+  }
 }
 
 export async function flushMemoryJournal(botId: string): Promise<void> {
-  await writeQueues.get(botId);
+  await writeQueues.get(botId)?.drained;
 }
 
 export async function flushAllMemoryJournals(): Promise<void> {
-  await Promise.allSettled(writeQueues.values());
+  await Promise.allSettled(Array.from(writeQueues.values(), (queue) => queue.drained));
 }
 
 function isEntry(value: unknown): value is MemoryJournalEntry {
@@ -194,8 +218,11 @@ function isEntry(value: unknown): value is MemoryJournalEntry {
 
 /** Another server's changes to this bot's memory, by id, in time order among this server's own: they describe that
  * server's files, so none of them can be reverted here. How many were added. */
-export async function adoptMemoryJournal(botId: string, entries: readonly MemoryJournalEntry[]): Promise<number> {
-  await flushMemoryJournal(botId);
+export function adoptMemoryJournal(botId: string, entries: readonly MemoryJournalEntry[]): Promise<number> {
+  return queueJournalWrite(botId, () => mergeJournalEntries(botId, entries));
+}
+
+function mergeJournalEntries(botId: string, entries: readonly MemoryJournalEntry[]): number {
   const held = readMemoryJournal(botId, MAX_ROWS);
   const ids = new Set(held.map((entry) => entry.id));
   const added = entries.filter((entry) => isEntry(entry) && !ids.has(entry.id)).map((entry): MemoryJournalEntry => ({ ...entry, botId, before: null, canRevert: false,
@@ -315,7 +342,9 @@ export function recordMemoryChange(botId: string, change: MemoryChangeInput): Me
   };
   if (change.threadId) entry.threadId = change.threadId;
   if (revertUnavailableReason) entry.revertUnavailableReason = revertUnavailableReason;
-  enqueue(botId, entry);
+  void queueJournalWrite(botId, () => appendEntry(entry), entry.path).catch((error: NodeJS.ErrnoException) => {
+    console.error(`memory-journal: could not append for ${botId}`, error?.code ?? "write failed");
+  });
   return entry;
 }
 

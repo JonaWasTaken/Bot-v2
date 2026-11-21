@@ -1,15 +1,21 @@
 import { createServer, type Server } from "node:http";
+import fsPromises, { appendFile } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 import { join } from "node:path";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { json, onJsonBody, readBody } from "../harness/http.ts";
-import { recordMemoryChange } from "../memory-journal.ts";
+import { flushMemoryJournal, journalMemoryWrite, readMemoryJournal, recordMemoryChange } from "../memory-journal.ts";
 import { commitLearned, planLearned } from "../profile-learned.ts";
 import { requiredScope } from "../request-auth.ts";
 import { launchVerificationServer, type VerificationServer } from "../../scripts/control-omb.ts";
 import { createBotMemoryRoutes, type BotMemoryRouteDeps } from "./bot-memory.ts";
 import { dispatchRoutes } from "./table.ts";
+
+vi.mock(import("node:fs/promises"), async (load) => {
+  const fs = await load();
+  return { ...fs, appendFile: vi.fn(fs.appendFile) };
+});
 
 const BOTS: Record<string, { id: string }> = { "bot-123": { id: "bot-123" } };
 const servers: Server[] = [];
@@ -200,6 +206,110 @@ describe("the bot-memory module through the route table", () => {
     ] as const) {
       expect(requiredScope(method, path), `${method} ${path}`).toBe("admin");
     }
+  });
+});
+
+describe("memory mutation acknowledgements", () => {
+  it.each([
+    ["bot save", "PUT", "/file"],
+    ["personal save", "PUT", "/mine/file"],
+    ["reviewed delete", "DELETE", "/file"],
+    ["personal delete", "DELETE", "/mine/file"],
+    ["query delete", "DELETE", "/file?path=memory/note.md"],
+    ["whole-file save", "PUT", ""],
+    ["Undo", "POST", "/journal"],
+  ] as const)("waits for the %s journal append before sending success", async (name, method, suffix) => {
+    const botId = name.replaceAll(" ", "-");
+    const layer = `${botId}--member-fixture`;
+    const notebook = suffix.includes("/mine/") ? layer : botId;
+    const path = suffix === "" ? "MEMORY.md" : "memory/note.md";
+    const prior = journalMemoryWrite(notebook, path, "first", { actor: "person", via: "ui" });
+    await flushMemoryJournal(notebook);
+    let response: import("node:http").ServerResponse | undefined;
+    const base = await serve({ bot: () => ({ id: botId }), ownLayer: () => layer }, (res) => { response = res; });
+    const route = method === "POST" ? `${suffix}/${prior.entry!.id}/revert` : suffix;
+    const body = method === "PUT" ? { path, text: "second" } : method === "DELETE" && !suffix.includes("?") ? { path, expectedHash: prior.doc.hash } : undefined;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let appending = false;
+    vi.mocked(appendFile).mockImplementationOnce(async (...args) => {
+      appending = true;
+      await gate;
+      await fsPromises.appendFile(...args);
+    });
+    const request = fetch(`${base}/api/bots/${botId}/memory${route}`, {
+      method, headers: { "content-type": "application/json" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    });
+    try {
+      await expect.poll(() => appending).toBe(true);
+      expect(response?.headersSent).toBe(false);
+      expect(readMemoryJournal(notebook)).toHaveLength(1);
+    } finally {
+      release();
+      await request;
+    }
+    const reply = await request;
+    expect(reply.status).toBe(200);
+    const accepted = await reply.json();
+    const [row] = readMemoryJournal(notebook);
+    expect(row).toMatchObject({ botId: notebook, path, via: method === "POST" ? "revert" : suffix === "" ? "api" : "ui" });
+    if (suffix === "") expect(accepted).toEqual({ ok: true, hash: row.afterHash, truncated: false });
+    else {
+      expect(accepted).toMatchObject({ entry: { id: row.id } });
+      expect(accepted).not.toHaveProperty("entry.before");
+    }
+    if (notebook === layer) expect(readMemoryJournal(botId)).toEqual([]);
+  });
+
+  it("reports a failed append to its callers and keeps the next queued row readable", async () => {
+    const botId = "append-failure";
+    const layer = `${botId}--member-fixture`;
+    let applied = 0;
+    const base = await serve({
+      bot: () => ({ id: botId }), ownLayer: () => layer,
+      ownersWrite: (_auth, _id, write) => { const value = write(); applied++; return value; },
+    });
+    const put = (path: string, personal = false) => fetch(`${base}/api/bots/${botId}/memory${personal ? "/mine" : ""}/file`, {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ path, text: "fixture note" }),
+    });
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    let partial = false;
+    vi.mocked(appendFile).mockImplementationOnce(async (file) => {
+      await fsPromises.appendFile(file, '{"id":"incomplete"');
+      partial = true;
+      await gate;
+      throw new Error("private fixture diagnostic");
+    });
+    const failedPath = "memory/first.md";
+    const nextPath = "memory/next.md";
+    const first = put(failedPath);
+    let next: Promise<Response>, same: Promise<Response>;
+    try {
+      await expect.poll(() => partial).toBe(true);
+      next = put(nextPath);
+      await expect.poll(() => applied).toBe(2);
+      same = put(failedPath);
+      await expect.poll(() => applied).toBe(3);
+      const independent = await put(failedPath, true);
+      expect(independent.status).toBe(200);
+      const rows = readMemoryJournal(layer);
+      expect(rows).toHaveLength(1);
+      expect(await independent.json()).toMatchObject({ entry: { id: rows[0].id } });
+    } finally {
+      release();
+    }
+    for (const reply of await Promise.all([first, same])) {
+      expect(reply.status).toBe(500);
+      const body = await reply.json();
+      expect(body).toEqual({ error: expect.stringContaining("history could not be saved") });
+      expect(JSON.stringify(body)).not.toContain("private fixture diagnostic");
+    }
+    const accepted = await next;
+    expect(accepted.status).toBe(200);
+    const rows = readMemoryJournal(botId);
+    expect(rows.map((row) => row.path)).toEqual([nextPath]);
+    expect(await accepted.json()).toMatchObject({ entry: { id: rows[0].id } });
   });
 });
 

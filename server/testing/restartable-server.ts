@@ -21,7 +21,7 @@ export interface RestartableServer {
   planPath: string;
   /** The webhook receiver's base URL. */
   hooksUrl: string;
-  stop(): Promise<void>;
+  stop(signal?: NodeJS.Signals): Promise<void>;
   start(): Promise<void>;
   /** Stop and delete the temporary home. */
   close(): Promise<void>;
@@ -52,17 +52,17 @@ export async function launchRestartableServer(options: { scripted?: boolean; dat
     closeSync(log);
     const deadline = Date.now() + 30_000;
     for (;;) {
-      if (child.exitCode !== null) throw new Error(`the server exited before it was ready; see ${logPath}`);
+      if (child.exitCode !== null || child.signalCode !== null) throw new Error(`the server exited before it was ready; see ${logPath}`);
       try {
-        const body = await (await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(1_000) })).json() as { app?: string };
-        if (body.app === "openmausbot") return;
+        const body = await (await fetch(`${url}/api/health`, { signal: AbortSignal.timeout(1_000) })).json() as { app?: string; pid?: number };
+        if (body.app === "openmausbot" && body.pid === child.pid) return;
       } catch { /* not listening yet */ }
       if (Date.now() > deadline) throw new Error(`the server did not become ready; see ${logPath}`);
       await new Promise((resolve) => setTimeout(resolve, 150));
     }
   };
-  const stop = async () => {
-    await waitForExit(child, { signal: "SIGTERM", graceMs: 15_000 });
+  const stop = async (signal: NodeJS.Signals = "SIGTERM") => {
+    await waitForExit(child, { signal, graceMs: 15_000 });
     child = undefined;
   };
   await start();
