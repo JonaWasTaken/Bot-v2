@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readdir, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -12,7 +12,7 @@ import { openHeadlessChrome } from "./testing/headless-chrome.ts";
 import { fixtureApi, mountPreview } from "./testing/preview-fixture.ts";
 
 const { values } = parseArgs({ options: { baseline: { type: "string" }, endpoint: { type: "string" },
-  model: { type: "string" }, out: { type: "string" }, metric: { type: "string" }, "no-screenshots": { type: "boolean" } } });
+  model: { type: "string" }, out: { type: "string" }, metric: { type: "string" }, electron: { type: "string" }, "no-screenshots": { type: "boolean" } } });
 const endpoint = new URL(values.endpoint ?? "");
 assert(endpoint.protocol === "http:" && ["127.0.0.1", "[::1]"].includes(endpoint.hostname) && !endpoint.username && !endpoint.password,
   "Provide a dedicated local OpenAI-compatible verification model.");
@@ -95,7 +95,17 @@ try {
   } else {
     preview = await mountPreview(fixture, { entry: "/scripts/testing/threads-preview.tsx", route: "/mission-check.html",
       title: "OpenMausBot", logLevel: "error" });
-    page = await openHeadlessChrome(profile);
+    const desktop = values.electron ? {
+      executable: resolve(values.electron), entry: fileURLToPath(new URL("./testing/mission-desktop.cjs", import.meta.url)),
+      pageUrl: preview.previewUrl, env: { ...verificationServerEnvironment(process.env, profile, Number(new URL(base).port)),
+        ELECTRON_START_URL: preview.previewUrl, OMB_MISSION_FIXTURE_PROFILE: profile },
+    } : undefined;
+    page = await openHeadlessChrome(profile, desktop);
+    if (desktop) {
+      await page.until("typeof window.ogb?.getCapabilities === 'function'");
+      result.electron = await page.evaluate("navigator.userAgent.match(/Electron\\/([\\d.]+)/)?.[1]");
+      assert(result.electron, "The native Electron renderer must own the desktop preload.");
+    }
     await page.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
     await page.send("Page.navigate", { url: preview.previewUrl });
     await openControl();
@@ -139,12 +149,31 @@ try {
     const bytes = await download();
     assert.equal(createHash("sha256").update(bytes).digest("hex"), verified.artifact.sha256);
     for (const step of verified.steps.filter(s => s.kind === "source")) assert(bytes.toString().includes(step.observation.source));
+    if (desktop) {
+      await page.evaluate("document.querySelector('a[download=\"report.md\"]').click()");
+      const destination = join(profile, "downloads", "report.md");
+      let downloaded;
+      for (let i = 0; i < 100 && !downloaded; i++) {
+        try { downloaded = await readFile(destination); } catch { await delay(100); }
+      }
+      assert.deepEqual(downloaded, bytes);
+      result.nativeDownload = true;
+    }
     Object.assign(result, { executionMs: Math.round(performance.now() - execution), elapsedMs: Math.round(performance.now() - start),
       verifiedReport: true, mission: verified, usage: (await api("GET", "/api/usage")).total });
     await writeFile(join(out, "report.md"), bytes);
     await capture("completed.png");
+    if (desktop) {
+      page.close();
+      assert(await page.exited(10_000), "The first Electron process must exit before the relaunch.");
+      await rm(join(profile, "DevToolsActivePort"), { force: true });
+    }
     await restart();
-    await page.send("Page.navigate", { url: preview.previewUrl });
+    if (desktop) {
+      page = await openHeadlessChrome(profile, desktop);
+      await page.until("typeof window.ogb?.getCapabilities === 'function'");
+      result.electronRelaunched = true;
+    } else await page.send("Page.navigate", { url: preview.previewUrl });
     await openControl();
     await page.until(byText("Preview report"));
     await click("Preview report");
@@ -152,6 +181,10 @@ try {
     const restored = await current(path);
     assert.deepEqual(restored, verified);
     assert.deepEqual(await download(), bytes);
+    if (desktop) {
+      await page.evaluate("document.querySelector('#mission-report').scrollIntoView({block:'center'})");
+      await capture("report-preview.png");
+    }
     await page.send("Emulation.setDeviceMetricsOverride", { width: 430, height: 790, deviceScaleFactor: 1, mobile: false });
     await page.until("document.documentElement.scrollWidth <= innerWidth");
     await capture("narrow.png");
@@ -171,7 +204,7 @@ try {
   assert(result.usage && typeof result.usage.input === "number");
   console.log(name, result.elapsedMs, "ms", "verified:", result.verifiedReport);
 } catch (error) {
-  if (page) console.error((await page.evaluate("document.body.innerText"))?.slice(-2600));
+  if (page) console.error((await page.evaluate("document.body.innerText").catch(() => ""))?.slice(-2600));
   throw error;
 } finally {
   page?.close();
