@@ -58,7 +58,7 @@ export interface SideJobText {
 
 /** `waiting`: the call has to wait for a free slot (other bots' background calls); `started`: it starts now, after waiting
  * or at once. A call that is never queued calls neither. */
-export type SideJobTextOptions = Pick<TextGenerationOptions, "signal" | "timeoutMs"> & { waiting?(): void; started?(): void };
+export type SideJobTextOptions = Pick<TextGenerationOptions, "signal" | "timeoutMs"> & { waiting?(): void; started?(): void; operationId?: string; measured?: TextGenerationOptions["onUsage"] };
 
 export interface SideJobsDeps {
   bot: (botId: string) => SideJobBot | null | undefined;
@@ -138,23 +138,27 @@ export function createSideJobs(deps: SideJobsDeps): SideJobs {
   const booked = (job: SideJob, bot: SideJobBot, instance: SideJobInstance, call: TextCall, trigger: UsageTrigger, fixed: () => TextGenerationOptions): SideJobText["generateText"] =>
     async (prompt, options) => {
       deps.assertWithinBudget();
-      const threadId = `${job}-${randomUUID()}`;
+      const { operationId, measured, ...generation } = options ?? {};
+      const threadId = job + "-" + (operationId ?? randomUUID());
       return call(prompt, {
-        ...options,
+        ...generation,
         ...fixed(),
-        onUsage: (usage) => deps.book({
-          botId: bot.id,
-          botName: bot.name,
-          threadId,
-          instanceId: instance.instanceId,
-          driverKind: instance.driverKind,
-          model: usage.model,
-          input: usage.input ?? 0,
-          output: usage.output ?? 0,
-          ...(usage.cachedInput !== undefined ? { cachedInput: usage.cachedInput } : {}),
-          costUsd: usage.costUsd ?? null,
-          trigger,
-        }, usage.input !== undefined && usage.output !== undefined, bot.threadId),
+        onUsage: (usage) => {
+          deps.book({
+            botId: bot.id,
+            botName: bot.name,
+            threadId,
+            instanceId: instance.instanceId,
+            driverKind: instance.driverKind,
+            model: usage.model,
+            input: usage.input ?? 0,
+            output: usage.output ?? 0,
+            ...(usage.cachedInput !== undefined ? { cachedInput: usage.cachedInput } : {}),
+            costUsd: usage.costUsd ?? null,
+            trigger,
+          }, usage.input !== undefined && usage.output !== undefined, bot.threadId);
+          measured?.(usage);
+        },
       });
     };
 
@@ -212,6 +216,8 @@ export function createSideJobs(deps: SideJobsDeps): SideJobs {
     if (call) {
       // The summary belongs to a turn that already passed the spend limit and is not booked on its own.
       if (job === "compaction") return { via: "engine", generateText: call };
+      if (job === "mission-plan") return { via: "engine", generateText: booked(job, bot, own, call,
+        { kind: "bot", botId: bot.id }, () => ({ model: bot.modelSelection.model })) };
       if (job === "setup-suggestions") {
         const quick = quickModel(bot, own);
         const write = booked(job, bot, own, call, { kind: "bot", botId: bot.id }, () => ({ fallback: ownFallback(bot, own), ...quick }));

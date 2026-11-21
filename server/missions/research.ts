@@ -46,7 +46,7 @@ export function comparisonReport(plan: ResearchPlan, observations: PackageObserv
   const winners = eligible.filter(item => measure(item, plan) === measure(eligible[0]!, plan));
   const criterion = plan.metric === "size" ? "smallest unpacked package" : "fewest direct runtime dependencies";
   const lines = ["# TypeScript package comparison", "", "## Recommendation", "",
-    winners.map(item => "**" + item.name + "**").join(" and ") + (winners.length > 1 ? " tie for " : " ranks first for ") + criterion + " among eligible releases.",
+    new Intl.ListFormat("en").format(winners.map(item => "**" + item.name + "**")) + (winners.length > 1 ? " tie for " : " ranks first for ") + criterion + " among eligible releases.",
     "", "| Package | Version | License | Declares types | Runtime dependencies | Unpacked bytes |", "| --- | --- | --- | --- | ---: | ---: |",
     ...observations.map(item => "| " + [item.name, item.version, item.license, item.types ? "Yes" : "No", item.dependencies, item.bytes ?? "Unknown"].join(" | ") + " |"),
     "", "## Scope", "", "Eligibility requires a declared permissive license (MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause or 0BSD) and bundled type declarations in the manifest. Dependency counts include optional runtime dependencies. Unpacked size describes the published package. API fit, transitive dependencies and application bundle size require separate evaluation.",

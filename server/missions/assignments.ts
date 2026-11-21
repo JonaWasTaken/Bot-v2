@@ -2,7 +2,7 @@ import type { PackageObservation } from "../../shared/mission.ts";
 import type { Assignment, RunResult, TurnRunner } from "../runtime/types.ts";
 import { terminal } from "../runtime/types.ts";
 import { MissionControl } from "./control.ts";
-import { parsePlannerReply, plannerPrompt, planSteps, type PlannedStep } from "./plan.ts";
+import { parsePlannerReply, plannerPrompt, planSteps, type MissionRecord, type PlannedStep } from "./plan.ts";
 import { comparisonReport, sha256, verifyReport } from "./research.ts";
 import { countTools, hasMission, type MissionRoot } from "./view.ts";
 
@@ -20,7 +20,7 @@ export class MissionAssignments extends MissionControl {
   validate(row: Assignment): string | undefined {
     const root = this.store.get(row.rootId);
     if (!row.parentId && row.mission) return this.host.refusal(row.assignee.botId, "coordinate");
-    if (!hasMission(root) || row.parentId !== root.id) return "The mission assignment no longer has its approved parent.";
+    if (!hasMission(root) || terminal(root.status) || row.parentId !== root.id) return "The mission assignment no longer has its approved parent.";
     const step = this.step(root, row);
     if (!step || !["active", "paused"].includes(root.mission.phase)) return "This operation is outside the approved plan.";
     if (row.assignee.botId !== (step.kind === "source" ? root.mission.researcherId : root.assignee.botId)) return "This specialist does not own the step.";
@@ -41,8 +41,8 @@ export class MissionAssignments extends MissionControl {
     for (const id of bots) if (id) this.host.changed(id);
   }
 
-  private block(root: MissionRoot, issue: string): RunResult {
-    this.update(root, { phase: "blocked", issue }, issue);
+  private block(root: MissionRoot, issue: string, usage?: MissionRecord["usage"]): RunResult {
+    this.update(root, { phase: "blocked", issue, ...(usage ? { usage } : {}) }, issue);
     return park(issue);
   }
 
@@ -63,30 +63,35 @@ export class MissionAssignments extends MissionControl {
       return this.block(root, "The planning call was interrupted. Review a manual shortlist to continue.");
     const refusal = this.host.refusal(root.assignee.botId, "plan");
     if (refusal) return this.block(root, refusal);
-    this.update(root, { modelCalls: root.mission.modelCalls + 1 }, "Planning call attempted");
+    let usage: MissionRecord["usage"];
     try {
-      const answer = await this.host.plan(root.assignee.botId, plannerPrompt(root.brief, root.mission.limits), signal);
+      const context = root.mission.memoryTopic ? this.host.context(root.assignee.botId, root.mission.memoryTopic) : undefined;
+      const prompt = plannerPrompt(root.mission.objective ?? root.brief, root.mission.limits, context);
+      this.update(root, { modelCalls: root.mission.modelCalls + 1 }, "Planning call attempted");
+      const answer = await this.host.plan(root.assignee.botId, prompt, signal, root.id);
+      usage = answer.usage;
       signal.throwIfAborted();
-      const plan = parsePlannerReply(answer, root.mission.limits);
+      const plan = parsePlannerReply(answer.text, root.mission.limits);
       const fresh = this.root(root.assignee.botId, root.id);
       if (terminal(fresh.status) || fresh.mission.revision !== root.mission.revision) return fail("The planning request ended.");
-      this.update(fresh, { phase: "review", plan }, "Plan ready for review");
+      this.update(fresh, { phase: "review", plan, usage }, "Plan ready for review");
       return park(REVIEW);
     } catch {
       const fresh = this.root(root.assignee.botId, root.id);
       if (terminal(fresh.status)) return fail("The planning request ended.");
-      return this.block(fresh, "The planner could not produce a supported shortlist. Enter public npm package names to continue.");
+      return this.block(fresh, "The planner could not produce a supported shortlist. Enter public npm package names to continue.", usage);
     }
   }
 
   private advance(root: MissionRoot): RunResult {
-    const { plan, version, limits, retryKey } = root.mission;
+    const { plan, version, limits, retryOf } = root.mission;
     if (!plan) return this.block(root, "No reviewed plan is available.");
     const steps = planSteps(plan, version), children = this.children(root);
     const latest = new Map(children.map(c => [c.missionStep, c]));
     const done = (key: string) => latest.get(key)?.status === "completed";
     if (steps.every(step => done(step.key))) return completed("The report was verified against the retrieved releases.");
-    const ready = steps.filter(s => (!latest.has(s.key) || s.key === retryKey) && s.dependsOn.every(done));
+    const retry = (step: PlannedStep) => !!retryOf && latest.get(step.key)?.id === retryOf && latest.get(step.key)?.status === "failed";
+    const ready = steps.filter(s => (!latest.has(s.key) || retry(s)) && s.dependsOn.every(done));
     if (!ready.length) return this.block(root, "Review the failed step. Its dependent work has not started.");
     const available = limits.toolCalls - countTools(children);
     let reserved = 0;
@@ -99,12 +104,12 @@ export class MissionAssignments extends MissionControl {
         botId: root.assignee.botId, threadId: root.assignee.destination.threadId }, assignee: { botId,
         destination: { kind: "work_thread", threadId: root.assignee.destination.threadId + "/" + step.key } },
         ownThread: botId === root.assignee.botId, levels: { own: "ask" }, reply: "resume", missionStep: step.key,
-        brief: step.key, rework: step.key === retryKey, doneWhen: step.kind === "source" ? "Match the latest release to its versioned registry record."
+        brief: step.key, rework: retry(step), doneWhen: step.kind === "source" ? "Match the latest release to its versioned registry record."
           : step.kind === "report" ? "Store the comparison as a Markdown attachment." : "Read the saved bytes and check every citation and measurement." });
-      if (!result.ok) return fail("The runtime refused to admit the mission step.");
+      if (!result.ok) return this.block(this.root(root.assignee.botId, root.id), "The runtime refused to admit the next step. Review the plan or the assigned bot.");
     }
     if (!reserved) return this.block(root, "The next step exceeds the approved tool-call budget. Review the limits to continue.");
-    if (retryKey) this.update(this.root(root.assignee.botId, root.id), { retryKey: undefined }, "Retry admitted");
+    if (retryOf) this.update(this.root(root.assignee.botId, root.id), { retryOf: undefined }, "Retry admitted");
     return completed("Waiting for the assigned work.");
   }
 

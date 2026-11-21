@@ -2,6 +2,9 @@ import { join } from "node:path";
 import { Readable } from "node:stream";
 import { allowsTool } from "../../shared/tool-scope.ts";
 import { ATTACHMENTS_DIR, saveFile } from "../attachments.ts";
+import { redactSecretsInText } from "../../shared/redact.ts";
+import { readMemoryDoc } from "../memory-store.ts";
+import type { MissionRecord } from "./plan.ts";
 import { openMessageFile } from "../message-file.ts";
 import type { Store } from "../store.ts";
 import type { SideJobText } from "../side-jobs.ts";
@@ -35,10 +38,19 @@ export function createMissionHost(deps: HostOptions): MissionHost {
         return "The assigned bot's tool selection does not allow this mission operation.";
       return undefined;
     },
-    async plan(botId, prompt, signal) {
+    context(botId, topic) {
+      const doc = readMemoryDoc(botId, "memory/" + topic);
+      if (!doc.exists) throw new Error("The selected memory topic is unavailable.");
+      return redactSecretsInText(doc.text).slice(0, 1200);
+    },
+    async plan(botId, prompt, signal, missionId) {
       const model = deps.model(botId);
       if (!model) throw new Error("No planning model is available.");
-      return model.generateText(prompt, { signal });
+      let usage: MissionRecord["usage"];
+      const text = await model.generateText(prompt, { signal, operationId: missionId, measured: ({ input, output, cachedInput, costUsd }) => {
+        usage = { input, output, cachedInput, costUsd };
+      } });
+      return { text, usage };
     },
     async save(id, text) {
       const bytes = Buffer.from(text);

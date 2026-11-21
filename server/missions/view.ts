@@ -21,7 +21,7 @@ export function missionView(root: MissionRoot, children: Assignment[], events: A
   const record = root.mission;
   const state = missionState(root, children);
   const steps: MissionStepView[] = [];
-  const usage = { toolCalls: countTools(children), modelCalls: record.modelCalls };
+  const usage = { toolCalls: countTools(children), modelCalls: record.modelCalls, ...record.usage };
   const retryKeys: string[] = [];
   const parked = root.status === "needs_input";
   const terminal = !!root.finishedAt;
@@ -31,9 +31,11 @@ export function missionView(root: MissionRoot, children: Assignment[], events: A
     const row = history.at(-1);
     const botId = step.kind === "source" ? record.researcherId : root.assignee.botId;
     const ready = step.dependsOn.every(key => steps.some(s => s.key === key && (s.status === "executed" || s.status === "verified")));
-    const view: MissionStepView = { ...step, botId, status: ready ? "planned" : "blocked", attempts: history.reduce((sum, a) => sum + a.executions, 0) };
+    const view: MissionStepView = { ...step, botId, status: ready ? "planned" : "blocked", toolCalls: countTools(history), attempts: history.reduce((sum, a) => sum + a.executions, 0) };
     if (row) {
       view.assignmentId = row.id;
+      view.startedAt = row.startedAt;
+      view.finishedAt = row.finishedAt;
       if (row.status === "completed") {
         view.status = step.kind === "report" ? "executed" : "verified";
         if (step.kind === "source") view.observation = JSON.parse(row.result) as PackageObservation;
@@ -56,7 +58,7 @@ export function missionView(root: MissionRoot, children: Assignment[], events: A
   }
   const actions: MissionView["actions"] = [];
   if (!terminal) {
-    if (parked && record.phase === "review") actions.push("start");
+    if (parked && record.phase === "review") actions.push("start", "decline");
     if (record.phase === "active") actions.push("pause");
     if (record.phase === "paused") actions.push("resume");
     if (retryKeys.length) actions.push("retry");
@@ -64,7 +66,7 @@ export function missionView(root: MissionRoot, children: Assignment[], events: A
     actions.push("cancel");
   }
   return { id: root.id, botId: root.assignee.botId, owner: record.owner, researcherId: record.researcherId, name: record.name,
-    objective: root.brief, projectId: record.projectId, state, version: record.version, revision: record.revision, plan: record.plan,
+    objective: record.objective ?? root.brief, memoryTopic: record.memoryTopic, originalObjective: root.brief, history: (record.history ?? []).map(({ artifactId: _artifact, ...plan }) => plan), projectId: record.projectId, state, version: record.version, revision: record.revision, plan: record.plan,
     limits: record.limits, steps, actions, retryKeys, createdAt: root.createdAt, updatedAt: root.lastActivityAt,
     finishedAt: root.finishedAt, issue: record.issue ?? (root.status === "failed" ? root.result : undefined), usage, artifact,
     activity: events.filter(e => e.kind === "progress" || e.kind === "restart_reconciled" || e.kind === "settled" || e.kind === "cancelled")
