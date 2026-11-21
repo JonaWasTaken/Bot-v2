@@ -18,6 +18,16 @@ At intake Git reported one worktree, a clean tracked and untracked status, and a
 
 The original-to-fork comparison covers 26 paths. Five changes affected user behavior before this sprint. Undo checks the saved memory revision, recall omits superseded entries, stale delete requests are refused, same-named notes in separate permitted notebooks remain distinct, and pairing waits for the server check. The rest of that diff consists of wiring, regression tests, evaluation runners and evidence. The previous paired notebook test went from 0/6 to 6/6 on same-name notes. [Original-to-fork diff](https://github.com/JonaWasTaken/Bot-v2/compare/e5490f70de6b683465fb5b7a7ff43e7aa931c1f9...f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1) · [Previous sprint and controls](2026-11-21-first-cycle.md)
 
+| Change already in Bot V2 | What a user can observe |
+| --- | --- |
+| Undo a memory edit | Undo checks the file against the journaled revision. A conflicting edit returns HTTP 409 and survives. |
+| Correct a remembered fact | Recognized superseded entries, including struck-through handwritten entries, drop out of active context. |
+| Delete a reviewed note | The desktop submits the reviewed hash. When the underlying file changes, the panel refreshes the current note before the user can retry. Older clients can still use the earlier unconditional endpoint. |
+| Recall two notes with a matching path | A permitted personal and shared notebook can contribute separate passages under the same filename. The existing recall limit still applies. |
+| Pair a desktop with a server | Changing the address or pairing code invalidates the preceding probe. The desktop waits for the check on the current address and code before offering to connect. |
+
+The JSON field `changedFilesOriginalToFork` lists every added or modified path. Git history contains the pairing patch twice through separate branches, with one behavioral change in the resulting tree. The comparison uses the fork's common ancestor. The canonical repository had advanced another 184 commits at intake. [Complete path inventory](apex-001-windows-results.json) · [Line-by-line comparison](https://github.com/JonaWasTaken/Bot-v2/compare/e5490f70de6b683465fb5b7a7ff43e7aa931c1f9...f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1)
+
 ## What runs when a person sends a message
 
 1. The composer dispatches a send with the active bot and thread. The React store waits for pending execution settings, generates a send ID, posts the message and reconciles its optimistic row with the server receipt. [Composer](../../src/components/Composer.tsx) · [Store, send case](../../src/state/store.tsx)
@@ -95,7 +105,36 @@ The Windows build produced a 271,043,231-byte installer and a ZIP. Four fresh-pr
 
 The legacy assignment check also exercised the names that the OpenAI-compatible and Pi drivers actually give the team and personal app tools. The first candidate replayed both saved sends. The review fix reduced each receiver count from two to one and scheduled zero retries. These are separate upgrade trials. Review also identified pending-approval and parent/child cases for further verification on the product PR. [Legacy compatibility fix](https://github.com/JonaWasTaken/Bot-v2/commit/cfd5f1fb7f4785d0910e073bfd17560128a66013)
 
-The second matched comparison counted every call received and recorded the decision in effect on arrival. It gave the original 4/6 (three grants, one denial) and the fork 5/6 (two grants, three denials). All five passing grants made exactly one call. No denied or timed-out trial called the tool. The three failed trials timed out before the card appeared. The change in ordering between the two runs is a reason to retain both sets of trials and avoid a general performance claim. [Counted trials](apex-001-windows-results.json) · [Scoring regressions](../../evals/runners/local-tool-approval.test.ts)
+The second matched comparison counted every call received and recorded the decision in effect on arrival. The scores were 4/6 for the original (three grants and one denial), 5/6 for the fork (two grants and three denials) and 5/6 for recovery commit `348c044f8` (three grants and two denials). Each passing grant made exactly one call. Denied and timed-out trials made zero calls. All four failed trials timed out before the card appeared. The two measurement rounds ranked the original and fork differently. The standalone evaluation typecheck, root typecheck, lint, Node 24 runner import and all 103 offline evaluation tests passed after the scorer received an explicit TypeScript input contract. [Counted trials](apex-001-windows-results.json) · [Scoring regressions](../../evals/runners/local-tool-approval.test.ts)
+
+## Sprint delivery and independent review
+
+| Draft | Branch | Deliverable |
+| --- | --- | --- |
+| [#5](https://github.com/JonaWasTaken/Bot-v2/pull/5/files) | `t3/windows-task-recovery` | Crash recovery for approved connected-app sends, terminal receipts and safe read-only continuations. |
+| [#6](https://github.com/JonaWasTaken/Bot-v2/pull/6/files) | `apex/001-windows-baseline` | Source and dependency audit, 15-category evaluation inventory, real-model tool-approval runner, measured Windows results and release gates. |
+| [#7](https://github.com/JonaWasTaken/Bot-v2/pull/7/files) | `t3/apex-mission-ledger` | Desktop-first engineering ledger. All 1,000 objectives, implementation plans and acceptance criteria are distinct. Each of the 50 requested chapters contains 20 missions. |
+| [#8](https://github.com/JonaWasTaken/Bot-v2/pull/8/files) | `t3/ask-card-audience-privacy` | Audience checks on both writes that propagate questions and approvals into a delegating conversation. |
+
+The crash could happen after a service had acted and before the server durably settled the assignment. Restart treated the unfinished assignment as runnable. PR #5 records dispatch immediately before forwarding an authorized send. The restart path uses the marker or, for older assignments, the persisted activity and actual connector names. It retires approvals owned by the stopped server and attributes each terminal receipt to its original request. The isolated receiver is a counted service double. The Electron main process, server, permission broker, persistent store and restart path run for real. [Recovery implementation and fixtures](https://github.com/JonaWasTaken/Bot-v2/pull/5/files)
+
+On `348c044f8`, ten Windows crash scenarios and 535 focused cases passed. Independent review checked both connector aliases, older bounded previews, pending approvals, cancellation, safe continuation and queued follow-ups. A pending send stayed at zero deliveries, its card expired, and an explicit retry required a fresh decision. A read-only operation resumed once. An out-of-scope send reached the receiver zero times. An upgrade from the real prior-release bundle then exposed an additional case involving older delegated assignments. After one counted send the requester could report success, time out waiting or resume, depending on the child's reply. The three failure cases each delivered once. The no-send control resumed as intended. The receipts preserve the exact revision for each observation. [Portable crash evidence](https://github.com/JonaWasTaken/Bot-v2/blob/348c044f8670eb0b387b2682310b9bd2751c5df4/docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl) · [Upgrade observations](apex-001-windows-results.json)
+
+PR #8 passed 113 targeted checks. Independently, 39 privacy cases passed on its proposed commit, and its GitHub CI passed. After a user shared the delegating chat, another reader could open that chat (HTTP 200) and received HTTP 404 for the private work. The shared transcript retained the waiting chip written before sharing. Later private questions and decisions produced no new entry there. Public and same-owner conversations continued showing authorized updates. Six neighboring routing cases timed out in Windows browser-login setup. The first produced the same pre-turn failure and timeout on the untouched fork. [Privacy change and fixture](https://github.com/JonaWasTaken/Bot-v2/pull/8) · [Privacy CI](https://github.com/JonaWasTaken/Bot-v2/actions/runs/44928700332)
+
+The full Windows host suite ran again on the combined recovery and privacy tree `7032a9d18`. It recorded 39,960 passed, 123 failed, 1,088 skipped and three todo, in 1,368.83 seconds. All 122 failing baseline cases and both failed suite setups recurred. The additional failure asserted that random base64url text surrounding a synthetic secret must always survive redaction. The test and redactor have identical Git blobs on both revisions. Replaying 64 deterministic inputs on both implementations produced 64 identical outputs. Seed 43 also changed the surrounding text on both. The synthetic value was masked in every run. These results leave the Windows release gate open. The joined privacy and channel checks passed 40/40 and the joined trust checks passed 94 with eight POSIX-only skips. [Paired host and fixture counts](apex-001-windows-results.json)
+
+The stock Windows package command at `348c044f8` passed in 245.307 seconds. Its unpacked application reached renderer, preload, authenticated backend and stream-ticket readiness in 10.401 seconds. All 3,129 ZIP files matched the unpacked payload. Both archives contained the tested executable, server and ASAR. The setup and executable were unsigned. Installer execution, updating and uninstalling still need a disposable Windows account. The one candidate launch does not establish a speed trend. [Archive sizes, SHA-256 hashes and launch results](apex-001-windows-results.json)
+
+In a separate desktop interaction test, a real Edge renderer submitted a message with Enter. The isolated server settled the task and the same two persisted message IDs reappeared after reload. The scripted provider and frontend recorded zero browser warnings, console errors or error overlays during that interaction. The repository's agent-browser adapter timed out on its Windows daemon, so this test used the repository's Chrome DevTools Protocol driver. [Screenshot after reload](../verification/evidence/apex-001-windows/conversation.png) · [Interaction receipt](apex-001-windows-results.json)
+
+Independent validation of the roadmap export resolved 505 source paths against the base commit. Each mission has a typed planning reference, a risk level, dependencies, automated and manual verification, and completion evidence or an explicit open state. At the recorded revision the ledger has 13 Verified, three Integrated, one In progress and 983 Not started. Four missions have individual implementation PRs. [Release chapters](https://github.com/JonaWasTaken/Bot-v2/blob/034bc53e95472ffb89bd43ff398c94c7caa306cf/docs/plans/apex-roadmap/release-chapters.md) · [Roadmap CI](https://github.com/JonaWasTaken/Bot-v2/actions/runs/44931184675)
+
+### Two additional restart checks
+
+On the archive-matched server for `348c044f8`, the receiver saw zero deliveries while the original send card was open. After the crash a late Allow returned unavailable. The user then asked again and approved the fresh card. The receiver counted exactly one delivery and the new task settled successfully.
+
+A second fixture paused a disposable copy of the initial server immediately after the durable dispatch marker and before forwarding. The receiver counted zero calls before the crash and zero after the unmodified replacement restarted. The original job reported an interruption and told the user the request might have taken effect. A follow-up completed without repeating the operation. This measures the cost of preventing duplicates when the service cannot confirm delivery. [Receiver counts, terminal text and stock server hash](apex-001-windows-results.json)
 
 ## Coverage of the 15 evaluation tasks
 
@@ -129,6 +168,12 @@ Rerunning six baseline suites with Git for Windows OpenSSL and sh available brou
 - A missing Windows benchmark channel leaves background process overhead and RSS trends unmeasured. The Windows host's process helper, Electron and provider subprocesses have distinct owners. Record their lifetimes in the isolated desktop benchmark before setting a budget. [Desktop measurements](../../scripts/testing/bench-desktop-page.ts)
 - Before release, close the shared-service authorization and private-card visibility gates, resolve or bound exposure to high dependency advisories, triage all host-suite failures, and verify the affected journeys on a clean Windows account. Verify NSIS install/update/uninstall in a disposable Windows environment and run a sustained recovery/permission/memory soak. The sprint includes packaging and short repeated starts. Third-party credentials, real Gmail delivery, competitor scores, mobile release, multi-hour durability and human acceptance of visual quality have separate gates. [Security policy](../../SECURITY.md) · [Release evidence](apex-001-windows-results.json)
 
+## Next three missions
+
+1. **Give shared-service workers a revocable identity.** Exercise an authorized worker, an ordinary signed-in account and a revoked worker against the same operation. Acceptance requires a successful authorized operation and refusal on both unauthorized paths across the service and connector. The published security policy and migration path should agree with the implemented scope. [Security policy](../../SECURITY.md)
+2. **Resolve the high dependency advisories on shipped paths.** Trace all six records to the locked package and distribution that use it. Update eligible runtime packages, build the OSS package, repeat the provider streaming and browser tests, and rerun the package audit. Record each remaining advisory's affected scope and disposition. [Advisories, dependency chains and installed versions](apex-001-windows-results.json)
+3. **Qualify Windows installation and recovery on a standard account.** Run the installer in a disposable Windows image, upgrade an existing profile, exercise send approval, restart, a saved draft and corrected/deleted memories, then uninstall. Triage each host failure using a repeatable stimulus and documented OS prerequisites. Require preserved user data and verified outcomes before treating the build as a release candidate. [Windows package and failure inventory](apex-001-windows-results.json)
+
 ## Running the acceptance checks
 
 Start in a clean worktree at the revision under test with `enterprise/` excluded. Install with `corepack pnpm install --frozen-lockfile`. Nested package scripts require the pinned `pnpm` command on PATH. The Windows audit used a temporary Corepack shim, disposable homes and the existing launcher’s independently chosen ports. The packaged smoke used separate Electron and server data directories and checked the process identity it received.
@@ -143,6 +188,8 @@ That is the repository’s Windows host selection. Linux CI carries additional p
 
 ```powershell
 corepack pnpm typecheck
+corepack pnpm exec tsc -p evals/tsconfig.json
+corepack pnpm exec vitest run --config evals/vitest.config.ts
 corepack pnpm lint
 corepack pnpm build
 corepack pnpm check:electron
@@ -150,5 +197,16 @@ corepack pnpm eval
 corepack pnpm eval --golden
 corepack pnpm package:win
 ```
+
+The measured local model used the Q4_K_M GGUF at the pinned revision and SHA-256 in the JSON. Ollama 0.40.17 used one inference slot, one loaded model and the following Modelfile, with the GGUF beside it. The benchmark only needs a loopback model endpoint. [Model source](https://huggingface.co/Qwen/Qwen3-4B-GGUF/tree/bc640142c66e1fdd12af0bd68f40445458f3869b)
+
+```text
+FROM ./Qwen3-4B-Q4_K_M.gguf
+PARAMETER num_ctx 16384
+PARAMETER temperature 0
+PARAMETER seed 17
+```
+
+For the paired comparison, run one grant/deny pair per revision for each fixture seed `apex001-pair-1`, `apex001-pair-2` and `apex001-pair-3`. Alternate checkout order original/fork, fork/original, original/fork. Keep the model, runner, tool scope, seed and timeout identical within a pair. Use the runner from the audit branch in each checkout's working directory. It takes the model configuration from the loopback provider and creates a fresh application fixture per decision.
 
 For a local model, point `node --experimental-strip-types evals/runners/local-tool-approval.mjs --endpoint http://127.0.0.1:PORT/v1 --model MODEL --repeats 3 --seed experiment-1` at an explicitly chosen loopback provider. Each trial opens a fresh fixture and bot. The normal Ask card must identify the one permitted tool, and the tool must be idle before the decision. An allowed call must run exactly once after the decision and deliver the seeded receipt through the tool and the final answer. The append-only fixture counts each invocation and records the user decision at arrival. A denied call must terminate with zero calls and keep the receipt out of the answer. A timeout before the card is a failed trial. The exit code and JSON lines report failures. The same runner can be invoked by absolute path from another checkout to compare its harness with identical inputs.

@@ -6,7 +6,8 @@
     "originalForkPoint": "e5490f70de6b683465fb5b7a7ff43e7aa931c1f9",
     "canonicalMainAtIntake": "362559603e8e5d12764253739f7a23888e52e7cb",
     "forkOnlyCommits": 10,
-    "canonicalOnlyCommits": 184
+    "canonicalOnlyCommits": 184,
+    "recoveryMeasured": "348c044f8670eb0b387b2682310b9bd2751c5df4"
   },
   "platform": {
     "host": "Windows 11 Pro 10.0.26300 x64",
@@ -1546,6 +1547,92 @@
           "exactAnswer": false,
           "durationMs": 10095
         }
+      ],
+      "recoveryMeasured": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 11716
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 11546
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 20347
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 10342
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 9650
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90061
+        }
       ]
     }
   },
@@ -1579,5 +1666,490 @@
         "failure": "Existing Windows symlink fixture in chat-mcp-tools.test.ts"
       }
     }
+  },
+  "changedFilesOriginalToFork": [
+    {
+      "change": "M",
+      "path": "docs/memory.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-first-cycle.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-local-answer-trials.csv"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-notebook-reader-trials.jsonl"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-oss-baseline.md"
+    },
+    {
+      "change": "A",
+      "path": "docs/plans/2026-11-21-revision-parity.md"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/local-answer-comparison.mjs"
+    },
+    {
+      "change": "A",
+      "path": "evals/runners/notebook-reader.mjs"
+    },
+    {
+      "change": "M",
+      "path": "server/cloud-team-private.e2e.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-entries.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-journal.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-routes.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-store.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/memory-topic-corrections.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/recall.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/routes/bot-memory.ts"
+    },
+    {
+      "change": "M",
+      "path": "server/workspace.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlaceAddSheet.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/PlacesRail.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/MemoryPage.team.test.ts"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-panel/pages.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/components/bot-settings/MemorySection.tsx"
+    },
+    {
+      "change": "M",
+      "path": "src/lib/memory.ts"
+    }
+  ],
+  "joinedWindowsHost": {
+    "recovery": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "privacy": "cccf44127f6af65e464af2ab8427524ef55934ed",
+    "tree": "7032a9d18bc4a6a2094f498820aa43ece48f2cd6",
+    "command": "pnpm test",
+    "selection": "Windows host, six workers",
+    "durationSeconds": 1368.83,
+    "files": {
+      "passed": 2753,
+      "failed": 47,
+      "skipped": 67
+    },
+    "tests": {
+      "passed": 39960,
+      "failed": 123,
+      "skipped": 1088,
+      "todo": 3
+    },
+    "sharedNamedFailuresIncludingSetup": 124,
+    "baselineOnlyFailures": [],
+    "candidateOnlyFailures": [
+      "shared/redact-linear.test.ts > redactSecretsInText on large text > still masks what it masked before, the blob around it unchanged"
+    ],
+    "pairedRedactionControl": {
+      "algorithm": "SHAKE256, 300000 bytes from apex-redaction- plus integer index, base64url",
+      "inputs": 64,
+      "equivalentOutputs": 64,
+      "changedSurroundingText": [
+        43
+      ],
+      "sameSourceAndTestBlobs": true
+    }
+  },
+  "candidateDesktopPackage": {
+    "revision": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "command": "pnpm package:win",
+    "exitCode": 0,
+    "elapsedSeconds": 245.307,
+    "launch": {
+      "ready": true,
+      "readyMs": 10401,
+      "edition": "oss",
+      "version": "0.1.175",
+      "features": [],
+      "preload": true,
+      "streamTicket": true
+    },
+    "archives": [
+      {
+        "archive": "OpenMausBot-0.1.175-setup.exe",
+        "bytes": 271046013,
+        "sha256": "eb95416b8681e22551d0ff7c01d28e07a04fdd7d8b250068f6a6f8996f924d05",
+        "enterprisePaths": 0
+      },
+      {
+        "archive": "OpenMausBot-0.1.175-x64.zip",
+        "bytes": 375155257,
+        "sha256": "8392f2ce71196954c225a4031c560e9691c72cce447477a1a47feaa247f460d5",
+        "enterprisePaths": 0
+      }
+    ],
+    "unpackedMatches": {
+      "zipPayloadFiles": 3129,
+      "identicalFileHashes": 3129,
+      "onlyInUnpacked": [
+        "resources/elevate.exe"
+      ]
+    },
+    "signed": false,
+    "installerLifecycleExercised": false
+  },
+  "rendererChatAcceptance": {
+    "viewport": [
+      1416,
+      808
+    ],
+    "before": {
+      "title": "Isolated OpenMaus Chat",
+      "url": "/__threads.html",
+      "viewport": [
+        1416,
+        808
+      ],
+      "overlay": false,
+      "errors": [],
+      "warnings": []
+    },
+    "after": {
+      "title": "Isolated OpenMaus Chat",
+      "url": "/__threads.html",
+      "overlay": false,
+      "errors": [],
+      "warnings": []
+    },
+    "verifiedPersistedRows": 2,
+    "backendWait": "settled",
+    "provider": "fixture",
+    "transport": "real React composer and keyboard, loopback verification server, Edge CDP, page reload",
+    "screenshot": "docs/verification/evidence/apex-001-windows/conversation.png",
+    "adapterLimitation": "Both tests in the agent-browser UI control fixture timed out opening the Windows daemon."
+  },
+  "reviewedRecovery": {
+    "revision": "348c044f8670eb0b387b2682310b9bd2751c5df4",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "docs/runtime-contract.md"
+      },
+      {
+        "change": "M",
+        "path": "docs/verification/README.md"
+      },
+      {
+        "change": "M",
+        "path": "docs/verification/desktop-server-recovery.md"
+      },
+      {
+        "change": "A",
+        "path": "docs/verification/evidence/desktop-server-recovery/windows-2026-11-21.jsonl"
+      },
+      {
+        "change": "A",
+        "path": "docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl"
+      },
+      {
+        "change": "M",
+        "path": "scripts/mcp-server.ts"
+      },
+      {
+        "change": "A",
+        "path": "scripts/testing/recovery-handoff.mjs"
+      },
+      {
+        "change": "M",
+        "path": "scripts/verify-server-recovery.mjs"
+      },
+      {
+        "change": "M",
+        "path": "server/bot-link/link.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/chat-followups-restart.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/index.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/mcp-server.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/outbound-hold.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime-coordinator.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/runtime.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/store.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/tree.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/runtime/types.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/testing/fake-connected-apps.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/turn-outcome.ts"
+      }
+    ],
+    "targetedTests": 535,
+    "targetedFiles": 23,
+    "electronCrashScenarios": 10,
+    "supervisorAndLeasePassed": 73,
+    "supervisorAndLeaseSkipped": 12,
+    "independentCrashScenarios": 10,
+    "olderSavedSendAndChildUpgrade": [
+      {
+        "scenario": "handoff-continue",
+        "executions": 2,
+        "receiverCalls": 0,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-notify",
+        "executions": 1,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "waiting",
+        "rootOutcome": null,
+        "wait": "timed-out",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-status",
+        "executions": 1,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      },
+      {
+        "scenario": "handoff-substantive",
+        "executions": 2,
+        "receiverCalls": 1,
+        "childStatus": "completed",
+        "rootStatus": "completed",
+        "rootOutcome": "done",
+        "wait": "settled",
+        "terminalReceiptCount": 0
+      }
+    ],
+    "portableEvidence": "https://github.com/JonaWasTaken/Bot-v2/blob/348c044f8670eb0b387b2682310b9bd2751c5df4/docs/verification/evidence/desktop-server-recovery/windows-review-2026-11-21.jsonl",
+    "freshApprovalRetry": {
+      "fixture": "Original pending approval, crash, reject expired card, explicit fresh request, approve only its fresh card.",
+      "events": [
+        {
+          "event": "before-crash",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "resultSeen": false
+        },
+        {
+          "event": "after-restart",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "status": "failed",
+          "state": "failed",
+          "busy": false
+        },
+        {
+          "event": "fresh-approved-retry",
+          "oldApproval": "unavailable",
+          "beforeFreshDecision": 0,
+          "freshOutcome": "allowed-once",
+          "receiverCallsAfter": 1,
+          "waitStatus": "settled",
+          "rootState": "completed"
+        }
+      ]
+    },
+    "afterMarkerBeforeTransmission": {
+      "fixture": "A disposable copy of the first server bundle pauses after recordOutboundDispatch returns, before the bridge returns to HTTP forwarding. The replacement runs the original archive-matched server bundle.",
+      "stockBackendSha256": "b099d5fbb204d251e053dc6bf75c2412eb9d0d81f94e9183e5e4c75e3e5f283b",
+      "events": [
+        {
+          "event": "before-crash",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "resultSeen": false
+        },
+        {
+          "event": "after-restart",
+          "slug": "GMAIL_SEND_EMAIL",
+          "effects": 0,
+          "prompts": 1,
+          "status": "failed",
+          "state": "failed",
+          "busy": false
+        },
+        {
+          "event": "dispatch-cut-no-replay",
+          "receiverCalls": 0,
+          "terminalReceipt": "error: Interrupted by an OpenMausBot restart after it already started a connected-app request (GMAIL_SEND_EMAIL). It may have taken effect. Check the app before asking to continue.",
+          "followupCompleted": true,
+          "original": "interrupted"
+        }
+      ]
+    }
+  },
+  "privateActivityReview": {
+    "revision": "cccf44127f6af65e464af2ab8427524ef55934ed",
+    "changedFiles": [
+      {
+        "change": "M",
+        "path": "docs/verification/question-cards.md"
+      },
+      {
+        "change": "M",
+        "path": "server/host/ask-cards.test.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/host/ask-cards.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/index.ts"
+      },
+      {
+        "change": "M",
+        "path": "server/question-cards.e2e.test.ts"
+      }
+    ],
+    "workstreamChecks": 113,
+    "independentPrivacyCases": 39,
+    "joinedPrivacyAndChannelPassed": 40,
+    "joinedTrustPassed": 94,
+    "joinedTrustSkipped": 8,
+    "otherReaderSharedParentHttp": 200,
+    "otherReaderPrivateWorkHttp": 404,
+    "newPrivateDecisionUpdateAfterShare": false,
+    "previouslyAuthorizedHistoryRetained": true
+  },
+  "roadmapValidation": {
+    "revision": "034bc53e95472ffb89bd43ff398c94c7caa306cf",
+    "programs": 10,
+    "chapters": 50,
+    "missions": 1000,
+    "uniqueObjectivesPlansAndAcceptance": true,
+    "trackedSourcePaths": 505,
+    "individualImplementationPRs": 4,
+    "statusCounts": {
+      "Verified": 13,
+      "Integrated": 3,
+      "In progress": 1,
+      "Not started": 983
+    }
+  },
+  "standaloneEvaluationVerification": {
+    "node24RunnerImport": {
+      "exitCode": 0,
+      "wallSeconds": 0.1
+    },
+    "rootTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 14.2
+    },
+    "evalsTypecheck": {
+      "exitCode": 0,
+      "wallSeconds": 1.8
+    },
+    "lint": {
+      "exitCode": 0,
+      "wallSeconds": 0.8
+    },
+    "vitest": {
+      "exitCode": 0,
+      "wallSeconds": 140.2
+    },
+    "suites": 18,
+    "passed": 103
   }
 }
