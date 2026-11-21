@@ -1373,6 +1373,180 @@
           "durationMs": 90055
         }
       ]
+    },
+    "countedBenchmark": {
+      "originalForkPoint": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 78498
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90038
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 40239
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90061
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 26699
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 9169
+        }
+      ],
+      "fork": [
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 19252
+        },
+        {
+          "seed": "apex001-pair-1",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 25924
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 1,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 17733
+        },
+        {
+          "seed": "apex001-pair-2",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 15642
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "allow",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90254
+        },
+        {
+          "seed": "apex001-pair-3",
+          "trial": 1,
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "callCount": 0,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 10095
+        }
+      ]
     }
   },
   "additionalChecks": {
