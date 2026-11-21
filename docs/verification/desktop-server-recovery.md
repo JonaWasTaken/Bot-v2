@@ -8,39 +8,58 @@ pnpm build:server
 node scripts/verify-server-recovery.mjs
 ```
 
-The fixture supports macOS and Linux (Linux needs a graphical session, or
+The fixture runs on Windows, macOS and Linux (Linux needs a graphical session, or
 `xvfb-run -a node scripts/verify-server-recovery.mjs`). It creates disposable
 homes and profiles, copies the bundled server outside the repository, chooses
-fresh loopback ports, and configures only the repository's inert fake engine.
+fresh loopback ports, and configures the repository's fake engine and loopback
+connected-app service. The Electron parent starts in desktop mode even when
+the invoking shell has `ELECTRON_RUN_AS_NODE` set.
 It never launches `electron/main.mjs`, a real computer/browser driver, the
 operator's installed app, or their data directory. It accepts no server URL.
 
-Three separate Electron parents exercise the production supervisor, PID health
+Five separate Electron parents exercise the production supervisor, PID health
 probe, parent-held data-directory lease, private approval coordinator, and built
 server:
 
-- Crash after a fake engine accepts a pinned user turn. Verify immediate
-  unavailability, a different PID on the same port, the unchanged parent lease,
-  the replacement's delegated child lease, and authenticated mutations.
-  The old child's pending approval must reject; a new approval must succeed.
-  The shared control surface records `wait` and bounded `messages` results,
-  while the fake engine's prompt ledger proves the interrupted turn was not
-  resent. The intentionally hung fake engine is explicitly reaped by its exact
-  fixture-recorded PID.
+- Send one synthetic Gmail message through the bot's connected-app bridge and
+  crash the server after the provider records the successful batch result.
+  Require one call at the service, one provider prompt, one terminal failure
+  in the conversation, and a failed pinned job. A fresh user request in that
+  conversation must complete with the send count still at one.
+- Repeat while the service holds its reply, after counting the send. The
+  transcript has no successful tool result at the crash. Require the same
+  counts and terminal outcome.
+- Repeat with a read-only Gmail grant and a fetch. The replacement must
+  continue the same assignment once and finish it. A subsequent send attempt
+  under the same grant must fail before reaching the service. Stop that turn
+  and check the cancelled assignment and idle conversation.
 - Quit through Electron's actual `before-quit` event during the first backoff.
   Wait beyond that retry deadline and verify no replacement was spawned.
 - Crash the initial child and every replacement. Verify exactly three retries
   with the production 1/2/4-second delays, then a terminal exhausted state.
 
 The printed evidence directory retains each scenario's JSON receipt and log.
-Successful cleanup removes only the copied server, temporary UI, and fixture
-homes. Keep the receipts and exact command sequence when reporting a pass.
+The turn scenarios also check the replacement's PID, port, parent and child
+leases, rejection of an outstanding approval, a fresh approval, authorized
+mutations and a 403 for a write without the desktop capability. The receipt
+includes the bounded transcript, wait response and counts at the crash and
+after reconciliation.
+Cleanup removes the copied server, temporary UI, and fixture homes. Keep the
+receipts and exact command sequence when reporting a pass.
 Unit checks also cover stable-uptime budget reset, old exit/ready results,
 pending-boot shutdown, repeated quit requests, failed probes, and refusing to
 fork a sibling when a child cannot be reaped.
 
-Limits: this is an owned-child smoke, not a complete packaged desktop or
-renderer test. It does not prove native failure-dialog presentation, renderer
-draft preservation, or real provider/computer-helper cleanup after SIGKILL.
-An interrupted turn remains interrupted; recovery does not synthesize a reply.
-Existing routine scheduling and persisted delegation policies are unchanged.
+On Windows x64 build 26300 with Node 24.22.0 and Electron 43.7.9, the baseline
+at `f0bf6f7cd` repeated both sends and reported both jobs complete. With the
+fix, each send reached the service once and each interrupted job reported a
+failure. The read-only assignment resumed once on both revisions. The
+[captured counts](evidence/desktop-server-recovery/windows-2026-11-21.jsonl)
+include requests received by the loopback service and total provider prompts
+through the end of reconciliation.
+
+This fixture exercises Electron main and its server child. Renderer draft
+preservation, native failure dialogs and cleanup of real provider processes
+require separate tests. A real connected app may have received a request
+whose response the server lost, so the interruption directs the person to
+check the app before continuing.

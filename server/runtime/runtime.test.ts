@@ -1166,6 +1166,43 @@ describe("Runtime: a root's later executions (every turn a root)", () => {
 });
 
 describe("Runtime: a cut turn that already acted outward (contract §5)", () => {
+  it("keeps the first outbound dispatch when the server dies before any provider result and reports the interruption once", () => {
+    const store = openRuntimeStore(":memory:");
+    const first = world(undefined, {}, store);
+    const root = first.runtime.begin(beginReq());
+    first.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    first.runtime.recordOutboundDispatch(root.id, "SLACK_SEND_MESSAGE");
+    first.runtime.close();
+
+    const second = world(undefined, {}, store);
+    second.runtime.tick();
+    expect(store.get(root.id)).toMatchObject({ status: "failed", outcome: "interrupted", executions: 1, restarts: 0,
+      outcomeDetail: expect.stringContaining("GMAIL_SEND_EMAIL") });
+    expect(store.get(root.id)?.outcomeDetail).toContain("may have taken effect");
+    expect(second.runner.runs).toHaveLength(0);
+    expect(second.runner.reports).toHaveLength(1);
+    second.runtime.close();
+    expect(world(undefined, {}, store).runner.reports).toHaveLength(0);
+    expect(store.events(root.id).filter(event => event.kind === "settled")).toHaveLength(1);
+    store.close();
+  });
+
+  it("a later execution of the same assignment may resume after a cut with no new dispatch", () => {
+    const store = openRuntimeStore(":memory:");
+    const first = world(() => "hold", {}, store);
+    const root = first.runtime.begin(beginReq());
+    first.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    first.runtime.end(root.id, { ok: true, text: "", needsInput: { question: "What next?", cards: ["card"] } });
+    expect(first.runtime.answer(root.id, "Continue with the read-only check")).toBe(true);
+    first.runtime.tick();
+    expect(store.get(root.id)).toMatchObject({ status: "running", executions: 2 });
+    first.runtime.close();
+    const second = world(undefined, {}, store);
+    expect(store.get(root.id)).toMatchObject({ status: "queued", restart: "rerun", restarts: 1 });
+    expect(second.runner.reports).toHaveLength(0);
+    store.close();
+  });
+
   it("open() asks the host once per cut node, ends one that acted outward failed(interrupted) with what it did, and the requester's note names it", async () => {
     const store = openRuntimeStore(":memory:");
     const first = world(() => "hold", {}, store);

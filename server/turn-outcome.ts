@@ -1,9 +1,11 @@
 import { errorTranscript } from "../shared/client-cancel.ts";
-import { isOutboundTool } from "../shared/outbound.ts";
+import { isOutboundTool, outboundCallsIn } from "../shared/outbound.ts";
+import { COMPOSIO_MULTI_EXECUTE_TOOL } from "./connector-verdict.ts";
 import type { RuntimeEvent } from "./contracts.ts";
 import { buildTurnDigest, digestTools } from "./digest.ts";
 import { stopCause } from "./drivers/engine-errors.ts";
-import type { TurnEvidence } from "./runtime/types.ts";
+import { outboundDispatchLabel } from "./runtime/tree.ts";
+import type { RestartEffects, TurnEvidence } from "./runtime/types.ts";
 import type { Message } from "./store.ts";
 
 const REASON_CHARS = 600;
@@ -96,7 +98,6 @@ const ERRORS_KEPT = 3;
 const toolRows = (rows: readonly Message[]) =>
   rows.filter((row) => row.role === "bot" && row.kind === "activity" && row.tool !== undefined);
 
-/** The one outward-action classifier: the restart policy uses it so a cut turn that already acted never reruns. */
 export function outwardActions(rows: readonly Message[]): string[] {
   const labels: string[] = [];
   const add = (label: string) => { if (!labels.includes(label)) labels.push(label); };
@@ -110,6 +111,23 @@ export function outwardActions(rows: readonly Message[]): string[] {
     for (const money of command.matchAll(MONEY_OUTWARD)) add(money[1]!.toLowerCase());
   }
   return labels;
+}
+
+export function restartEffects(rows: readonly Message[], checkLegacyBatches: boolean): RestartEffects {
+  if (!checkLegacyBatches) return outwardActions(rows);
+  for (const row of toolRows(rows)) {
+    const tool = row.tool!;
+    if (tool.name.replace(/^mcp__(?:composio|own_apps)__/, "") !== COMPOSIO_MULTI_EXECUTE_TOOL) continue;
+    let input: unknown;
+    try {
+      input = JSON.parse(tool.input ?? "");
+    } catch {
+      return { dispatched: COMPOSIO_MULTI_EXECUTE_TOOL };
+    }
+    const dispatch = outboundCallsIn(COMPOSIO_MULTI_EXECUTE_TOOL, input)[0];
+    if (dispatch) return { dispatched: outboundDispatchLabel(dispatch.slug) };
+  }
+  return outwardActions(rows);
 }
 
 export function turnEvidence(rows: readonly Message[]): TurnEvidence {

@@ -327,7 +327,7 @@ import { recordLiveCall, spokenLineFields, titleLiveCall } from "./live-call-rec
 import { narrateTool, toUtterances } from "./tts/speech-text.ts";
 import { createTtsRoutes } from "./routes/tts.ts";
 import { turnStartLogLine } from "./turn-log.ts";
-import { TurnStops, outwardActions, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
+import { TurnStops, restartEffects, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
 import { buildRecoveryText, buildTurnContext, engineIsFresh, replaysNatively } from "./turn-context.ts";
 import { Handoffs, handedStateUsable, isContextMessage, recordHanded, renderUnseen, sessionStart, unseenMessages, withUnseenMessages, type ContextMessage } from "./delta-context.ts"; import { isFreshStart, sinceFreshStart } from "./fresh-start.ts";
 import { extractReplayImages, extractTurnImages, nativeClips, turnMedia, videoFramesWithin } from "./turn-images.ts";
@@ -3888,7 +3888,8 @@ const botLink = createBotLinkHost({ roomLine: (threadId, key, params) => serverL
         const cause = followupLine ?? (child.outcome === "interrupted" && child.outcomeDetail ? child.outcomeDetail : child.result);
         const member = room ? store.bot(child.botId) : undefined;
         store.appendMessage(child.threadId, { role: "bot", kind: "activity",
-          ...(member ? { from: { botId: member.id, name: member.name, color: member.color } } : {}), tool: failedTurnTool(cause) });
+          ...(member ? { from: { botId: member.id, name: member.name, color: member.color } } : {}), tool: failedTurnTool(cause, { terminal: child.outcome === "interrupted" }) },
+          child.outcome === "interrupted" ? { kind: "runtime.interrupted", key: child.id } : undefined);
         if (room) store.markGroupThreadUnread(room.id, child.threadId, true);
         else store.patchTask(child.botId, child.threadId, { unread: true });
         return;
@@ -4026,13 +4027,13 @@ const botLink = createBotLinkHost({ roomLine: (threadId, key, params) => serverL
     levelOf: (target, source) => delegatedLevel.levelOf(target, source),
     chiefOf: address => chiefLevel(store.bot(address.botId)),
     // A person's cut root never reruns after a follow-up in its thread: that would hand the person's words to a model again, or redo an older request.
-    outward: node => {
+    outward: (node, legacy) => {
       const followup = node.parentId || node.groupId ? undefined : followupAtBoot(node.threadId);
       if (followup) {
         followupEndedRoots.set(node.id, followup === "pending" ? "turn interrupted — OpenMausBot restarted" : undefined);
         return [followup === "pending" ? "queued follow-up waiting" : "queued follow-up dispatched"];
       }
-      return outwardActions(turnRows(node));
+      return restartEffects(turnRows(node), legacy);
     },
     shareAnswer: createShareAnswer({ askedFrom: (node) => (node.parentId ? coordinator.node(node.parentId)?.threadId : undefined), audienceOf: teamHost.audienceOf, pinned: (botId, threadId) => store.taskByThread(botId, threadId)?.cwd, botFolder: (botId) => store.bot(botId)?.cwd, privateFolders: TASK_WORKSPACES_DIR }),
     joined: (node) => { store.appendMessage(node.threadId, { role: "bot", kind: "activity", tool: { name: `notice: ${serverLine(threadLanguage(node.threadId), "server.teammates.sameRequest")}`, ok: true } }); },
@@ -14344,7 +14345,11 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
                 refuseDispatch(error instanceof Error ? error.message : String(error));
               }
             }
-            const sent = files.upload ? await files.upload().catch((error: unknown) => refuseDispatch(error instanceof Error ? error.message : String(error))) : undefined; requireActiveInternalCapability(); for (const key of nextDrafts) reservedDrafts.add(key); return sent as typeof body | undefined;
+            const sent = files.upload ? await files.upload().catch((error: unknown) => refuseDispatch(error instanceof Error ? error.message : String(error))) : undefined;
+            requireActiveInternalCapability();
+            if (outboundTool) coordinator.recordOutboundDispatch(directCoordinationSettlers.get(internalCapability.generation)?.nodeId ?? internalCapability.generation, outboundTool);
+            for (const key of nextDrafts) reservedDrafts.add(key);
+            return sent as typeof body | undefined;
           }, undefined, teamConnections.via(actor.access)[1],
         ); } catch (error) {
           if (dispatchRefusal) return refuseOutbound(dispatchRefusal);

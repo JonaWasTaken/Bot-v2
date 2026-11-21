@@ -6,7 +6,7 @@ import { hostFaultOf, retryCannotFix } from "../host-fault.ts";
 import { composeEnvelope } from "./envelope.ts";
 import { assignmentLevel } from "./level.ts";
 import type { RuntimeStore } from "./store.ts";
-import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, isTerminal, loopStop, nextGuard, outwardDetail, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
+import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, INTERRUPTED_OUTWARD, isTerminal, loopStop, nextGuard, outboundDispatchLabel, outwardDetail, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
 import { DEFAULT_LIMITS, type Answerer, type Assignment, type Assignee, type Clock, type EndResult, type EnqueueRequest, type EnqueueResult, type EnvelopeNames,
   type EventKind, type InboxItem, type InboxKind, type Level, type Limits, type LiveEdge, type Origin, type Outcome, type Owner,
   type Reply, type Requester, type RunInput, type RunResult, type StatusView, type TurnRunner } from "./types.ts";
@@ -120,11 +120,16 @@ export class Runtime {
         if (n.status !== "running") continue;
         const carried = n.carrying ?? [];
         const handedOut = childrenSince(this.store, n).length > 0;
-        const outward = handedOut ? [] : this.outwardOf(n);
+        const effects = handedOut ? [] : this.safe("outward", () => this.runner.outward?.(n)) ?? [];
+        const outward = Array.isArray(effects) ? effects.filter(label => typeof label === "string" && label.trim()) : [];
+        const dispatched = n.outboundDispatch ?? (Array.isArray(effects) ? undefined : effects.dispatched);
         if (handedOut) {
           n.status = "waiting"; n.restart = "cut"; n.lastActivityAt = now;
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "waiting: cut after handing out work" });
           this.touch(n);
+        } else if (dispatched) {
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward dispatch" });
+          this.settle(n, "failed", "interrupted", `${INTERRUPTED_OUTWARD} started a connected-app request (${dispatched}). It may have taken effect. Check the app before asking to continue.`);
         } else if (outward.length > 0) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward action done" });
           this.settle(n, "failed", "interrupted", outwardDetail(outward));
@@ -157,7 +162,7 @@ export class Runtime {
       id, rootId: id, depth: 0, origin: req.origin, requester: req.requester, assignee: req.assignee,
       mode: "work", reply: req.reply ?? "resume", brief: clip(req.brief, BRIEF_MAX), status: "running",
       level: req.level, levelSource: "own", executions: 1, restarts: 0, createdAt: now, startedAt: now, lastActivityAt: now,
-      result: "", rework: false, budgets: { since: now, requests: 0, executions: 1, wakes: 0, total: 1 }, version: 1,
+      result: "", rework: false, outboundDispatch: null, budgets: { since: now, requests: 0, executions: 1, wakes: 0, total: 1 }, version: 1,
       ...(req.goalRunId ? { goalRunId: req.goalRunId } : {}),
     };
     this.store.transaction(() => {
@@ -462,6 +467,7 @@ export class Runtime {
       return false;
     }
     n.status = "running"; n.startedAt = now; n.executions += 1; n.lastActivityAt = now;
+    n.outboundDispatch = null;
     delete n.continuation; delete n.cards;
     if (carrying.length) n.carrying = carrying; else delete n.carrying;
     if (root.id !== n.id) root.lastActivityAt = now;
@@ -600,6 +606,13 @@ export class Runtime {
     if (!n || isTerminal(n) || this.heldFor.get(id) === why) return;
     this.heldFor.set(id, why);
     this.store.update(n, { kind: "held", at: this.clock.now(), detail: clip(why, DETAIL_MAX) });
+  }
+
+  recordOutboundDispatch(id: string, tool: string): void {
+    const n = this.store.get(id);
+    if (n?.status !== "running" || n.outboundDispatch) return;
+    n.outboundDispatch = outboundDispatchLabel(tool);
+    this.store.update(n);
   }
 
   /** The host saw activity on this running turn: its stall window restarts, and lastActivityAt
@@ -883,13 +896,6 @@ export class Runtime {
       const child = this.store.get(id);
       if (child) this.decideDefault(child);
     }
-  }
-
-  private outwardOf(n: Assignment): string[] {
-    const port = this.runner.outward;
-    if (!port) return [];
-    const labels = this.safe("outward", () => port.call(this.runner, n));
-    return Array.isArray(labels) ? labels.filter(label => typeof label === "string" && label.trim() !== "") : [];
   }
 
   private names(n: Assignment, parent: Assignment | undefined): EnvelopeNames {

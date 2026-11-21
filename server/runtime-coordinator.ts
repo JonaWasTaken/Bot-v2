@@ -585,6 +585,11 @@ export class RuntimeCoordinator implements Coordinator {
     for (const n of this.live()) if (n.status === "running" && n.assignee.destination.threadId === threadId) this.runtime.progress(n.id);
   }
 
+  recordOutboundDispatch(id: string, tool: string): void {
+    this.ready();
+    this.runtime.recordOutboundDispatch(id, tool);
+  }
+
   held(threadId: string, why: string): void {
     this.ready();
     for (const n of this.live()) if (n.status === "running" && n.assignee.destination.threadId === threadId) this.runtime.held(n.id, why);
@@ -624,7 +629,7 @@ export class RuntimeCoordinator implements Coordinator {
         host.changed(groups, threads);
       },
       names: (a, parent) => host.names(view(a, parent), parent && this.project(parent)),
-      outward: a => host.outward ? host.outward(this.project(a)) : [],
+      outward: a => host.outward ? host.outward(this.project(a), a.outboundDispatch === undefined) : [],
       away: a => host.away ? host.away(this.project(a)) : false,
     };
   }

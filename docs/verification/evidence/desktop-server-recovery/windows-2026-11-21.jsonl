@@ -1,0 +1,6 @@
+{"revision":"baseline","scenario":"recover","tool":"GMAIL_SEND_EMAIL","toolResultBeforeCrash":true,"callsBeforeCrash":1,"callsAfterRestart":2,"promptsAfterRestart":2,"waitStatus":"settled","jobState":"completed","busy":false}
+{"revision":"patched","scenario":"recover","tool":"GMAIL_SEND_EMAIL","toolResultBeforeCrash":true,"callsBeforeCrash":1,"callsAfterRestart":1,"promptsAfterRestart":1,"waitStatus":"failed","jobState":"failed","busy":false}
+{"revision":"baseline","scenario":"in-flight","tool":"GMAIL_SEND_EMAIL","toolResultBeforeCrash":false,"callsBeforeCrash":1,"callsAfterRestart":2,"promptsAfterRestart":2,"waitStatus":"settled","jobState":"completed","busy":false}
+{"revision":"patched","scenario":"in-flight","tool":"GMAIL_SEND_EMAIL","toolResultBeforeCrash":false,"callsBeforeCrash":1,"callsAfterRestart":1,"promptsAfterRestart":1,"waitStatus":"failed","jobState":"failed","busy":false}
+{"revision":"baseline","scenario":"continue","tool":"GMAIL_FETCH_EMAILS","toolResultBeforeCrash":true,"callsBeforeCrash":1,"callsAfterRestart":2,"promptsAfterRestart":2,"waitStatus":"settled","jobState":"completed","busy":false}
+{"revision":"patched","scenario":"continue","tool":"GMAIL_FETCH_EMAILS","toolResultBeforeCrash":true,"callsBeforeCrash":1,"callsAfterRestart":2,"promptsAfterRestart":2,"waitStatus":"settled","jobState":"completed","busy":false}

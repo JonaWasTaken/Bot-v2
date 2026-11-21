@@ -58,6 +58,7 @@ const assignmentSchema = z.object({
   level: z.enum(APPROVAL_MODES),
   levelSource: z.enum(["own", "chief", "engine_cap"]),
   executions: z.number().int().nonnegative(),
+  outboundDispatch: z.string().nullable().optional(),
   restarts: z.number().int().nonnegative(),
   restart: z.enum(["rerun", "cut", "teammates"]).optional(),
   createdAt: z.number(),

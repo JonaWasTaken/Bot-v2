@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { RuntimeEvent } from "./contracts.ts";
 import { classifyError } from "./drivers/retry.ts";
 import type { Message } from "./store.ts";
-import { TurnStops, outwardActions, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
+import { TurnStops, outwardActions, restartEffects, stoppedTurnOutcome, turnEvidence } from "./turn-outcome.ts";
 
 const event = (fields: Record<string, unknown>): RuntimeEvent =>
   ({ eventId: "e", provider: "fake", threadId: "t1", createdAt: "", ...fields }) as unknown as RuntimeEvent;
@@ -126,6 +126,23 @@ const row = (tool: NonNullable<Message["tool"]>, extra: Partial<Message> = {}): 
 const call = (name: string, ok: boolean, fields: Partial<NonNullable<Message["tool"]>> = {}) => row({ name, ok, itemId: `i-${Math.random()}`, ...fields });
 
 describe("outwardActions", () => {
+  it("recovers a completed batch in an older transcript from its slugs, never from the mail body or an unrelated tool", () => {
+    const batch = (name: string, slugs: string[], ok = true) => call(name, ok, { input: JSON.stringify({
+      tools: slugs.map(tool_slug => ({ tool_slug, arguments: { query: "GMAIL_SEND_EMAIL" } })),
+    }) });
+    for (const name of ["COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__composio__COMPOSIO_MULTI_EXECUTE_TOOL", "mcp__own_apps__COMPOSIO_MULTI_EXECUTE_TOOL"]) {
+      expect(restartEffects([batch(name, ["GMAIL_FETCH_EMAILS", "GMAIL_SEND_EMAIL"])], true)).toEqual({ dispatched: "GMAIL_SEND_EMAIL" });
+      expect(restartEffects([batch(name, ["GMAIL_FETCH_EMAILS"])], true)).toEqual([]);
+      const refused = batch(name, ["GMAIL_SEND_EMAIL"], false);
+      expect(restartEffects([refused], false)).toEqual([]);
+      expect(restartEffects([refused], true)).toEqual({ dispatched: "GMAIL_SEND_EMAIL" });
+    }
+    expect(restartEffects([batch("mcp__other__COMPOSIO_MULTI_EXECUTE_TOOL", ["GMAIL_SEND_EMAIL"])], true)).toEqual([]);
+    const clipped = call("COMPOSIO_MULTI_EXECUTE_TOOL", true, { input: '{"tools": [' });
+    expect(restartEffects([clipped], true)).toEqual({ dispatched: "COMPOSIO_MULTI_EXECUTE_TOOL" });
+    expect(restartEffects([clipped], false)).toEqual([]);
+  });
+
   it("names the sends, posts and payments a turn completed, once each, in order", () => {
     const rows = [call("GMAIL_SEND_EMAIL", true), call("GMAIL_FETCH_EMAILS", true), call("mcp__composio__SLACK_SEND_MESSAGE", true),
       call("GMAIL_SEND_EMAIL", true), call("COMPOSIO_PROXY_EXECUTE", true), call("Read", true), call("mcp__agents__coordinate_bots", true)];

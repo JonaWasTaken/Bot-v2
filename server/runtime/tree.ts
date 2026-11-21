@@ -6,6 +6,10 @@ export const CUT_TWICE = "Interrupted by another OpenMausBot restart after resum
 
 export const INTERRUPTED_OUTWARD = "Interrupted by an OpenMausBot restart after it already";
 
+export function outboundDispatchLabel(tool: string): string {
+  return /^[A-Z0-9_.-]{1,80}$/i.test(tool) ? tool : "connected app";
+}
+
 const OUTWARD_SHOWN = 4;
 const OUTWARD_LABEL_MAX = 48;
 
