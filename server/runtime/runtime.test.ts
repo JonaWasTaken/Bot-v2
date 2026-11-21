@@ -1184,13 +1184,49 @@ describe("Runtime: a cut turn that already acted outward (contract §5)", () => 
     after.store.close();
   });
 
-  it("a person can still stop the work issued by an interrupted requester", async () => {
+  it.each([
+    { name: "named batch", effects: { dispatched: "GMAIL_SEND_EMAIL" }, label: "GMAIL_SEND_EMAIL" },
+    { name: "bounded batch", effects: { dispatched: "COMPOSIO_MULTI_EXECUTE_TOOL" }, label: "COMPOSIO_MULTI_EXECUTE_TOOL" },
+    { name: "observed direct action", effects: ["git push"], label: "git push" },
+    { name: "read-only activity", effects: [], label: null },
+  ])("consults the pre-marker requester's $name before resuming for its child", async ({ effects, label }) => {
     const before = world();
     const root = before.runtime.begin(beginReq());
     const child = ok(before.runtime.enqueue(toBot("builder", root.id)));
-    before.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    const legacy = before.store.get(root.id)!;
+    delete legacy.outboundDispatch;
+    before.store.update(legacy);
     before.runtime.close();
-    const after = world(() => "hold", {}, before.store);
+    const inspected: string[] = [];
+    const after = world(undefined, {}, before.store, { outward(a) { inspected.push(a.id); return effects; } });
+    after.runtime.tick(); await flush(); after.runtime.tick(); await flush();
+    expect(inspected).toEqual([root.id]);
+    expect(after.store.get(child.id)).toMatchObject({ status: "completed", outcome: "done", reportedAt: expect.any(Number) });
+    if (label) {
+      expect(after.runner.runs.map(run => run.a.id)).toEqual([child.id]);
+      expect(after.store.get(root.id)).toMatchObject({ status: "failed", outcome: "interrupted", executions: 1,
+        outcomeDetail: expect.stringContaining(label) });
+      expect(after.store.events(root.id).filter(event => event.kind === "reported")).toHaveLength(1);
+    } else {
+      expect(after.runner.runs.map(run => run.a.id)).toEqual([child.id, root.id]);
+      expect(after.store.get(root.id)).toMatchObject({ status: "completed", outcome: "done", executions: 2 });
+    }
+    invariants(after);
+    after.store.close();
+  });
+
+  it.each(["marked", "pre-marker"])("a person can still stop the work issued by a %s interrupted requester", async format => {
+    const before = world();
+    const root = before.runtime.begin(beginReq());
+    const child = ok(before.runtime.enqueue(toBot("builder", root.id)));
+    if (format === "marked") before.runtime.recordOutboundDispatch(root.id, "GMAIL_SEND_EMAIL");
+    else {
+      const legacy = before.store.get(root.id)!;
+      delete legacy.outboundDispatch;
+      before.store.update(legacy);
+    }
+    before.runtime.close();
+    const after = world(() => "hold", {}, before.store, { outward: () => ({ dispatched: "GMAIL_SEND_EMAIL" }) });
     after.runtime.tick();
     after.runtime.stopRequester({ threadId: "chief-chat" });
     await flush();

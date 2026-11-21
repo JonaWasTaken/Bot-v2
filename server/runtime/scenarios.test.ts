@@ -1873,7 +1873,7 @@ describe("§5 outward / §2 loop guard", () => {
     invariants(u);
   });
 
-  it("R-S10 a host without the port, or one that throws, reruns the cut turn as before; a turn that handed out work is never asked", async () => {
+  it("R-S10 a host without the port, or one that throws, reruns the cut turn as before; a current-format handoff with an empty marker skips the lookup", async () => {
     const w = world({}, { outward: false });
     expect(w.runner.outward).toBeUndefined();
     const root = beginChief(w);

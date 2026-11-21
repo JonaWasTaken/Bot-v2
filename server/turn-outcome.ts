@@ -8,6 +8,7 @@ import type { HandoffView } from "./coordinator.ts";
 import { buildTurnDigest, digestTools } from "./digest.ts";
 import { stopCause } from "./drivers/engine-errors.ts";
 import { outboundDispatchLabel } from "./runtime/tree.ts";
+import { isToolIdentifier } from "./sentinel/normalize.ts";
 import type { RestartEffects, TurnEvidence } from "./runtime/types.ts";
 import type { Message } from "./store.ts";
 import { previewIsPartial } from "./tool-summary.ts";
@@ -133,7 +134,7 @@ export function outwardActions(rows: readonly Message[]): string[] {
   return labels;
 }
 
-export function restartEffects(rows: readonly Message[], checkLegacyBatches: boolean): RestartEffects {
+export function restartEffects(rows: readonly Message[], checkLegacyBatches: boolean, handedOut = false): RestartEffects {
   if (!checkLegacyBatches) {
     const holds = rows.flatMap(({ kind, role, card }) => {
       if (role !== "bot" || kind !== "options" || !card?.requestId || card.heldCode !== "approval.held.outbound" || !card.outboundRequest) return [];
@@ -160,7 +161,8 @@ export function restartEffects(rows: readonly Message[], checkLegacyBatches: boo
       if (isOutboundTool(slug)) return { dispatched: outboundDispatchLabel(slug) };
     }
   }
-  return outwardActions(rows);
+  const activity = handedOut ? rows.filter(({ tool }) => tool && (tool.itemId !== undefined || isToolIdentifier(tool.name))) : rows;
+  return outwardActions(activity);
 }
 
 export function turnEvidence(rows: readonly Message[]): TurnEvidence {

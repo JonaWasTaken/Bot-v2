@@ -104,7 +104,8 @@ async function screenCalls(server: AgentsIntegration, count: number): Promise<Ar
  * `steered` says was sent into the turn while it ran. */
 export async function runRoomHandoffAgent(argv: string[], planPath: string, prompt?: unknown,
   launch?: { integration: AgentsIntegration; system: string; evidence?: Record<string, unknown> },
-  progress?: (text: string) => void, steered: () => readonly string[] = () => []): Promise<string> {
+  progress?: (text: string) => void, steered: () => readonly string[] = () => [],
+  toolActivity?: (role: "assistant" | "user", block: Record<string, unknown>) => void): Promise<string> {
   const arg = (flag: string) => argv[argv.indexOf(flag) + 1];
   const mounted = launch ? [] : Object.values(JSON.parse(readAtLaunch(arg("--mcp-config"))).mcpServers as Record<string, AgentsIntegration>);
   // With a tool selection every server sits behind the gate, which names its upstream in OMB_GATE_UPSTREAM.
@@ -212,9 +213,15 @@ export async function runRoomHandoffAgent(argv: string[], planPath: string, prom
         const server = step.server ? (launch ? undefined : JSON.parse(readAtLaunch(arg("--mcp-config"))).mcpServers?.[step.server] as AgentsIntegration | undefined) : undefined;
         if (step.server && !server) throw new Error(`A scripted ${step.server} step needs that server mounted for the turn`);
         const args = withCaptured(step.arguments, captured);
-        const response = server ? await serverToolCall(server, step.tool, args) : await call("tools/call", { name: step.tool ?? "coordinate_bots", arguments: args });
+        const name = step.tool ?? "coordinate_bots";
+        const id = `tool-${process.pid}-${turnIndex}-${evidence.length}`;
+        const activity = step.emitToolActivity ? toolActivity : undefined;
+        activity?.("assistant", { type: "tool_use", id, name, input: args });
+        const response = server ? await serverToolCall(server, name, args) : await call("tools/call", { name, arguments: args });
+        const isError = Boolean(response.error || response.result?.isError);
+        activity?.("user", { type: "tool_result", tool_use_id: id, is_error: isError, content: response.result?.content ?? [] });
         evidence.push({ step, response });
-        if (Boolean(response.error || response.result?.isError) !== Boolean(step.expectError)) throw new Error(`Unexpected tool outcome: ${JSON.stringify(response)}`);
+        if (isError !== Boolean(step.expectError)) throw new Error(`Unexpected tool outcome: ${JSON.stringify(response)}`);
         for (const [name, pattern] of Object.entries((step.capture ?? {}) as Record<string, string>)) {
           const text = (response.result?.content ?? []).map((part: any) => part?.text ?? "").join("\n");
           const found = new RegExp(pattern).exec(text)?.[1];
