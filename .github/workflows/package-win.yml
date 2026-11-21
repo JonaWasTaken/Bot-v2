@@ -1,24 +1,8 @@
-# Windows installer, built on a real Windows runner and published as a
-# workflow artifact.
-#
-# Why this exists: releases are cut by hand from a Mac, which cannot build
-# an NSIS installer (electron-builder needs wine, and a cross-built exe
-# that never ran on Windows is exactly the artifact that looks fine and
-# breaks in the field). So every release so far shipped Windows behind the
-# mac build — different trees under one version number. Run this from the
-# same commit as the mac build and attach the artifact to the release.
-#
-# Deliberately artifact-only: the full release workflow is the one place
-# allowed to create a GitHub release.
 name: Package Windows
 
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Commit/tag/branch to build (defaults to the branch this is run from)"
-        required: false
-        type: string
+  push:
+    branches: [verify/sprint-one-oss-windows]
 
 # least privilege: the build only reads the checkout, it never writes back
 permissions:
@@ -32,7 +16,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/enterprise/
+      - name: Verify OSS checkout
+        shell: bash
+        run: test ! -e enterprise
       - uses: pnpm/action-setup@ff378ebe6b225b0680b81c1ad4498ae0d1d3a5e3 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -127,13 +117,3 @@ jobs:
           cat "$RUNNER_TEMP/server.log" || true
           kill $pid 2>/dev/null || true
           exit 1
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: windows-installer
-          path: |
-            release/*.exe
-            release/*.exe.blockmap
-            release/latest.yml
-          if-no-files-found: error
-          retention-days: 14
