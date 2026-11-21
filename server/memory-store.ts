@@ -254,13 +254,16 @@ export function writeMemoryDoc(
   return { path, before: current.exists ? current.text : null, after, hash: hashMemoryText(after) };
 }
 
-export function deleteMemoryDoc(botId: string, path: string): { path: string; before: string | null } {
+export function deleteMemoryDoc(botId: string, path: string, expectedHash?: string): { path: string; before: string | null } {
   const ref = parseMemoryPath(path);
   if (ref.kind === "index") {
     throw new MemoryStoreError("forbidden", 400, "MEMORY.md cannot be deleted — clear its text instead");
   }
   const absolute = resolveMemoryPath(botId, path);
   const current = readMemoryDoc(botId, path);
+  if (expectedHash !== undefined && (!current.exists || current.hash !== expectedHash)) {
+    throw new MemoryStoreError("conflict", 409, "This file changed since you opened it. Review the current file before deleting it.");
+  }
   if (current.exists) unlinkSync(absolute);
   return { path, before: current.exists ? current.text : null };
 }
