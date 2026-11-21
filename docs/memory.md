@@ -384,7 +384,9 @@ record the bot could edit would not be a record.
 Each row says who (bot, person, or import), how (in Settings, during a task,
 from which chat, changed outside the app, undo), which file, when, the
 before/after hashes, a short diff, and the full earlier text so **Undo** can put
-the file back without anything else. Undo is itself a journaled change, so it
+the file back. Undo checks that the file still matches the selected change. If
+the file has changed since, the app keeps the current version and asks you to
+review it. Undo is itself a journaled change, so it
 can be undone in turn. Two kinds of row cannot be undone and say so: one
 whose earlier text contained a credential (the stored copy is redacted, and
 restoring it would write the redaction marker into the bot's memory), and one

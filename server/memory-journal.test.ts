@@ -247,8 +247,9 @@ describe("revertMemoryChange", () => {
 
   it("empties MEMORY.md rather than deleting it when reverting its creation", async () => {
     const bot = freshBot();
-    const row = recordMemoryChange(bot, { path: MEMORY_INDEX, actor: "bot", via: "turn", before: null, after: "hello" });
     ensureWorkspace(bot);
+    writeFileSync(join(workspaceDir(bot), MEMORY_INDEX), "hello");
+    const row = recordMemoryChange(bot, { path: MEMORY_INDEX, actor: "bot", via: "turn", before: null, after: "hello" });
     await flushMemoryJournal(bot);
     expect(revertMemoryChange(bot, row!.id).ok).toBe(true);
     expect(existsSync(join(workspaceDir(bot), "MEMORY.md"))).toBe(true);

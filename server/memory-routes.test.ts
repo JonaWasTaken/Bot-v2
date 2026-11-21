@@ -161,6 +161,32 @@ describe("memory routes through an isolated HTTP fixture", () => {
     expect((await api("POST", `/api/bots/${botId}/memory/journal/nope/revert`)).status).toBe(404);
   });
 
+  it.each([
+    { kind: "created", before: null, after: "First note", newer: "Updated note" },
+    { kind: "edited", before: "First note", after: "Edited note", newer: "Latest correction" },
+    { kind: "deleted", before: "First note", after: null, newer: "" },
+    { kind: "edited to empty", before: "First note", after: "", newer: null },
+  ])("preserves later work when undoing a stale change ($kind)", async ({ kind, before, after, newer }) => {
+    const path = `memory/undo-${kind.replaceAll(" ", "-")}.md`;
+    const root = `/api/bots/${botId}/memory`;
+    const file = `${root}/file?path=${encodeURIComponent(path)}`;
+    const change = (text: string | null) => text === null
+      ? api("DELETE", file)
+      : api("PUT", `${root}/file`, { path, text });
+
+    if (before !== null) expect((await change(before)).status).toBe(200);
+    const original = await change(after);
+    expect(original.status).toBe(200);
+    expect((await change(newer)).status).toBe(200);
+    const journal = await api("GET", `${root}/journal`);
+
+    const undo = await api("POST", `${root}/journal/${original.body.entry.id}/revert`);
+    expect(undo.status).toBe(409);
+    expect(undo.body.error).toMatch(/changed/i);
+    expect((await api("GET", file)).body).toMatchObject({ exists: newer !== null, text: newer ?? "" });
+    expect((await api("GET", `${root}/journal`)).body).toEqual(journal.body);
+  });
+
   it("validates the open target and never runs anything for a bad one", async () => {
     expect((await api("POST", `/api/bots/${botId}/memory/open`, { target: "terminal" })).status).toBe(400);
     expect((await api("POST", `/api/bots/${botId}/memory/open`, {})).status).toBe(400);

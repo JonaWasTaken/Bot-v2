@@ -358,6 +358,10 @@ export function revertMemoryChange(botId: string, entryId: string, opts: { threa
   if (!entry) return { ok: false, status: 404, error: "no such memory change" };
   if (!entry.canRevert) return { ok: false, status: 400, error: entry.revertUnavailableReason ?? "this change cannot be reverted" };
   try {
+    const current = readMemoryDoc(botId, entry.path);
+    if ((current.exists ? current.hash : null) !== entry.afterHash) {
+      return { ok: false, status: 409, error: "This memory file changed after the selected entry. Review the current file before editing it." };
+    }
     if (entry.kind === "created") {
       if (entry.path === MEMORY_INDEX) {
         const written = journalMemoryWrite(botId, entry.path, "", { actor: "person", via: "revert", threadId: opts.threadId });
