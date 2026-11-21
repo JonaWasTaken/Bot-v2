@@ -33,8 +33,8 @@ const memoryFingerprint = (workspace: string, workingFolders: readonly string[] 
 
 let dir = "";
 afterEach(() => { if (dir) rmSync(dir, { recursive: true, force: true }); dir = ""; Object.assign(fsCalls, { sameTick: "", tick: undefined }); vi.restoreAllMocks(); });
-const workspace = () => {
-  dir = mkdtempSync(join(tmpdir(), "omb-lending-memory-"));
+const workspace = (prefix = "omb-lending-memory-") => {
+  dir = mkdtempSync(join(tmpdir(), prefix));
   const ws = join(dir, "workspaces", "bot1");
   mkdirSync(join(ws, "memory", "log"), { recursive: true });
   writeFileSync(join(ws, "MEMORY.md"), "# Memory\n");
@@ -388,8 +388,8 @@ describe("a bot's memory and a lent Mac (server/lending-memory.ts)", () => {
 describe("what the harness puts in a bot's folders, and what a bot writes there (server/lending-memory.ts)", () => {
   const FAMILIES = [".claude", ".agents", ".grok"];
   /** A bot with one enabled skill and one from the person's computer, linked in its own folder as syncSkillLinks links them. */
-  function harness() {
-    const ws = workspace();
+  function harness(prefix?: string) {
+    const ws = workspace(prefix);
     const tasks = join(dir, "task-workspaces");
     const skill = join(ws, "skills", "report"), imported = join(dir, "imported-skills", "pdf");
     for (const [folder, text] of [[skill, "Write the report.\n"], [imported, "Read the PDF.\n"]] as const) {
@@ -554,18 +554,24 @@ describe("what the harness puts in a bot's folders, and what a bot writes there 
     symlinkSync(join(ws, "planted"), skill);
     expect(fingerprint()).not.toBe(clean);
   });
-  it("a folder full of the harness's links is read whole, and something planted among them still counts", () => {
-    const { skill, opened, bot, links } = harness();
+  it.each([
+    "omb-lending-memory-",
+    "omb-lending-memory-t1-",
+  ])("a folder full of the harness's links is read whole, and something planted among them still counts (temp prefix %s)", (prefix) => {
+    const { skill, opened, bot, links } = harness(prefix);
     const many = new Map(Array.from({ length: FOLDER_ENTRY_CAP + 50 }, (_, i) => [`skill-${i}`, skill]));
     const all = { own: new Map([...links.own, ...many]), imported: links.imported };
     const folder = opened("t1");
     for (const name of many.keys()) symlinkSync(skill, join(folder, ".claude", "skills", name));
     const read = () => botMemoryFiles(bot, { workspace: () => dir, taskWorkspaces: join(dir, "task-workspaces"), skillLinks: () => all });
-    expect(Object.keys(read()).filter((name) => name.includes("t1"))).toEqual([]);
-    const before = fingerprintOf(read());
-    plant(join(folder, ".claude", "skills", "evil", "SKILL.md"));
-    expect(fingerprintOf(read())).not.toBe(before);
-    expect(Object.keys(read()).filter((name) => name.includes("t1"))).toContain(join(folder, ".claude", "skills", "evil", "SKILL.md"));
+    const before = read();
+    expect(before[join(dir, ".claude", "skills", "report", "SKILL.md")]).toBeDefined();
+    expect(Object.keys(before).filter((name) => name.startsWith(folder + sep))).toEqual([]);
+    const planted = join(folder, ".claude", "skills", "evil", "SKILL.md");
+    plant(planted);
+    const after = read();
+    expect(fingerprintOf(after)).not.toBe(fingerprintOf(before));
+    expect(Object.keys(after)).toContain(planted);
   });
   it("the harness taking back a link it no longer wants flags nothing; a link it never made still counts when it goes away and comes back different", () => {
     const { skill, links, opened, memory } = harness();
@@ -593,9 +599,9 @@ describe("what the harness puts in a bot's folders, and what a bot writes there 
     /** The record as the last version wrote it: every link listed, and the trusted hash over them all. */
     function fromBefore(state: Partial<{ pending: true; flagged: true }>) {
       const made = harness();
-      made.opened("t-old");
+      const folder = made.opened("t-old");
       const old = botMemoryFiles(made.bot, { workspace: () => made.ws, taskWorkspaces: join(dir, "task-workspaces") });
-      expect(Object.keys(old).filter((name) => name.includes("t-old")).length).toBeGreaterThan(0);
+      expect(Object.keys(old)).toContain(join(folder, ".claude", "skills", "report"));
       const digest = (described: string) => createHash("sha256").update(described).digest("hex").slice(0, 24);
       writeFileSync(join(dir, "lending-memory.json"), JSON.stringify({ version: 1, bots: { bot1: {
         trusted: fingerprintOf(old), files: Object.fromEntries(Object.entries(old).map(([name, described]) => [name, digest(described)])), ...state,

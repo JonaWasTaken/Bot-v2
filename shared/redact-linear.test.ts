@@ -30,12 +30,11 @@ describe("redactSecretsInText on large text", () => {
   }
 
   it("still masks what it masked before, the blob around it unchanged", () => {
-    const blob = randomBytes(300_000).toString("base64url");
+    const blob = "AZaz09-_".repeat(50_000);
     const text = `${blob} MY_SERVICE_API_KEY=abcd1234efgh ${blob}`;
     const out = redactSecretsInText(text);
     expect(out).not.toContain("abcd1234efgh");
-    expect(out.startsWith(blob)).toBe(true);
-    expect(out.endsWith(blob)).toBe(true);
+    expect(out).toBe(`${blob} MY_SERVICE_API_KEY=«redacted 12 chars» ${blob}`);
   });
 });
 
