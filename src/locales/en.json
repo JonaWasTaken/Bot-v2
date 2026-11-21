@@ -1,5 +1,6 @@
 {
   "mission.title": "Mission Control",
+  "mission.workspaceRequired": "Available to the owner of an eligible personal workspace.",
   "mission.name": "Mission name (optional)",
   "mission.defaultName": "TypeScript package comparison",
   "mission.source": "Registry source",

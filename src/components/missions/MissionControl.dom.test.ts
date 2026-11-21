@@ -7,7 +7,7 @@ import { publishLiveFrame, publishMissedFrames } from "@/lib/live-events";
 import type { Bot } from "@/state/store";
 import { MissionControl } from "./MissionControl";
 
-const data = vi.hoisted(() => ({ name: "Reviewed comparison", state: "review", calls: 0 }));
+const data = vi.hoisted(() => ({ name: "Reviewed comparison", state: "planning", calls: 0 }));
 vi.mock("@/state/store-select", () => ({ useStoreSelector: () => [{ id: "lead", name: "Research" }] }));
 vi.mock("@/state/api", () => ({ api: async (path: string) => {
   data.calls++;
@@ -21,7 +21,10 @@ it("renders live mission events and refreshes a missed cursor through the shared
   const host = document.body.appendChild(document.createElement("div")), root = createRoot(host);
   try {
     flushSync(() => root.render(createElement(MissionControl, { bot: { id: "lead", name: "Research" } as Bot, onClose: () => {} })));
-    await vi.waitFor(() => expect(host.textContent).toContain("Approve and start"));
+    const start = () => [...host.querySelectorAll("button")].find(b => b.textContent === "Approve and start");
+    await vi.waitFor(() => expect(start()?.disabled).toBe(true));
+    data.state = "review"; publishLiveFrame({ kind: "mission.changed", botId: "lead" });
+    await vi.waitFor(() => expect(start()?.disabled).toBe(false));
     const before = data.calls;
     publishLiveFrame({ kind: "mission.changed", botId: "another" });
     await new Promise(r => setTimeout(r, 105));

@@ -15,6 +15,11 @@ export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path
   const [preview, setPreview] = useState<string | null>(null);
   const [opening, setOpening] = useState(false), [error, setError] = useState("");
   const done = m.steps.filter(s => s.status === "verified" || s.status === "executed").length;
+  const controls = ({
+    planning: ["start", "cancel"], review: ["start", "revise", "decline"], running: ["pause", "cancel"],
+    verifying: ["pause", "cancel"], paused: ["resume", "revise", "cancel"], partial: ["revise", "cancel"],
+    failed: ["revise", "cancel"], completed: [], cancelled: [],
+  } satisfies Record<MissionView["state"], MissionAction[]>)[m.state];
   const participants = [...new Set([m.botId, m.researcherId])];
   const agent = (id: string) => bots.find(b => b.id === id)?.name ?? id;
   const title = (s: MissionStepView) => s.kind === "source" ? s.name : t(s.kind === "report" ? "mission.write" : "mission.verify");
@@ -37,10 +42,10 @@ export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path
       <p className="mt-1">{t("mission.approvalBody", { names: m.plan?.packages.join(", ") ?? "", n: m.limits.toolCalls })}</p></section>}
     {m.issue && <p role="status" className="flex gap-2 text-[13px] text-ink-secondary"><CircleAlert size={16} className="shrink-0" aria-hidden="true" />{m.issue}</p>}
     <div className="flex flex-wrap gap-2 empty:hidden">
-      {(["start", "resume", "pause", "revise", "decline", "cancel"] as const).filter(a => m.actions.includes(a) && (a !== "cancel" || !m.actions.includes("decline"))).map(a => {
+      {controls.map(a => {
         const Icon = a === "pause" ? Pause : a === "cancel" || a === "decline" ? Square : a === "revise" ? FileText : Play;
         return <button key={a} type="button" className={btn + (a === "start" || a === "resume" ? " ui-button-primary" : "")}
-          disabled={busy} onClick={() => a === "revise" ? onRevise() : onAction(a)}><Icon size={14} aria-hidden="true" />{t(`mission.action.${a}`)}</button>;
+          disabled={busy || !m.actions.includes(a)} onClick={() => a === "revise" ? onRevise() : onAction(a)}><Icon size={14} aria-hidden="true" />{t(`mission.action.${a}`)}</button>;
       })}
     </div>
     {m.artifact && <section className="rounded-lg border border-hairline p-4"><div className="flex items-center gap-2"><FileCheck2 size={18} aria-hidden="true" />
@@ -63,7 +68,7 @@ export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path
           {s.observation && <a href={s.observation.source} className="text-[12px] text-accent-text hover:underline"
             onClick={e => { e.preventDefault(); void openExternalLink(s.observation!.source); }}>{t("mission.source")}</a>}
           {s.error && <p className="mt-1 text-[13px] text-danger">{s.error}</p>}
-          {m.retryKeys.includes(s.key) && <button className={btn + " mt-2"} disabled={busy} onClick={() => onAction("retry", s.key)}><RotateCcw size={14} aria-hidden="true" />{t("mission.retry")}</button>}
+          {s.status === "failed" && <button className={btn + " mt-2"} disabled={busy || !m.retryKeys.includes(s.key)} onClick={() => onAction("retry", s.key)}><RotateCcw size={14} aria-hidden="true" />{t("mission.retry")}</button>}
           </div></li>;
       })}</ol></section>}
     {!!m.steps.length && <details className="text-[13px]"><summary className="cursor-pointer font-medium">{t("mission.agents")}</summary>

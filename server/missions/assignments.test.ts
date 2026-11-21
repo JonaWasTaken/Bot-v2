@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { MissionAction, MissionLimits, PackageObservation } from "../../shared/mission.ts";
+import { ATTACHMENTS_DIR } from "../attachments.ts";
+import { createMissionHost } from "./host.ts";
 import { Runtime } from "../runtime/runtime.ts";
 import { openRuntimeStore } from "../runtime/store.ts";
 import { FakeRunner } from "../runtime/testing/fake-runner.ts";
@@ -14,7 +16,6 @@ import { checkedPlan, defaultLimits, mayTransition, parsePlannerReply, validateD
 import { registrySource } from "./research.ts";
 
 const files = new Map<string, Buffer>();
-const saves = new Set<string>();
 const dirs: string[] = [];
 const stores: ReturnType<typeof openRuntimeStore>[] = [];
 const shortlist = { packages: ["alpha", "beta", "gamma"], metric: "dependencies" as const };
@@ -23,7 +24,7 @@ const observation = (name: string): PackageObservation => ({ name, version: "1.0
 afterEach(() => {
   for (const store of stores.splice(0)) store.close();
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
-  files.clear(); saves.clear();
+  files.clear();
 });
 
 function fixture(overrides: Partial<MissionHost> = {}, path = ":memory:") {
@@ -32,7 +33,7 @@ function fixture(overrides: Partial<MissionHost> = {}, path = ":memory:") {
   const host: MissionHost = {
     refusal: () => undefined, context: vi.fn(() => ""), busy: () => false, changed: vi.fn(), plan: vi.fn(async () => ({ text: JSON.stringify(shortlist) })),
     readPackage: vi.fn(async name => observation(name)),
-    save: vi.fn(async (id, text) => { files.set(id, Buffer.from(text)); saves.add(id); }),
+    save: vi.fn(async (id, text) => { files.set(id, Buffer.from(text)); }),
     read: vi.fn(async id => Buffer.from(files.get(id)!)), ...overrides,
   };
   const runtime: Runtime = new Runtime(store, missionRunner(new FakeRunner(), () => service));
@@ -248,12 +249,21 @@ describe("reviewed research missions on the assignment runtime", () => {
   it("reopens the same database after the artifact commit and before its receipt, using one protected file identity", async () => {
     const dir = mkdtempSync(join(tmpdir(), "mission-restart-")); dirs.push(dir);
     const path = join(dir, "runtime.db");
-    const f = fixture({ save: async (id, text) => { files.set(id, Buffer.from(text)); saves.add(id); await new Promise(() => {}); } }, path);
-    f.create(); await f.start(); await f.until(() => saves.size === 1);
+    const disk = createMissionHost({ store: { bot: () => null }, enabled: () => true, busy: () => false,
+      toolsEnabled: () => true, held: () => null, model: () => null, changed: () => {} });
+    let name = "";
+    const f = fixture({ save: async (id, text) => {
+      await disk.save(id, text); name = id + ".md"; await new Promise(() => {});
+    } }, path);
+    f.create(); await f.start(); await f.until(() => !!name);
+    const first = statSync(join(ATTACHMENTS_DIR, name), { bigint: true });
     f.runtime.close(); stores.splice(stores.indexOf(f.store), 1); f.store.close();
-    const g = fixture({}, path);
+    const g = fixture({ save: vi.fn(disk.save), read: disk.read }, path);
     await g.until(() => g.read(f.id).state === "completed");
-    expect(saves.size).toBe(1);
+    expect(g.host.save).toHaveBeenCalledTimes(1);
+    expect(readdirSync(ATTACHMENTS_DIR).filter(file => file.startsWith(name.slice(0, -3)))).toEqual([name]);
+    const restored = statSync(join(ATTACHMENTS_DIR, name), { bigint: true });
+    expect([restored.ino, restored.mtimeNs, restored.size]).toEqual([first.ino, first.mtimeNs, first.size]);
     expect(g.read(f.id).steps.map(s => s.attempts)).toEqual([1, 1, 1, 2, 1]);
     expect(await g.service.artifact(g.bot, f.id)).toContain("Registry sources");
     expect(g.host.readPackage).not.toHaveBeenCalled();

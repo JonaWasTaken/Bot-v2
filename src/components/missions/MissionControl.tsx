@@ -19,9 +19,9 @@ export function MissionControlRow({ bot }: { bot: Bot }) {
   const available = useStoreSelector(s => s.config?.missionsEnabled === true);
   const owner = useOwnerOrAdmin();
   const [open, setOpen] = useState(false);
-  if (!available || !owner) return null;
-  return <><NavRow icon={ListChecks} title={t("mission.title")} onClick={() => setOpen(true)} />
-    {open && createPortal(<MissionControl key={bot.id} bot={bot} onClose={() => setOpen(false)} />, document.body)}</>;
+  const enabled = available && owner === true;
+  return <><NavRow icon={ListChecks} title={t("mission.title")} disabled={!enabled} tooltip={enabled ? undefined : t("mission.workspaceRequired")} onClick={() => setOpen(true)} />
+    {open && enabled && createPortal(<MissionControl key={bot.id} bot={bot} onClose={() => setOpen(false)} />, document.body)}</>;
 }
 
 export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void }) {

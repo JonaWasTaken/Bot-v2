@@ -116,7 +116,7 @@ try {
       + "Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e," + JSON.stringify(reader.id) + ");e.dispatchEvent(new Event('change',{bubbles:true})); })()");
     const start = performance.now();
     await click("Prepare plan");
-    await page.until(byText("Approve and start") + " || document.querySelector('[role=dialog] [role=alert]') || document.querySelector('[role=dialog] article [role=status]')", 100_000);
+    await page.until(byText("Approve and start") + "?.disabled === false || document.querySelector('[role=dialog] [role=alert]') || document.querySelector('[role=dialog] article [role=status]')", 100_000);
     const path = botPath + "/missions";
     const reviewed = await current(path);
     assert.equal(reviewed.state, "review", reviewed.issue);
