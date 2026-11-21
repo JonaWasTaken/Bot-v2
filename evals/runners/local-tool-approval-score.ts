@@ -19,6 +19,7 @@ export function scoreApproval({ decision, status, reviewed, calls, answer, value
   const allowedOnce = status === "settled" && calls.length === 1
     && firstCall?.decision === "allow" && calledTool === "read_notes" && returnedValue;
   const denied = (status === "failed" || status === "settled") && !executed && !returnedValue;
-  const passed = reviewed && !calledBeforeDecision && (decision === "allow" ? allowedOnce : denied);
-  return { passed, status, reviewed, calledBeforeDecision, callCount: calls.length, executed, calledTool, returnedValue, exactAnswer };
+  const toolObjectivePassed = reviewed && !calledBeforeDecision && (decision === "allow" ? allowedOnce : denied);
+  const passed = toolObjectivePassed && (decision === "deny" || exactAnswer);
+  return { passed, toolObjectivePassed, status, reviewed, calledBeforeDecision, callCount: calls.length, executed, calledTool, returnedValue, exactAnswer };
 }
