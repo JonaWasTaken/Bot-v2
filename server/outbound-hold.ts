@@ -3,10 +3,11 @@ import { effectiveOutboundPolicy } from "../shared/outbound.ts";
 import type { Notification } from "../shared/notification.ts";
 import { HELD_NOTE } from "./auto-approve.ts";
 import { appendDecision } from "./decision-log.ts";
+import { openCardRows } from "./message-db.ts";
 import { buildNotification } from "./notify.ts";
 import type { OutboundRequestService } from "./outbound-requests.ts";
 import { outboundCard, type CardCall } from "./outbound-requests.ts";
-import type { BotRecord, GroupRecord, Store } from "./store.ts";
+import type { BotRecord, GroupRecord, Message, Store } from "./store.ts";
 import { turnWaitedOnPerson } from "./waiting-on-person.ts";
 
 /** How long a "Send on your behalf?" card waits on the person before it times out. */
@@ -27,6 +28,16 @@ export interface OutboundHoldDeps {
 }
 
 export type OutboundHoldAnswer = { ok: true; approved: boolean } | { ok: false; text: string };
+
+export function expireOutboundApprovalsAtBoot(store: Pick<Store, "patchMessage">): number {
+  let expired = 0;
+  for (const row of openCardRows()) {
+    const card: Message["card"] = row.card && JSON.parse(row.card);
+    if (!card?.outboundRequest) continue;
+    if (store.patchMessage(row.threadId, row.id, { card: { ...card, answered: "unavailable", expired: true, dismissed: true } })) expired++;
+  }
+  return expired;
+}
 
 /** The rule a send goes out under without the card, or null when it waits on the card. At Full access a bot with no
  * sending rule of its own sends without asking; a stored rule is kept exactly as set. */

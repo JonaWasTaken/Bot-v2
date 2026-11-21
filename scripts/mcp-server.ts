@@ -661,9 +661,9 @@ function messageNeedsInput(message: Record<string, any>): boolean {
 
 function dispatchFailedAfterLatestUser(messages: Array<Record<string, any>>): boolean {
   const lastUser = messages.findLastIndex((message) => message.role === "user");
-  const turnMessages = messages.slice(lastUser + 1);
-  // Only an explicit terminal receipt overrides prose. Existing providers
-  // also emit diagnostics on intentional cancellation, which remain settled.
+  const requestId = messages[lastUser]?.id;
+  const turnMessages = messages.slice(lastUser + 1).filter(message => message.tool?.ok !== false ||
+    (message.tool.terminal !== false && (!requestId || !message.requestMessageId || message.requestMessageId === requestId)));
   if (turnMessages.some((message) => message.tool?.terminal === true && message.tool.ok === false)) return true;
   if (turnMessages.some((message) => message.role === "bot" && message.kind === "text" && message.text?.trim())) {
     return false;

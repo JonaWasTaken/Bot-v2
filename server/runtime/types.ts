@@ -91,6 +91,7 @@ export interface Assignment {
   reply: Reply;
   /** The request, harness-stored (at most 12 000 characters). */
   brief: string;
+  requestMessageId?: string;
   /** The requester's own completion criterion, if it gave one. */
   doneWhen?: string;
   /** A root that is one step of a room goal run (the run's id): it neither parks nor continues in
@@ -106,6 +107,8 @@ export interface Assignment {
   levelSource: LevelSource;
   /** Turns started for it, including resumes and reruns. */
   executions: number;
+  /** First outbound connector request released by this execution. Null means none, absent on older records. */
+  outboundDispatch?: string | null;
   /** Turns of it a restart cut and ran again in place. */
   restarts: number;
   /** Set until the turn after a restart settles: "rerun" its cut turn runs again; "cut" it was cut after
@@ -181,6 +184,8 @@ export interface TurnEvidence {
    * as short labels ("GMAIL_SEND_EMAIL", "git push", "COMPOSIO_PROXY_EXECUTE"). */
   outward?: string[];
 }
+
+export type RestartEffects = string[] | { dispatched: string } | { unapproved: string };
 
 export type EventKind =
   | "enqueued" | "refused" | "admitted" | "started" | "progress" | "parked" | "answered"
@@ -329,9 +334,8 @@ export interface TurnRunner {
   changed(assignments: readonly Assignment[]): void;
   /** Display names for the envelope of a turn (ids are the fallback). */
   names(a: Assignment, parent?: Assignment): EnvelopeNames;
-  /** What the cut turn of this node already did outward, as short labels. Read at open() only: a
-   * turn that acted outward is not run again. Absent or empty: the turn reruns once. */
-  outward?(a: Assignment): string[];
+  /** Transcript evidence for a cut turn, either observed actions or a possible dispatch from an older connected-app batch. */
+  outward?(a: Assignment): RestartEffects;
   /** The assignee lives in a place that cannot be reached now (a computer that is off or asleep). Queued work for it is
    * held by no window: neither the queue bound nor the tree's stall window runs while this is true. */
   away?(a: Assignment): boolean;

@@ -186,9 +186,10 @@ The [rail of Clouds](cloud-rail.md) checks the session's list of Clouds, which
 pages may read the rail, opening a place by its id, hiding the rail, and buying
 another Cloud, with a loopback Admin and the real app in a disposable preview.
 
-The [embedded server recovery smoke](desktop-server-recovery.md) crashes real
-Electron-owned fixture servers, verifies bounded recovery and private access,
-and proves quit cancels recovery without replaying an interrupted fixture turn.
+The [embedded server recovery smoke](desktop-server-recovery.md) counts sends
+and reads across real Electron-owned server crashes. It checks send approvals,
+interrupted requests with live or completed teammates, explicit follow-ups,
+read-only grants, Stop and bounded retries.
 
 The [Tailscale discovery fixture](tailscale.md) checks standalone macOS CLI mode
 and HTTP tailnet endpoint refresh without touching a real Tailscale installation.

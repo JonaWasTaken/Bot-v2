@@ -38,7 +38,7 @@ class ToolFailure extends Error {}
 const NOT_FOUND = "Requested entity was not found.";
 const field = (value: unknown, name: string): unknown => (value && typeof value === "object" ? (value as Record<string, unknown>)[name] : undefined);
 
-export async function startFakeConnectedApps(): Promise<FakeConnectedApps> {
+export async function startFakeConnectedApps(beforeToolReply?: () => Promise<void>): Promise<FakeConnectedApps> {
   const fake: Omit<FakeConnectedApps, "url" | "token" | "close"> = {
     connected: { gmail: true, googlecalendar: true }, accounts: {}, address: "me@example.test", events: [], emails: [], calls: [], threads: {}, outlook: [], uploads: [],
     calendars: [{ id: "me@example.test", primary: true, accessRole: "owner", selected: true }],
@@ -128,6 +128,7 @@ export async function startFakeConnectedApps(): Promise<FakeConnectedApps> {
           response = { successful: false, data: null, error: error.message };
         }
         const text = JSON.stringify({ successful: true, data: { results: [{ tool_slug: slug, response }] }, error: null });
+        await beforeToolReply?.();
         return res.end(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: { content: [{ type: "text", text }] } }));
       }
       return res.end(JSON.stringify({ jsonrpc: "2.0", id: body.id, result: {} }));

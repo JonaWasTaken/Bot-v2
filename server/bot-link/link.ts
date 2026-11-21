@@ -747,7 +747,7 @@ export function createBotLink(deps: BotLinkDeps) {
       remind: (node, closesAt) => { if (!awayNode(node)) inner.remind?.(node, closesAt); },
       levelOf: (target, source) => (isLinkedId(target.botId) ? { level: remoteOf(target.botId)?.bot.level ?? "full" } : inner.levelOf(target, source)),
       chiefOf: (address) => (isLinkedId(address.botId) ? false : inner.chiefOf(address)),
-      outward: (node) => (awayNode(node) ? [] : inner.outward?.(node) ?? []),
+      outward: (node, legacy) => (awayNode(node) ? [] : inner.outward?.(node, legacy) ?? []),
       shareAnswer: (first, joiner) => (awayNode(first) || awayNode(joiner) ? false : inner.shareAnswer?.(first, joiner) ?? false),
       statusReply: (requester, prompt, signal) => (isLinkedId(requester) ? Promise.resolve(undefined) : inner.statusReply?.(requester, prompt, signal) ?? Promise.resolve(undefined)),
     };

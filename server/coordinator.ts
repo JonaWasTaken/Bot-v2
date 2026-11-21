@@ -1,7 +1,7 @@
 import { RuntimeCoordinator } from "./runtime-coordinator.ts";
 import type { WorkOrigin } from "./peer-provenance.ts";
 import type { LegacyThreadResolver } from "./runtime/import-legacy.ts";
-import type { Answerer, Assignment, EnvelopeNames, Level, Limits, Mode, Origin, Outcome, Owner, Reply, Requester, StatusView, TurnEvidence } from "./runtime/types.ts";
+import type { Answerer, Assignment, EnvelopeNames, Level, Limits, Mode, Origin, Outcome, Owner, Reply, Requester, RestartEffects, StatusView, TurnEvidence } from "./runtime/types.ts";
 import type { ModelSelection } from "../shared/wire.ts";
 import type { PassedFile } from "./host/handoff-files.ts";
 import type { NewThreadLevel } from "./task-record.ts";
@@ -47,6 +47,7 @@ export interface HandoffView {
   text: string;
   createdAt: number;
   requestBatchKey?: string;
+  requestMessageId?: string;
   /** Its reply only acknowledged (runtime/status-reply.ts). */
   statusOnly?: boolean;
   status: HandoffStatus;
@@ -80,6 +81,7 @@ export interface HandoffView {
 
 export interface BeginTurnRequest {
   id: string;
+  requestMessageId?: string;
   address: RoomAddress;
   brief: string;
   level: Level;
@@ -163,8 +165,8 @@ export interface CoordinatorHost {
    * so it resolves from `source`, the requester's node, whose parents lead up the chain. */
   levelOf(target: RoomAddress, source?: HandoffView): { level: Level; chief?: Level; driverKind?: string };
   chiefOf(address: RoomAddress): boolean;
-  /** What the cut turn already did outward (sent, posted, paid): a turn that acted outward is not run again. */
-  outward?(node: HandoffView): string[];
+  /** Outward actions from this turn's transcript. Older executions need their connected-app batches checked here. */
+  outward?(node: HandoffView, checkLegacyBatches: boolean): RestartEffects;
   /** The node's bot lives in a place that cannot be reached now: its queued work waits without a clock (runtime `away`). */
   away?(node: HandoffView): boolean;
   /** Whether `joiner`'s requester may read the answer `first` gives its own (the same people see both conversations),
@@ -237,6 +239,7 @@ export interface Coordinator {
   pace(): "busy" | "parked" | "idle";
   close(): void;
   progress(threadId: string): void;
+  recordOutboundDispatch(id: string, tool: string): void;
   /** What the turn this thread is running waits for, for the record. */
   held(threadId: string, why: string): void;
   /** True when a parked assignment took the text as its answer: the host must not start an ordinary turn. */

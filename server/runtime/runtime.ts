@@ -6,7 +6,7 @@ import { hostFaultOf, retryCannotFix } from "../host-fault.ts";
 import { composeEnvelope } from "./envelope.ts";
 import { assignmentLevel } from "./level.ts";
 import type { RuntimeStore } from "./store.ts";
-import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, isTerminal, loopStop, nextGuard, outwardDetail, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
+import { answersSender, asking, awaited, childrenSince, settledSince, clip, continuations, CUT_TWICE, duration, INTERRUPTED_OUTWARD, isTerminal, loopStop, nextGuard, outboundDispatchLabel, outwardDetail, ownsConversation, ownThread, path, restartNote, wakeOwner } from "./tree.ts";
 import { DEFAULT_LIMITS, type Answerer, type Assignment, type Assignee, type Clock, type EndResult, type EnqueueRequest, type EnqueueResult, type EnvelopeNames,
   type EventKind, type InboxItem, type InboxKind, type Level, type Limits, type LiveEdge, type Origin, type Outcome, type Owner,
   type Reply, type Requester, type RunInput, type RunResult, type StatusView, type TurnRunner } from "./types.ts";
@@ -35,6 +35,7 @@ export const RERUN_SUPERSEDED = "cut by a restart; newer work in this conversati
 export interface BeginRequest {
   /** The host's own id for the requesting turn (its generation); default a fresh uuid. */
   id?: string;
+  requestMessageId?: string;
   origin: Origin;
   /** person | routine_run | external_runtime */
   requester: Requester;
@@ -120,11 +121,19 @@ export class Runtime {
         if (n.status !== "running") continue;
         const carried = n.carrying ?? [];
         const handedOut = childrenSince(this.store, n).length > 0;
-        const outward = handedOut ? [] : this.outwardOf(n);
-        if (handedOut) {
+        const effects = n.outboundDispatch || handedOut ? [] : this.safe("outward", () => this.runner.outward?.(n)) ?? [];
+        const outward = Array.isArray(effects) ? effects.filter(label => typeof label === "string" && label.trim()) : [];
+        const dispatched = n.outboundDispatch ?? ("dispatched" in effects ? effects.dispatched : undefined);
+        if (dispatched) {
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward dispatch" });
+          this.settle(n, "failed", "interrupted", `${INTERRUPTED_OUTWARD} started a connected-app request (${dispatched}). It may have taken effect. Check the app before asking to continue.`);
+        } else if (handedOut) {
           n.status = "waiting"; n.restart = "cut"; n.lastActivityAt = now;
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "waiting: cut after handing out work" });
           this.touch(n);
+        } else if ("unapproved" in effects) {
+          this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outbound approval expired" });
+          this.settle(n, "failed", "interrupted", `OpenMausBot restarted while waiting for your approval for ${effects.unapproved}. That request was never sent. Ask again to request a fresh approval.`);
         } else if (outward.length > 0) {
           this.store.update(n, { kind: "restart_reconciled", at: now, detail: "failed: outward action done" });
           this.settle(n, "failed", "interrupted", outwardDetail(outward));
@@ -157,8 +166,9 @@ export class Runtime {
       id, rootId: id, depth: 0, origin: req.origin, requester: req.requester, assignee: req.assignee,
       mode: "work", reply: req.reply ?? "resume", brief: clip(req.brief, BRIEF_MAX), status: "running",
       level: req.level, levelSource: "own", executions: 1, restarts: 0, createdAt: now, startedAt: now, lastActivityAt: now,
-      result: "", rework: false, budgets: { since: now, requests: 0, executions: 1, wakes: 0, total: 1 }, version: 1,
+      result: "", rework: false, outboundDispatch: null, budgets: { since: now, requests: 0, executions: 1, wakes: 0, total: 1 }, version: 1,
       ...(req.goalRunId ? { goalRunId: req.goalRunId } : {}),
+      ...(req.requestMessageId ? { requestMessageId: req.requestMessageId } : {}),
     };
     this.store.transaction(() => {
       this.store.insert(root, { kind: "enqueued", at: now, detail: "queued: root" });
@@ -462,6 +472,7 @@ export class Runtime {
       return false;
     }
     n.status = "running"; n.startedAt = now; n.executions += 1; n.lastActivityAt = now;
+    n.outboundDispatch = null;
     delete n.continuation; delete n.cards;
     if (carrying.length) n.carrying = carrying; else delete n.carrying;
     if (root.id !== n.id) root.lastActivityAt = now;
@@ -602,6 +613,13 @@ export class Runtime {
     this.store.update(n, { kind: "held", at: this.clock.now(), detail: clip(why, DETAIL_MAX) });
   }
 
+  recordOutboundDispatch(id: string, tool: string): void {
+    const n = this.store.get(id);
+    if (n?.status !== "running" || n.outboundDispatch) return;
+    n.outboundDispatch = outboundDispatchLabel(tool);
+    this.store.update(n);
+  }
+
   /** The host saw activity on this running turn: its stall window restarts, and lastActivityAt
    * catches up on the PROGRESS_WRITE_MS cadence so the stored row reads as live, not frozen at dispatch. */
   progress(id: string): void {
@@ -669,9 +687,14 @@ export class Runtime {
   stopRequester(owner: Owner, reason = "Stopped by user"): void {
     this.withBatch(() => {
       for (const snapshot of this.store.all({ nonTerminal: true })) {
-        if (!ownsConversation(snapshot, owner)) continue;
         const n = this.store.get(snapshot.id);
         if (!n || isTerminal(n)) continue;
+        if (!ownsConversation(n, owner)) {
+          if (n.parentId && path(this.store, n).some(a => a.outcome === "interrupted" && a.outboundDispatch && ownsConversation(a, owner))) {
+            this.cancelTree(n, STOPPED_WITH_REQUEST, "cancelled", "stopped");
+          }
+          continue;
+        }
         for (const child of this.store.children(n.id)) {
           if (isTerminal(child)) continue;
           const unstarted = child.status === "queued" && (child.executions === 0 || child.restart === "rerun");
@@ -883,13 +906,6 @@ export class Runtime {
       const child = this.store.get(id);
       if (child) this.decideDefault(child);
     }
-  }
-
-  private outwardOf(n: Assignment): string[] {
-    const port = this.runner.outward;
-    if (!port) return [];
-    const labels = this.safe("outward", () => port.call(this.runner, n));
-    return Array.isArray(labels) ? labels.filter(label => typeof label === "string" && label.trim() !== "") : [];
   }
 
   private names(n: Assignment, parent: Assignment | undefined): EnvelopeNames {
