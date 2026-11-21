@@ -1,0 +1,1326 @@
+{
+  "mission": "APEX-001",
+  "observedUtcDate": "2026-11-21",
+  "revisions": {
+    "fork": "f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1",
+    "originalForkPoint": "e5490f70de6b683465fb5b7a7ff43e7aa931c1f9",
+    "canonicalMainAtIntake": "362559603e8e5d12764253739f7a23888e52e7cb",
+    "forkOnlyCommits": 10,
+    "canonicalOnlyCommits": 184
+  },
+  "platform": {
+    "host": "Windows 11 Pro 10.0.26300 x64",
+    "cpu": "AMD Ryzen 9 9950X3D",
+    "logicalProcessors": 32,
+    "ramGiB": 61.7,
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "node": "24.22.0",
+    "pnpm": "10.33.0",
+    "electron": "43.7.9"
+  },
+  "baselineCommands": {
+    "typecheck": {
+      "exitCode": 0,
+      "wallSeconds": 26.6
+    },
+    "lint": {
+      "exitCode": 0,
+      "wallSeconds": 1.1
+    },
+    "build": {
+      "exitCode": 0,
+      "wallSeconds": 56.8
+    },
+    "check:electron": {
+      "exitCode": 0,
+      "wallSeconds": 44.7
+    },
+    "test (Windows host)": {
+      "exitCode": 1,
+      "wallSeconds": 1285.6
+    },
+    "broker:test": {
+      "exitCode": 0,
+      "wallSeconds": 8.4
+    },
+    "test:electron": {
+      "exitCode": 1,
+      "wallSeconds": 65.0
+    },
+    "test:packaged-server": {
+      "exitCode": 0,
+      "wallSeconds": 39.4
+    },
+    "package:win": {
+      "exitCode": 0,
+      "wallSeconds": 204.1
+    },
+    "node scripts/verify-server-recovery.mjs": {
+      "exitCode": 1,
+      "wallSeconds": 0.1
+    },
+    "bench:desktop (startup)": {
+      "exitCode": 1,
+      "wallSeconds": 38.7
+    },
+    "eval --golden": {
+      "exitCode": 0,
+      "wallSeconds": 7.8
+    },
+    "pnpm audit --prod": {
+      "exitCode": 1,
+      "wallSeconds": 0.8
+    }
+  },
+  "windowsHostVitest": {
+    "durationSeconds": 1282.69,
+    "workers": 6,
+    "files": {
+      "passed": 2754,
+      "failed": 46,
+      "skipped": 67
+    },
+    "tests": {
+      "passed": 39944,
+      "failed": 122,
+      "skipped": 1088,
+      "todo": 3
+    },
+    "failedFiles": [
+      {
+        "file": "scripts/prepare-duckdb.test.mjs",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "scripts/testing/duration-sequencer.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "scripts/testing/no-bitwarden-dependency.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "scripts/testing/verification-docs.test.ts",
+        "suiteSetup": 1,
+        "testCases": 0,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/app-settings/picture-file.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/bot-box/env.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/browser-upload.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/chat-apps.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-computer-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 4,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/cloud-lending.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/cloud-send-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-sync-store.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/cloud-sync.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/data/tools.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/drivers/chat-mcp-tools.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/drivers/codex-shared-home.test.ts",
+        "suiteSetup": 0,
+        "testCases": 12,
+        "directSymlinkPermissionErrors": 4
+      },
+      {
+        "file": "server/drivers/codex.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/email/client.test.ts",
+        "suiteSetup": 1,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/grok-local.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/host/delete-leftovers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 4,
+        "directSymlinkPermissionErrors": 4
+      },
+      {
+        "file": "server/host/handoff-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/host/netlify-sites.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/host/team-files.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/hosted-access.test.ts",
+        "suiteSetup": 0,
+        "testCases": 9,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/hosted-models-api.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/lending-memory.test.ts",
+        "suiteSetup": 0,
+        "testCases": 31,
+        "directSymlinkPermissionErrors": 31
+      },
+      {
+        "file": "server/lent-copies.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/mcp-bot-servers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/memory-store.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/message-file.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 2
+      },
+      {
+        "file": "server/pages/bundle.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/pages/published-pages.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/setup-import.test.ts",
+        "suiteSetup": 0,
+        "testCases": 5,
+        "directSymlinkPermissionErrors": 5
+      },
+      {
+        "file": "server/share.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/skills.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/team-computers.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/testing/worker-port.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "server/themes/tool.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/turn-images.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "server/workspace-backup.test.ts",
+        "suiteSetup": 0,
+        "testCases": 3,
+        "directSymlinkPermissionErrors": 3
+      },
+      {
+        "file": "server/workspace-links.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 1
+      },
+      {
+        "file": "src/components/PhoneDevicesSection.page.test.ts",
+        "suiteSetup": 0,
+        "testCases": 2,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/components/ServerList.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/components/SidebarThreadRow.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/lib/schedule-label.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      },
+      {
+        "file": "src/lib/transcript-derivations.test.ts",
+        "suiteSetup": 0,
+        "testCases": 1,
+        "directSymlinkPermissionErrors": 0
+      }
+    ]
+  },
+  "electronNodeTest": {
+    "passed": 2184,
+    "failed": 6,
+    "skipped": 51,
+    "failures": [
+      {
+        "source": "electron/cloud-sync-engine.node-test.mjs:80:1",
+        "test": "shared: a missing folder, a link and a hard-linked file never read as deleted"
+      },
+      {
+        "source": "electron/cloud-sync-scan.node-test.mjs:15:1",
+        "test": "lists files as wire paths with hashes, keeping links and hard links as present, skipping litter and sync's own downloads"
+      },
+      {
+        "source": "electron/elevated-install.node-test.mjs:119:1",
+        "test": "nothing is run for a file or checksum that cannot be trusted"
+      },
+      {
+        "source": "electron/lent-staged.node-test.mjs:66:1",
+        "test": "the live write's rules hold: never .git, never through a link, never a damaged download"
+      },
+      {
+        "source": "electron/vendor-updater.node-test.mjs:91:1",
+        "test": "the shipped installer replaces the AppImage and queues its original path for relaunch"
+      },
+      {
+        "source": "electron/vendor-updater.node-test.mjs:147:1",
+        "test": "a rejected AppImage relaunch is reported without quitting the desktop"
+      }
+    ]
+  },
+  "focusedVitest": {
+    "passed": 402,
+    "files": [
+      {
+        "file": "server/agent-tool-policy.test.ts",
+        "passed": 44
+      },
+      {
+        "file": "server/browser/cdp/s4-actions.e2e.test.ts",
+        "passed": 32
+      },
+      {
+        "file": "server/browser/session-control.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "server/data/data.e2e.test.ts",
+        "passed": 1
+      },
+      {
+        "file": "server/host/sse-replay.test.ts",
+        "passed": 7
+      },
+      {
+        "file": "server/memory-routes.test.ts",
+        "passed": 16
+      },
+      {
+        "file": "server/memory-topic-corrections.test.ts",
+        "passed": 3
+      },
+      {
+        "file": "server/openai-tools.e2e.test.ts",
+        "passed": 3
+      },
+      {
+        "file": "server/permission-proxy.test.ts",
+        "passed": 19
+      },
+      {
+        "file": "server/recall.test.ts",
+        "passed": 22
+      },
+      {
+        "file": "server/request-auth.e2e.test.ts",
+        "passed": 2
+      },
+      {
+        "file": "server/request-auth.test.ts",
+        "passed": 69
+      },
+      {
+        "file": "server/routine-unattended-approval.e2e.test.ts",
+        "passed": 1
+      },
+      {
+        "file": "server/runtime/handoff-limits.test.ts",
+        "passed": 2
+      },
+      {
+        "file": "server/runtime/scenarios.test.ts",
+        "passed": 63
+      },
+      {
+        "file": "server/sse-fanout.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "server/turn-route.test.ts",
+        "passed": 27
+      },
+      {
+        "file": "src/components/BotProjects.test.ts",
+        "passed": 10
+      },
+      {
+        "file": "src/components/ModelPicker.interaction.test.ts",
+        "passed": 15
+      },
+      {
+        "file": "src/components/PlacesRail.test.ts",
+        "passed": 46
+      }
+    ]
+  },
+  "brokerVitest": {
+    "passed": 139,
+    "files": 6
+  },
+  "packagedStartup": {
+    "installerBytes": 271043231,
+    "samples": [
+      {
+        "readyMs": 5026,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      },
+      {
+        "readyMs": 5209,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 1
+      },
+      {
+        "readyMs": 4972,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      },
+      {
+        "readyMs": 4385,
+        "ready": true,
+        "edition": "oss",
+        "preload": true,
+        "streamTicket": true,
+        "launcherExitCode": 0
+      }
+    ],
+    "sample2Note": "The readiness marker passed. Cleanup returned Windows taskkill code 128. Both fixture PIDs were separately confirmed gone."
+  },
+  "behaviorScenarios": {
+    "originalForkPoint": [
+      {
+        "id": "dispatch-supersede",
+        "pass": true,
+        "durationMs": 4923
+      },
+      {
+        "id": "lazy-claim-rejection",
+        "pass": true,
+        "durationMs": 6392
+      },
+      {
+        "id": "lazy-claim-screenless",
+        "pass": true,
+        "durationMs": 9735
+      },
+      {
+        "id": "lazy-computer-claim",
+        "pass": true,
+        "durationMs": 52473
+      },
+      {
+        "id": "routine-deferral",
+        "pass": true,
+        "durationMs": 13671
+      },
+      {
+        "id": "skill-assignment-visibility",
+        "pass": true,
+        "durationMs": 7003
+      }
+    ],
+    "fork": [
+      {
+        "id": "dispatch-supersede",
+        "pass": true,
+        "durationMs": 6330
+      },
+      {
+        "id": "lazy-claim-rejection",
+        "pass": true,
+        "durationMs": 6792
+      },
+      {
+        "id": "lazy-claim-screenless",
+        "pass": true,
+        "durationMs": 7692
+      },
+      {
+        "id": "lazy-computer-claim",
+        "pass": true,
+        "durationMs": 51981
+      },
+      {
+        "id": "routine-deferral",
+        "pass": true,
+        "durationMs": 14194
+      },
+      {
+        "id": "skill-assignment-visibility",
+        "pass": true,
+        "durationMs": 5060
+      }
+    ],
+    "goldenHandoffOnFork": {
+      "passed": true
+    }
+  },
+  "productionRegistryAudit": {
+    "severity": {
+      "info": 0,
+      "low": 2,
+      "moderate": 16,
+      "high": 6,
+      "critical": 0
+    },
+    "dependencies": 807,
+    "advisories": [
+      {
+        "package": "@vitest/mocker",
+        "installed": [
+          "4.1.11"
+        ],
+        "id": "GHSA-qxg6-89mg-rqv8",
+        "severity": "moderate",
+        "fixed": ">=4.1.12"
+      },
+      {
+        "package": "@vitest/mocker",
+        "installed": [
+          "4.1.11"
+        ],
+        "id": "GHSA-xp26-3454-mjgp",
+        "severity": "moderate",
+        "fixed": ">=4.1.12"
+      },
+      {
+        "package": "katex",
+        "installed": [
+          "0.16.47"
+        ],
+        "id": "GHSA-238p-pmpm-9mq7",
+        "severity": "low",
+        "fixed": ">=0.18.2"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-7qx7-33qx-rqx2",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-f3mh-rxg3-f5g2",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-mfr8-8qww-v76h",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-pc58-hwjq-p385",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-rhh4-g77r-r9qj",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-vc7v-qv4w-wrv8",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "next",
+        "installed": [
+          "16.4.3"
+        ],
+        "id": "GHSA-vvgp-ww4w-46vf",
+        "severity": "moderate",
+        "fixed": ">=16.4.5"
+      },
+      {
+        "package": "source-map-js",
+        "installed": [
+          "1.2.1"
+        ],
+        "id": "GHSA-68fv-2mgg-jv7q",
+        "severity": "high",
+        "fixed": ">=1.2.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-2m5v-pch6-74hx",
+        "severity": "high",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-4qv8-2p9j-2685",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-4w7w-5xrc-9h26",
+        "severity": "high",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-55wc-3pg8-jfw6",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-9fm3-97px-rjf6",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-f72v-6w45-q472",
+        "severity": "moderate",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-qrxm-fqhp-jwvm",
+        "severity": "high",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "undici",
+        "installed": [
+          "8.11.2"
+        ],
+        "id": "GHSA-xjj6-f33q-929c",
+        "severity": "high",
+        "fixed": ">=8.12.2"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-587h-7wmj-h5pm",
+        "severity": "high",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-698v-4r3x-3vcv",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-9jrq-w75r-8gcw",
+        "severity": "low",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-r825-w8mm-5pxw",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      },
+      {
+        "package": "vite",
+        "installed": [
+          "7.3.6"
+        ],
+        "id": "GHSA-rq7h-c2jc-7f22",
+        "severity": "moderate",
+        "fixed": ">=7.3.7"
+      }
+    ]
+  },
+  "localModel": {
+    "model": "Qwen3-4B-Q4_K_M",
+    "weightsRevision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+    "weightsSha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "ollamaVersion": "0.40.17",
+    "temperature": 0,
+    "samplerSeed": 17,
+    "numCtx": 16384,
+    "trialOrder": {
+      "tools": [
+        "original-fork",
+        "fork-original",
+        "original-fork"
+      ],
+      "answers": [
+        "fork",
+        "original"
+      ]
+    },
+    "positiveLocalToolObservedOnBoth": true,
+    "originalForkPoint": {
+      "approvalTrials": [
+        {
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": true,
+          "durationMs": 19311
+        },
+        {
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18985
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 26846
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 30747
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 17151
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 17909
+        }
+      ],
+      "answerTrials": [
+        {
+          "trial": 1,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 11103,
+          "usage": {
+            "input": 991,
+            "output": 224,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 13899,
+          "usage": {
+            "input": 1062,
+            "output": 991,
+            "cachedInput": 945,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 9674,
+          "usage": {
+            "input": 1003,
+            "output": 465,
+            "cachedInput": 943,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 12346,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 19780,
+          "usage": {
+            "input": 1062,
+            "output": 972,
+            "cachedInput": 945,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 9157,
+          "usage": {
+            "input": 1003,
+            "output": 412,
+            "cachedInput": 943,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6877,
+          "usage": {
+            "input": 991,
+            "output": 224,
+            "cachedInput": 941,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 20251,
+          "usage": {
+            "input": 1062,
+            "output": 1194,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 11661,
+          "usage": {
+            "input": 1003,
+            "output": 433,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        }
+      ]
+    },
+    "fork": {
+      "approvalTrials": [
+        {
+          "seed": "apex001-pair-1",
+          "decision": "allow",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90067
+        },
+        {
+          "seed": "apex001-pair-1",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 16675
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 27631
+        },
+        {
+          "seed": "apex001-pair-2",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18353
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 15420
+        },
+        {
+          "seed": "apex001-pair-3",
+          "decision": "deny",
+          "passed": false,
+          "status": "timed-out",
+          "reviewed": false,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 90067
+        }
+      ],
+      "answerTrials": [
+        {
+          "trial": 1,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 10826,
+          "usage": {
+            "input": 991,
+            "output": 659,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 17942,
+          "usage": {
+            "input": 1062,
+            "output": 1620,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 1,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6273,
+          "usage": {
+            "input": 1003,
+            "output": 434,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 7893,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "source-reconciliation",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 15608,
+          "usage": {
+            "input": 1062,
+            "output": 1384,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 2,
+          "task": "code-review",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 6214,
+          "usage": {
+            "input": 1003,
+            "output": 427,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "general",
+          "status": "settled",
+          "correct": false,
+          "durationMs": 8064,
+          "usage": {
+            "input": 991,
+            "output": 379,
+            "cachedInput": 1,
+            "turns": 1
+          }
+        },
+        {
+          "trial": 3,
+          "task": "source-reconciliation",
+          "status": "timed-out",
+          "correct": false,
+          "durationMs": 120028,
+          "usage": null
+        },
+        {
+          "trial": 3,
+          "task": "code-review",
+          "status": "timed-out",
+          "correct": false,
+          "durationMs": 120031,
+          "usage": null
+        }
+      ]
+    },
+    "recoveryCandidate": {
+      "revision": "027f4dfbe55d0c20854c2394c0c99ff2335fb1bc",
+      "separateAcceptanceSeed": true,
+      "approvalTrials": [
+        {
+          "trial": 1,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": true,
+          "durationMs": 23398
+        },
+        {
+          "trial": 1,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18611
+        },
+        {
+          "trial": 2,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 20376
+        },
+        {
+          "trial": 2,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 21416
+        },
+        {
+          "trial": 3,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "allow",
+          "passed": true,
+          "status": "settled",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": true,
+          "calledTool": "read_notes",
+          "returnedValue": true,
+          "exactAnswer": false,
+          "durationMs": 21109
+        },
+        {
+          "trial": 3,
+          "seed": "apex001-recovery-acceptance",
+          "decision": "deny",
+          "passed": true,
+          "status": "failed",
+          "reviewed": true,
+          "calledBeforeDecision": false,
+          "executed": false,
+          "calledTool": null,
+          "returnedValue": false,
+          "exactAnswer": false,
+          "durationMs": 18576
+        }
+      ]
+    }
+  }
+}

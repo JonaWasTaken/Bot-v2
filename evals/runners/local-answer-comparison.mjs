@@ -1,19 +1,7 @@
-import { execFileSync } from "node:child_process";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-import { parseArgs } from "node:util";
+import { launchLocalModelFixture, localModelOptions } from "./local-model-fixture.mjs";
 
-const { values } = parseArgs({ options: {
-  endpoint: { type: "string" },
-  model: { type: "string" },
-  repeats: { type: "string", default: "3" },
-} });
-if (!values.endpoint || !values.model) throw new Error("Supply --endpoint http://127.0.0.1:PORT/v1 and --model MODEL.");
-const endpoint = new URL(values.endpoint);
-if (endpoint.protocol !== "http:" || endpoint.hostname !== "127.0.0.1" || endpoint.username || endpoint.password ||
-    endpoint.pathname !== "/v1" || endpoint.search || endpoint.hash) throw new Error("Use a local /v1 endpoint.");
-const repeats = Number(values.repeats);
-if (!Number.isInteger(repeats) || repeats < 1 || repeats > 10) throw new Error("--repeats must be between 1 and 10.");
+const options = localModelOptions();
+const { model, repeats, revision } = options;
 
 const tasks = [
   {
@@ -32,27 +20,13 @@ const tasks = [
     answer: "===",
   },
 ];
-const { launchVerificationServer, runControlOmb } = await import(pathToFileURL(resolve("scripts/control-omb.ts")).href);
-const revision = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
-const fixture = await launchVerificationServer();
-const api = async (method, path, body) => {
-  const res = await fetch(fixture.info.url + path, {
-    method, headers: { origin: fixture.info.url, "content-type": "application/json" },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!res.ok) throw new Error(`${method} ${path} returned ${res.status}`);
-  return res.json();
-};
-const control = (...args) => runControlOmb([...args, "--url", fixture.info.url]);
+const { api, control, close } = await launchLocalModelFixture(options);
 try {
-  await api("PATCH", "/api/config", { openaiCompat: { key: "local-fixture", url: endpoint.href, model: values.model } });
-  await api("POST", "/api/instances/openaiCompat/refresh-models", {});
   await api("PATCH", "/api/instances/openaiCompat", { tools: false });
   for (let trial = 1; trial <= repeats; trial++) {
     for (const task of tasks) {
       const { bot } = await control("new-bot", "--name", `Reader ${task.id} ${trial}`);
-      await control("set-model", "--bot", bot.id, "--instance", "openaiCompat", "--model", values.model);
+      await control("set-model", "--bot", bot.id, "--instance", "openaiCompat", "--model", model);
       const pin = ["--bot", bot.id, "--task", bot.activeTaskId];
       const start = performance.now();
       const receipt = await control("send", ...pin, "--text", task.prompt);
@@ -63,10 +37,10 @@ try {
       const answer = messages.findLast(m => m.role === "bot" && m.text && (!m.kind || m.kind === "text"))?.text?.trim() ?? "";
       const correct = waited.status === "settled" && answer.replaceAll("`", "").toUpperCase() === task.answer;
       const usage = (await api("GET", "/api/usage?groupBy=bot")).groups.find(row => row.key === `bot:${bot.id}`);
-      console.log(JSON.stringify({ revision, model: values.model, trial, task: task.id, status: waited.status,
+      console.log(JSON.stringify({ revision, model, trial, task: task.id, status: waited.status,
         correct, answer, durationMs, usage: usage ?? null }));
     }
   }
 } finally {
-  await fixture.close();
+  await close();
 }
