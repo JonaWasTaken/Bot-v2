@@ -3,6 +3,7 @@ import { chmodSync, existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import net from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
@@ -27,32 +28,39 @@ mkdirSync(home, { mode: 0o700 });
 chmodSync(runtime, 0o700);
 chmodSync(home, 0o700);
 
-// A real Xorg desktop always runs a window manager, and Cua Driver 0.41 sends foreground input only to the window the
-// manager reports active (_NET_ACTIVE_WINDOW). A bare Xvfb has none, so start a small EWMH one first.
-const windowManager = spawn("openbox", ["--sm-disable"], { env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+// Cua Driver 0.41 routes foreground input through _NET_ACTIVE_WINDOW. Openbox 3.6 runs --startup after it owns
+// the screen. An earlier xprop probe can reset Xvfb by closing its last client connection.
+const readyLine = "openmausbot-openbox-ready";
+const windowManager = spawn("openbox", ["--sm-disable", "--startup", `echo ${readyLine}`], { stdio: ["ignore", "pipe", "pipe"] });
 let windowManagerOutput = "";
-for (const stream of [windowManager.stdout, windowManager.stderr]) {
-  stream.setEncoding("utf8");
-  stream.on("data", (chunk) => {
-    windowManagerOutput += chunk;
-  });
+
+function closeDisplayFixture() {
+  if (windowManager.exitCode === null && windowManager.signalCode === null) windowManager.kill("SIGTERM");
+  rmSync(sandbox, { recursive: true, force: true });
 }
-windowManager.once("error", (error) => {
-  console.error(`[smoke-cua-x11-input] openbox could not start (install it): ${error.message}`);
-  process.exit(1);
-});
-{
-  // openbox claims the screen before it loads its theme and fonts, and a window mapped in between can go unmanaged;
-  // _OB_THEME is set once that startup is done. A fresh runner can spend many seconds building the font cache.
-  const deadline = Date.now() + 30_000;
-  for (;;) {
-    const { stdout } = await execFileAsync("xprop", ["-root", "_NET_SUPPORTING_WM_CHECK", "_OB_THEME"]).catch(() => ({ stdout: "" }));
-    if (/window id #/.test(stdout) && /_OB_THEME\(UTF8_STRING\) =/.test(stdout)) break;
-    if (windowManager.exitCode !== null || Date.now() > deadline) {
-      throw new Error("the window manager did not start on this display");
+
+let startupTimer;
+try {
+  await new Promise((resolve, reject) => {
+    for (const stream of [windowManager.stdout, windowManager.stderr]) {
+      createInterface({ input: stream }).on("line", (line) => {
+        windowManagerOutput += `${line}\n`;
+        if (stream === windowManager.stdout && line === readyLine) resolve();
+      });
     }
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
+    windowManager.once("error", reject);
+    windowManager.once("close", (code, signal) => reject(new Error(
+      `Openbox exited on ${process.env.DISPLAY} before startup (${signal ?? code}):\n${windowManagerOutput}`,
+    )));
+    startupTimer = setTimeout(() => reject(new Error(
+      `Openbox startup timed out on ${process.env.DISPLAY}:\n${windowManagerOutput}`,
+    )), 30_000);
+  });
+} catch (error) {
+  closeDisplayFixture();
+  throw error;
+} finally {
+  clearTimeout(startupTimer);
 }
 
 const title = `OpenMausBot CUA input safety ${process.pid}`;
@@ -307,6 +315,5 @@ try {
   if (proxy) await stop(proxy);
   await stop(driverProcess);
   if (xev.exitCode === null && xev.signalCode === null) xev.kill("SIGTERM");
-  if (windowManager.exitCode === null && windowManager.signalCode === null) windowManager.kill("SIGTERM");
-  rmSync(sandbox, { recursive: true, force: true });
+  closeDisplayFixture();
 }
