@@ -217,11 +217,34 @@ export interface PointerResult extends Point {
   dialog: boolean;
 }
 
+async function confirmClickTarget(context: ActionContext, handle: NodeHandle & { ref?: string }, deadline: number): Promise<Point> {
+  try {
+    for (;;) {
+      const point = context.mouse.position;
+      const offset = await context.frames.localRootOffset(handle.session);
+      const local = { x: point.x - offset.x, y: point.y - offset.y };
+      const { disabled, covering } = await receivesClick(context, handle, local, true);
+      if (!disabled && !covering) return point;
+      if (Date.now() >= deadline) throw new DriverError("timeout", "The element did not stay under the pointer long enough to click.");
+      const next = await actionablePoint(context, handle, deadline);
+      await context.mouse.move(next.x, next.y);
+    }
+  } catch (error) {
+    if (isGone(error) || (error instanceof DriverError && error.code === "not-found")) throw gone(handle);
+    throw error;
+  }
+}
+
 export async function click(context: ActionContext, target: Target, { button = "left", clickCount = 1, timeoutMs = DEFAULT_ACTION_TIMEOUT_MS, pointer }: ClickOptions = {}): Promise<PointerResult> {
   await context.bringToFront();
   refuseErrorPage(context);
-  const point = await pointAfterShowing(context, isPoint(target) ? target : await element(context, target), Date.now() + timeoutMs, "click", pointer);
-  const dialog = await untilDialog(context, context.mouse.click(point.x, point.y, { button, clickCount }));
+  const deadline = Date.now() + timeoutMs;
+  const at = isPoint(target) ? target : await element(context, target);
+  let point = await pointAfterShowing(context, at, deadline, "click", pointer);
+  const beforePress = "x" in at ? undefined : async () => {
+    point = await confirmClickTarget(context, at, deadline);
+  };
+  const dialog = await untilDialog(context, context.mouse.click(point.x, point.y, { button, clickCount, beforePress }));
   return { x: point.x, y: point.y, dialog };
 }
 

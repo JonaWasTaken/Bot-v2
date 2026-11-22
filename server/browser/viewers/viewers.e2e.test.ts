@@ -19,7 +19,6 @@ const suite = CHROME ? describe : describe.skip;
 /** A page that keeps painting, so a screencast keeps sending frames. */
 const ANIMATED = `<!doctype html><title>animated</title><style>@keyframes spin{to{transform:rotate(360deg)}}#s{width:60px;height:60px;background:#36c;animation:spin 1s linear infinite}</style><div id="s"></div><div style="height:4000px"></div>`;
 
-/** Buttons A and B swap places on a page taller than 1500 CSS pixels, or once /state says so; a click notes the page's size. */
 const SWAP = `<!doctype html><title>swap</title><style>
 body{margin:0} button{position:absolute;left:100px;width:300px;height:120px;font-size:30px}
 #a{top:100px} #b{top:300px}
@@ -27,8 +26,7 @@ body{margin:0} button{position:absolute;left:100px;width:300px;height:120px;font
 body.swapped #a{top:300px} body.swapped #b{top:100px}
 </style>
 <button id="a" onclick="document.body.dataset.clicked='a:'+innerWidth+'x'+innerHeight">A</button>
-<button id="b" onclick="document.body.dataset.clicked='b:'+innerWidth+'x'+innerHeight">B</button>
-<script>setInterval(async () => { if (await (await fetch("/state", { cache: "no-store" })).text() === "swap") document.body.classList.add("swapped"); }, 10);</script>`;
+<button id="b" onclick="document.body.dataset.clicked='b:'+innerWidth+'x'+innerHeight">B</button>`;
 
 /** A page taller than its viewport whose Low button and field sit where only a tall viewport shows them; a press notes where it landed. */
 const TALL = `<!doctype html><title>tall</title><style>body{margin:0;height:4000px}</style>
@@ -48,14 +46,12 @@ suite("viewers of the new browser on real Chrome", () => {
   let real: RealService;
   let page: string;
   let swap: string;
-  let state = "still";
   let sessions = 0;
 
   beforeAll(async () => {
     fx = await FixtureServer.start();
     page = fx.page("/animated", ANIMATED);
     swap = fx.page("/swap", SWAP);
-    fx.route("/state", () => ({ body: state, type: "text/plain" }));
     real = await startService({ screen: SCREEN });
   }, hostTimeout(240_000));
 
@@ -147,22 +143,22 @@ suite("viewers of the new browser on real Chrome", () => {
     await acked.viewer.close();
   }, hostTimeout(90_000));
 
-  it("clicks an element where it is once the pointer people watch got there, after the page moved it", async () => {
-    state = "still";
+  it("clicks the requested button when the page swaps it with another as the pointer reaches it", async () => {
     const target = await opened(swap);
     const ref = /button "A" \[ref=(e\d+)\]/u.exec(real.text(await real.call(target, "agent_browser_snapshot")))![1]!;
-    const viewer = await real.service.attachViewer(target, { owner: "local-owner", canOperate: true, maxWidth: 1280, maxHeight: 1280 }, (output) => {
-      if (output.type === "frame") output.ack();
-      else if (output.type === "pointer" && output.phase === "move") state = "swap";
-    });
-    expect(real.text(await real.call(target, "agent_browser_click", { ref }))).toContain(`Clicked ${ref}.`);
-    expect(await until(() => real.peek<string | undefined>(target, "document.body.dataset.clicked"), (value) => value !== undefined)).toMatch(/^a:/u);
-    await viewer.close();
-    state = "still";
+    await real.peek(target, `document.getElementById("a").addEventListener("pointermove", () => document.body.classList.add("swapped"), { once: true })`);
+    const { viewer, outputs } = await watch(target, {});
+    try {
+      expect(real.text(await real.call(target, "agent_browser_click", { ref }))).toContain(`Clicked ${ref}.`);
+      expect(outputs).toContainEqual(expect.objectContaining({ type: "pointer", phase: "move", x: 250, y: 160 }));
+      expect(await real.peek(target, "document.body.classList.contains('swapped')")).toBe(true);
+      expect(await real.peek(target, "document.body.dataset.clicked")).toBe("a:1280x800");
+    } finally {
+      await viewer.close();
+    }
   }, hostTimeout(90_000));
 
   it("resizes the page for a watching panel only once the bot's click is done, so the click lands where it aimed", async () => {
-    state = "still";
     const target = await opened(swap);
     const ref = /button "A" \[ref=(e\d+)\]/u.exec(real.text(await real.call(target, "agent_browser_snapshot")))![1]!;
     let resized: Promise<void> | null = null;
