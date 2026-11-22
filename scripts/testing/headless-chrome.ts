@@ -30,9 +30,12 @@ async function within<T>(work: Promise<T>, ms: number, error: () => Error): Prom
   }
 }
 
-export async function openHeadlessChrome(profile: string): Promise<HeadlessPage> {
-  const chrome = spawn(CHROME_PATH, ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--no-default-browser-check", "--use-mock-keychain",
-    `--user-data-dir=${profile}`, "--remote-debugging-port=0", "about:blank"], { stdio: "ignore" });
+export async function openHeadlessChrome(profile: string, desktop?: {
+  executable: string; entry: string; env: NodeJS.ProcessEnv; pageUrl: string;
+}): Promise<HeadlessPage> {
+  const debug = [`--user-data-dir=${profile}`, "--remote-debugging-port=0"];
+  const chrome = spawn(desktop?.executable ?? CHROME_PATH, desktop ? [...debug, desktop.entry] : ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--no-default-browser-check", "--use-mock-keychain",
+    ...debug, "about:blank"], { stdio: "ignore", ...(desktop ? { env: desktop.env, windowsHide: true } : {}) });
   const ended = new Promise<void>((done) => { chrome.once("exit", () => done()); });
   let spawnError: Error | undefined;
   chrome.once("error", (error) => { spawnError = error; });
@@ -44,8 +47,15 @@ export async function openHeadlessChrome(profile: string): Promise<HeadlessPage>
   if (!port) { chrome.kill(); throw new Error(`Chrome did not start${spawnError ? `: ${spawnError.message}` : ""}`); }
   let socket: WebSocket | undefined;
   try {
-    const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as Array<{ type: string; webSocketDebuggerUrl: string }>;
-    const opening = new WebSocket(targets.find((target) => target.type === "page")!.webSocketDebuggerUrl);
+    let endpoint: string | undefined;
+    const deadline = Date.now() + 30_000;
+    while (!endpoint && Date.now() < deadline) {
+      const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as Array<{ type: string; url: string; webSocketDebuggerUrl: string }>;
+      endpoint = targets.find(target => target.type === "page" && (!desktop || target.url === desktop.pageUrl))?.webSocketDebuggerUrl;
+      if (!endpoint) await delay(100);
+    }
+    if (!endpoint) throw new Error("The fixture renderer did not open.");
+    const opening = new WebSocket(endpoint);
     socket = opening;
     await new Promise((done, fail) => { opening.onopen = done; opening.onerror = () => fail(new Error("Chrome's DevTools connection did not open")); });
   } catch (error) {
@@ -88,7 +98,8 @@ export async function openHeadlessChrome(profile: string): Promise<HeadlessPage>
       }
     },
     async capture(clip) {
-      const { data } = await send("Page.captureScreenshot", { format: "png", ...(clip ? { clip: { ...clip, scale: 1 } } : {}) });
+      const capture = send("Page.captureScreenshot", { format: "png", ...(clip ? { clip: { ...clip, scale: 1 } } : {}) });
+      const { data } = await within(capture, 20_000, () => new Error("The fixture renderer did not produce a screenshot."));
       return Buffer.from(data, "base64");
     },
     close() { open.close(); chrome.kill(); },

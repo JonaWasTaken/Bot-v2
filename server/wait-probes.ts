@@ -184,6 +184,7 @@ export type PageResult = { ok: true; text: string } | Failure;
 export type PublicPage = { ok: true; url: URL; headers: IncomingHttpHeaders; body: Buffer } | Failure;
 
 export interface PageFetchOptions {
+  signal?: AbortSignal;
   allow?: (target: { host: string; address: string }) => boolean;
   lookup?: (host: string) => Promise<Array<{ address: string; family: number }>>;
   timeoutMs?: number;
@@ -257,7 +258,8 @@ export async function fetchPublicPage(rawUrl: string, options: PageFetchOptions 
   const lookup = options.lookup ?? resolveTarget;
   const allow = options.allow ?? (({ address }) => addressClass(address, ownAddresses()) === "public");
   const maxBytes = options.maxBytes ?? PAGE_MAX_BYTES;
-  const signal = AbortSignal.timeout(options.timeoutMs ?? PAGE_TIMEOUT_MS);
+  const timeout = AbortSignal.timeout(options.timeoutMs ?? PAGE_TIMEOUT_MS);
+  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
   let url: URL;
   try {
     url = new URL(rawUrl);

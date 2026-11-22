@@ -60,7 +60,7 @@ const defaultClock: Clock = { now: () => Date.now(), monotonic: () => performanc
 
 /** `interruption`: a resume for a teammate's question while other work is still out; the node's restart note waits for its real resume.
  * `carried`: the settled children whose results the turn's input carried; one that settles later owes the node another resume. */
-interface LiveTurn { controller: AbortController; rootId: string; activeAt: number; interruption: boolean; carried: ReadonlySet<string> }
+interface LiveTurn { controller: AbortController; rootId: string; activeAt: number; interruption: boolean; carried: ReadonlySet<string>; pendingReceipt?: RunResult }
 
 type TerminalStatus = "completed" | "failed" | "cancelled";
 
@@ -254,7 +254,8 @@ export class Runtime {
     const { level, source } = this.level({ own: req.levels.own, chief: req.levels.chief, origin: (root ?? req).origin.kind, chiefLineage,
       driverKind: req.driverKind });
     const node: Assignment = {
-      id: randomUUID(), rootId: parent ? parent.rootId : "", ...(parent ? { parentId: parent.id } : {}), depth: parent ? parent.depth + 1 : 0,
+      id: req.mission?.id ?? randomUUID(), rootId: parent ? parent.rootId : "", ...(parent ? { parentId: parent.id } : {}), depth: parent ? parent.depth + 1 : 0,
+      ...(req.mission ? { mission: req.mission.record } : {}), ...(req.missionStep ? { missionStep: req.missionStep } : {}),
       origin: root ? root.origin : req.origin, requester: req.requester, assignee: target, mode,
       reply: req.reply ?? (mode === "notify" ? "none" : "resume"), brief, ...(req.doneWhen ? { doneWhen: req.doneWhen } : {}),
       status: "queued", level, levelSource: source, executions: 0, restarts: 0, createdAt: now, lastActivityAt: now, result: "",
@@ -316,6 +317,7 @@ export class Runtime {
   }
 
   private tickBody(): void {
+    for (const [id, live] of this.turns) if (live.pendingReceipt) this.turnEnded(id, live, live.pendingReceipt);
     const now = this.clock.now();
     const mono = this.clock.monotonic();
     const live = this.store.all({ nonTerminal: true });
@@ -507,20 +509,25 @@ export class Runtime {
         this.log(`run(${n.id}) threw: ${String(error)}`);
         this.turnEnded(n.id, live, { kind: "failed", outcome: "provider_error", text: clip(String(error), 1000), failure: { text: clip(String(error), 1000) } });
       },
-    ).finally(() => { if (this.turns.get(n.id) === live) this.turns.delete(n.id); });
+    );
     return true;
   }
 
   /** Only the live handle's result settles the node: an ended, cancelled or stalled turn has no handle. */
   private turnEnded(id: string, live: LiveTurn, result: RunResult): void {
+    if (this.turns.get(id) !== live) return;
+    delete live.pendingReceipt;
     try {
-      if (this.turns.get(id) !== live) return;
       const n = this.store.get(id);
       if (!n || n.status !== "running") return;
       if (this.closing && result.kind === "failed") return;
       this.withBatch(() => this.finishTurn(n, result, live));
     } catch (error) {
+      const sqlite = error as { code?: string; errcode?: number } | null;
+      if (sqlite?.code === "SQLITE_BUSY" || [5, 6].includes((sqlite?.errcode ?? 0) & 255)) live.pendingReceipt = result;
       this.log(`settling ${id} failed: ${String(error)}`);
+    } finally {
+      if (!live.pendingReceipt && this.turns.get(id) === live) this.turns.delete(id);
     }
   }
 
@@ -731,7 +738,7 @@ export class Runtime {
   liveEdges(): LiveEdge[] {
     const edges: LiveEdge[] = [];
     for (const n of this.store.all({ nonTerminal: true })) {
-      if (!n.parentId) continue;
+      if (!n.parentId || n.missionStep) continue;
       const parent = this.store.get(n.parentId);
       if (!parent || parent.assignee.botId === n.assignee.botId) continue;
       const state: LiveEdge["state"] = n.status === "resume" ? "waiting" : n.status as LiveEdge["state"];

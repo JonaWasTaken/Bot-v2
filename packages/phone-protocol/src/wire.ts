@@ -1,6 +1,4 @@
-/** The client-visible wire model for tasks, bots, messages and rooms. A field
- * here is one the server emits in every response and SSE frame that carries
- * the shape. */
+/** Client-visible tasks, bots, messages and rooms as emitted in responses and SSE frames. */
 import type { PresenceFrame } from "./team-presence.ts";
 import type { DataBroadcast } from "./data-surface.ts";
 import type { ApprovalMode } from "./approval-mode.ts";
@@ -966,6 +964,7 @@ export type ServerFrame =
   | { kind: "notify"; notification: NotificationLogEntry }
   | { kind: "notifications.read"; threadId: string; ids: string[] }
   | { kind: "group.deleted"; groupId: string }
+  | { kind: "mission.changed"; botId: string }
   | { kind: "routine"; routine: Routine }
   | { kind: "routine.deleted"; routineId: string }
   | { kind: "routine.run"; run: RoutineRun }
