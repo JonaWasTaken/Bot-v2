@@ -35,7 +35,7 @@ export async function openHeadlessChrome(profile: string, desktop?: {
 }): Promise<HeadlessPage> {
   const debug = [`--user-data-dir=${profile}`, "--remote-debugging-port=0"];
   const chrome = spawn(desktop?.executable ?? CHROME_PATH, desktop ? [...debug, desktop.entry] : ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--no-default-browser-check", "--use-mock-keychain",
-    ...debug, "about:blank"], { stdio: "ignore", ...(desktop ? { env: desktop.env, windowsHide: true } : {}) });
+    ...debug, "about:blank"], { stdio: desktop ? ["ignore", "ignore", "ignore", "ipc"] : "ignore", ...(desktop ? { env: desktop.env, windowsHide: true } : {}) });
   const ended = new Promise<void>((done) => { chrome.once("exit", () => done()); });
   let spawnError: Error | undefined;
   chrome.once("error", (error) => { spawnError = error; });
@@ -102,7 +102,11 @@ export async function openHeadlessChrome(profile: string, desktop?: {
       const { data } = await within(capture, 20_000, () => new Error("The fixture renderer did not produce a screenshot."));
       return Buffer.from(data, "base64");
     },
-    close() { open.close(); chrome.kill(); },
+    close() {
+      open.close();
+      if (desktop && chrome.connected) chrome.send("quit", error => { if (error) chrome.kill(); });
+      else chrome.kill();
+    },
     exited: (timeoutMs) => within(ended.then(() => true), timeoutMs, () => new Error("Chrome is still running")).catch(() => false),
   };
 }

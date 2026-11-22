@@ -101,6 +101,16 @@ suite("S4 snapshot, refs and actions on real Chrome", () => {
     expect(await read(`document.querySelector("button").textContent`)).toBe("replacement");
   });
 
+  it("stops a double-click if the first click removes the requested button", async () => {
+    await open(`<style>button{width:120px}</style>
+      <button onmousedown="document.body.dataset.presses = 'A'" onclick="this.remove()">A</button>
+      <button onmousedown="document.body.dataset.presses += 'B'">B</button>`);
+    const ref = refOf((await page.snapshot()).tree, "button", "A");
+    await expect(page.click({ ref }, { clickCount: 2, timeoutMs: 2_000 })).rejects.toMatchObject({ code: "stale-ref" });
+    expect(await read("document.querySelector('button').textContent")).toBe("B");
+    expect(await read("document.body.dataset.presses")).toBe("A");
+  });
+
   it("rejects refs from another tab (t3)", async () => {
     await open("<button>same label</button>");
     const ref = refOf((await page.snapshot()).tree, "button", "same label");

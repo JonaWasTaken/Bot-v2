@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowDown, ArrowUp, CheckCheck, Folder, MoreHorizontal, Pencil, Plus, X } from "lucide-react";
+import { MissionControl } from "./missions/MissionControl";
+import { ArrowDown, ArrowUp, CheckCheck, Folder, ListChecks, MoreHorizontal, Pencil, Plus, X } from "lucide-react";
 import { useStore, type Bot, type BotProject } from "@/state/store";
 import { cn } from "@/lib/cn";
 import { MENU_SHEET } from "./menu-recipe";
@@ -24,7 +25,7 @@ export function navigateThreadMenu(event: React.KeyboardEvent<HTMLDivElement>) {
   buttons[next]?.focus();
 }
 
-export function FolderActions({ project, canMoveUp, canMoveDown, canMarkRead, saving, menu, onMenuChange, onEdit, onMove, onMarkRead }: {
+export function FolderActions({ project, canMoveUp, canMoveDown, canMarkRead, saving, menu, onMenuChange, missionBot, onEdit, onMove, onMarkRead }: {
   project: BotProject;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -32,10 +33,12 @@ export function FolderActions({ project, canMoveUp, canMoveDown, canMarkRead, sa
   saving: boolean;
   menu: { left: number; top: number } | null;
   onMenuChange: (menu: { left: number; top: number } | null) => void;
+  missionBot?: Bot;
   onEdit: () => void;
   onMove: (direction: -1 | 1, onSaved: () => void) => void;
   onMarkRead: (onSaved: () => void) => void;
 }) {
+  const [showMissions, setShowMissions] = useState(false);
   const actionRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const close = () => { onMenuChange(null); actionRef.current?.focus(); };
@@ -56,7 +59,7 @@ export function FolderActions({ project, canMoveUp, canMoveDown, canMarkRead, sa
   const shown = motion.value;
   const position = shown && {
     left: Math.max(8, Math.min(shown.left, window.innerWidth - 228)),
-    top: Math.max(8, Math.min(shown.top, window.innerHeight - 180)),
+    top: Math.max(8, Math.min(shown.top, window.innerHeight - (missionBot ? 216 : 180))),
   };
   return <>
     <button ref={actionRef} type="button" aria-label={t("folder.actions", { name: project.name })} title={t("folder.actions", { name: project.name })} aria-haspopup="menu" aria-expanded={Boolean(menu)}
@@ -67,10 +70,12 @@ export function FolderActions({ project, canMoveUp, canMoveDown, canMarkRead, sa
       onMouseDown={(event) => event.stopPropagation()}
       onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); close(); } else navigateThreadMenu(event); }}>
       <button type="button" role="menuitem" onClick={() => { close(); onEdit(); }} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[14px] leading-[18px] text-ink hover:bg-menu-hover"><Pencil size={16} />{t("folder.settings")}</button>
+      {missionBot && <button type="button" role="menuitem" onClick={() => { close(); setShowMissions(true); }} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[14px] leading-[18px] text-ink hover:bg-menu-hover"><ListChecks size={16} />{t("mission.title")}</button>}
       <button type="button" role="menuitem" disabled={!canMarkRead || saving} onClick={() => onMarkRead(close)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[14px] leading-[18px] text-ink hover:bg-menu-hover disabled:opacity-40"><CheckCheck size={16} />{t("folder.markRead")}</button>
       <button type="button" role="menuitem" disabled={!canMoveUp || saving} onClick={() => move(-1)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[14px] leading-[18px] text-ink hover:bg-menu-hover disabled:opacity-40"><ArrowUp size={16} />{t("folder.moveUp")}</button>
       <button type="button" role="menuitem" disabled={!canMoveDown || saving} onClick={() => move(1)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[14px] leading-[18px] text-ink hover:bg-menu-hover disabled:opacity-40"><ArrowDown size={16} />{t("folder.moveDown")}</button>
     </div>, document.body)}
+    {showMissions && missionBot && createPortal(<MissionControl bot={missionBot} project={project} onClose={() => setShowMissions(false)} />, document.body)}
   </>;
 }
 

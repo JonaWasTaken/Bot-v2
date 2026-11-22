@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ListChecks, Plus, X } from "lucide-react";
 import { api } from "@/state/api";
-import { useStoreSelector } from "@/state/store-select";
-import type { Bot } from "@/state/store";
+import { useStoreDispatch, useStoreSelector } from "@/state/store-select";
+import type { Bot, BotProject } from "@/state/store";
 import { t } from "@/lib/i18n";
 import { listenLiveFrames } from "@/lib/live-events";
 import { useOwnerOrAdmin } from "@/lib/use-owner-or-admin";
@@ -24,11 +24,13 @@ export function MissionControlRow({ bot }: { bot: Bot }) {
     {open && enabled && createPortal(<MissionControl key={bot.id} bot={bot} onClose={() => setOpen(false)} />, document.body)}</>;
 }
 
-export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void }) {
+export function MissionControl({ bot, project, onClose }: { bot: Bot; project?: BotProject; onClose: () => void }) {
   const dialog = useRef<HTMLDivElement>(null);
   useModalDialog(dialog, onClose);
   const bots = useStoreSelector(s => s.bots);
   const base = "/api/bots/" + encodeURIComponent(bot.id) + "/missions";
+  const listPath = project ? base + "?projectId=" + encodeURIComponent(project.id) : base;
+  const dispatch = useStoreDispatch();
   const [list, setList] = useState<Summary[]>([]);
   const [selected, select] = useState<string | null>(null), [detail, setDetail] = useState<MissionView | null>(null);
   const [form, setForm] = useState<"new" | "revise" | null>(null);
@@ -47,7 +49,7 @@ export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void
   useEffect(() => {
     const abort = new AbortController(), seq = ++generation.current;
     const load = async () => {
-      const { missions } = await api<{ missions: Summary[] }>(base, { signal: abort.signal });
+      const { missions } = await api<{ missions: Summary[] }>(listPath, { signal: abort.signal });
       const id = selected ?? missions[0]?.id;
       const view = id ? await api<MissionView>(base + "/" + id, { signal: abort.signal }) : null;
       if (abort.signal.aborted || seq !== generation.current) return;
@@ -58,8 +60,10 @@ export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void
       setError(t("mission.loadError")); setLoading(false);
     } });
     return () => abort.abort();
-  }, [base, selected, reload]);
+  }, [base, listPath, selected, reload]);
   const current = detail?.id === selected ? detail : null;
+  const conversation = current?.conversationId && bot.tasks?.find(task =>
+    task.threadId === current.conversationId && task.projectId === current.projectId && task.archivedAt === undefined);
   async function write(path: string, body: unknown) {
     if (writing.current) return;
     writing.current = true; setBusy(true); setError("");
@@ -77,12 +81,12 @@ export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void
     if (form === "revise" && current) await write(base + "/" + current.id, { action: "revise", revision: current.revision, objective: data.objective, plan: data.plan, limits: data.limits });
     else await write(base, data);
   };
-  return <div className="ui-scrim fixed inset-0 z-[100] grid place-items-center p-2 sm:p-5">
+  return <div className="ui-scrim fixed inset-0 z-[90] grid place-items-center p-2 sm:p-5">
     <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="mission-control-title" tabIndex={-1}
       className="ui-modal flex h-[min(820px,94dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-panel text-ink">
       <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6"><div className="flex min-w-0 items-center gap-2">
         <ListChecks size={18} className="shrink-0 text-accent-text" aria-hidden="true" /><h1 id="mission-control-title" className="truncate text-[17px] font-semibold">{t("mission.title")}</h1>
-        <span className="truncate text-[13px] text-ink-secondary">{bot.name}</span></div>
+        <span className="truncate text-[13px] text-ink-secondary">{project?.name ?? bot.name}</span></div>
         <button type="button" className="ui-icon-button" onClick={onClose} aria-label={t("common.close")} title={t("common.close")}><X size={16} aria-hidden="true" /></button></header>
       <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] sm:grid-cols-[225px_minmax(0,1fr)] sm:grid-rows-1">
         <nav aria-label={t("mission.list")} className="flex max-h-36 flex-col gap-2 overflow-y-auto bg-inset p-3 sm:max-h-none">
@@ -98,10 +102,15 @@ export function MissionControl({ bot, onClose }: { bot: Bot; onClose: () => void
           {error && <div role="alert" className="mb-3 flex flex-wrap items-center gap-2 text-[13px] text-danger">{error}
             <button className="ui-button ui-button-sm" onClick={() => { setError(""); refresh(); }}>{t("chat.retry")}</button></div>}
           {form || (!loading && !list.length && !error)
-            ? <MissionForm key={form === "revise" ? current?.id : "new"} bot={bot} bots={bots.filter(b => !b.hidden)} previous={form === "revise" ? current ?? undefined : undefined}
+            ? <MissionForm key={form === "revise" ? current?.id : "new"} bot={bot} fixedProjectId={project?.id} bots={bots.filter(b => !b.hidden)} previous={form === "revise" ? current ?? undefined : undefined}
                 busy={busy} onSave={save} onBack={() => list.length ? setForm(null) : onClose()} />
-            : current ? <MissionDetail key={current.id + ":" + current.version} mission={current} bots={bots} busy={busy}
-                path={base + "/" + current.id} onAction={action} onRevise={() => setForm("revise")} />
+            : current ? <>{conversation && <button type="button" className="ui-button ui-button-sm mb-3" onClick={() => {
+                dispatch({ type: "switchTask", botId: bot.id, threadId: conversation.threadId }); onClose();
+              }}>{t("mission.openConversation", { name: conversation.title || t("task.newShort") })}</button>}
+              <MissionDetail key={current.id + ":" + current.version} mission={current} bots={bots} busy={busy}
+                conversationName={conversation ? conversation.title || t("task.newShort") : undefined}
+                onPostReport={() => void write(base + "/" + current.id + "/conversation-report", { revision: current.revision })}
+                path={base + "/" + current.id} onAction={action} onRevise={() => setForm("revise")} /></>
             : !error && <p role="status" className="text-[13px] text-ink-secondary">{t("mission.loading")}</p>}
         </main>
       </div>

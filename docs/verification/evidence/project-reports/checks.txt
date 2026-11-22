@@ -1,0 +1,68 @@
+Selected command output from the 2026-11-22 macOS runs. Commands and host details are in the sprint report.
+
+Fork baseline
+Test Files  4 passed (4)
+Tests  205 passed (205)
+Duration  9.26s (transform 431ms, setup 583ms, import 217ms, tests 8.19s, environment 0ms)
+
+Application regression selection
+Test Files  37 passed (37)
+Tests  959 passed (959)
+Duration  106.88s (transform 14.33s, setup 14.98s, import 18.58s, tests 225.60s, environment 633ms)
+
+Electron
+ℹ the notification names the Cloud and the fix
+ℹ ZIP transferred -> preparing (0 quits) -> native ready -> downloaded -> one restart; watchdog and late ready cannot repeat it
+ℹ native never fetches ZIP -> deadline/error/retryable=false; late native ready keeps error and causes zero quits
+ℹ tests 2241
+ℹ suites 9
+ℹ pass 2228
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 13
+ℹ todo 0
+ℹ duration_ms 64278.034875
+
+Broker
+Test Files  6 passed (6)
+Tests  139 passed (139)
+Duration  1.87s (transform 1.10s, setup 0ms, import 2.07s, tests 3.19s, environment 0ms)
+
+Evaluation tests
+Test Files  18 passed (18)
+Tests  103 passed (103)
+Duration  115.07s (transform 2.89s, setup 3.70s, import 3.59s, tests 106.26s, environment 1ms)
+
+Offline scenarios
+running dispatch-supersede (coordination)...
+PASS in 4.5s
+running lazy-claim-rejection (localVm)...
+PASS in 3.8s
+running lazy-claim-screenless (localVm)...
+PASS in 3.5s
+running lazy-computer-claim (localVm)...
+PASS in 48.8s
+running routine-deferral (coordination)...
+PASS in 18.3s
+running skill-assignment-visibility (coordination)...
+PASS in 13.9s
+
+Golden replay
+replaying golden golden-handoff...
+PASS in 4.8s
+
+Packaged server
+packaged server started with no node_modules in reach (port 62887) ✓
+all 14 spawned proxy paths resolve inside the packaged server dir ✓
+packaged MCP stdio server reached the API and flushed its final frames ✓
+packaged openmausbot doctor and bots answered from the bundle ✓
+packaged backup worker exported an encrypted archive ✓
+packaged loopback trust gate: health serves, a public mutation is refused at service trust ✓
+packaged container launcher ran the server as its child and stopped it cleanly ✓
+packaged desktop entry started the server twice on its compile cache (1 entries) ✓
+
+Locale validation
+locale catalogs valid (16 languages, 11458 English strings)
+
+Renderer build
+✓ built in 18.98s

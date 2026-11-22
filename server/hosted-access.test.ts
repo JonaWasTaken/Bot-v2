@@ -82,9 +82,9 @@ async function login() {
   expect(callback.status).toBe(302);
   return callback.cookies.find((value) => !value.startsWith("__Host-"))!.split(";")[0];
 }
-async function restart(env: NodeJS.ProcessEnv = {}) {
+async function restart(env: NodeJS.ProcessEnv = {}, nodeArgs: string[] = []) {
   await waitForExit(child, { signal: "SIGTERM" });
-  child = spawn(process.execPath, [join(ROOT, "server/index.ts")], { cwd: ROOT, env: { ...fixtureEnv, ...env }, stdio: ["ignore", "pipe", "pipe"] });
+  child = spawn(process.execPath, [...nodeArgs, join(ROOT, "server/index.ts")], { cwd: ROOT, env: { ...fixtureEnv, ...env }, stdio: ["ignore", "pipe", "pipe"] });
   child.stdout?.on("data", (chunk) => log += chunk); child.stderr?.on("data", (chunk) => log += chunk);
   await expect.poll(async () => {
     try { return (await call("/api/health", { local: true })).status; } catch { return 0; }
@@ -328,11 +328,16 @@ describe("hosted bridge in the full server", () => {
     await refuseFullTask();
   }, 25_000);
   it("withdraws hosted readiness the moment the running server's license grace period ends", async () => {
-    // Expired a week ago less eight seconds: inside the 7-day grace, which ends mid-test.
-    state("admin", false, { expiresAt: new Date(Date.now() + 8_000 - 7 * 24 * 60 * 60_000).toISOString() });
-    await restart({ OMB_ADMIN_MEMBERSHIP: "portal", OMB_SHARED_WORKSPACE_FULL_ACCESS: "1" });
+    const day = 24 * 60 * 60_000;
+    const data = join(home, ".openmausbot");
+    state("admin", false, { expiresAt: new Date(Date.now() - 6 * day).toISOString() });
+    await restart({
+      OMB_ADMIN_MEMBERSHIP: "portal", OMB_SHARED_WORKSPACE_FULL_ACCESS: "1",
+      HOME: data, USERPROFILE: data, OMB_DATA_DIR: data, OMB_TEST_RESUME_CLOCK: "1",
+    }, ["--import", new URL("./testing/resume-clock-hooks.mjs", import.meta.url).href]);
     expect((await call("/api/health/hosted")).status).toBe(200);
     await policyHealth(true);
+    writeFileSync(join(data, "resume-clock-ms"), String(day));
     await expect.poll(async () => (await call("/api/health/hosted")).status, { timeout: 10_000, interval: 100 }).toBe(503);
     expect((await call("/api/health")).status).toBe(200);
     await policyHealth(false);

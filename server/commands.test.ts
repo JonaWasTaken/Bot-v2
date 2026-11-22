@@ -1,9 +1,9 @@
 import { mkdirSync, rmSync } from "node:fs";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { runCommand, commandReceipt } from "./commands.ts";
+import { runCommand, commandReceipt, persistMessage } from "./commands.ts";
 import { DATA_DIR } from "./config.ts";
-import { closeMessageDb, insertMessage, readThread } from "./message-db.ts";
+import { closeMessageDb, deleteThread, insertMessage, readThread } from "./message-db.ts";
 import type { Message } from "./store.ts";
 
 const msg = (id: string, text: string): Message => ({ id, role: "bot", kind: "text", text, at: 1 });
@@ -35,6 +35,17 @@ describe("runCommand", () => {
     const second = runCommand({ kind: "digest.append", key: "t1:turn-1" }, apply);
     expect(second).toEqual(first);
     expect(applied).toBe(1);
+  });
+
+  it("replays a message by ID without retaining its contents in the receipt or resurrecting a deleted message", () => {
+    const command = { kind: "mission.post-report", key: "review:1", receipt: "message-id" as const };
+    const first = persistMessage("project-chat", msg("m1", "Verified findings"), command);
+    expect(persistMessage("project-chat", msg("m2", "Duplicate"), command)).toEqual(first);
+    expect(commandReceipt(command.kind, command.key)?.result).toBe("m1");
+    expect(readThread("project-chat", "/nonexistent").messages).toEqual([first]);
+    deleteThread("project-chat");
+    expect(() => persistMessage("project-chat", msg("m3", "Duplicate"), command)).toThrow("no longer available");
+    expect(readThread("project-chat", "/nonexistent").messages).toEqual([]);
   });
 
   it("keeps commands of different kinds apart even when the key matches", () => {

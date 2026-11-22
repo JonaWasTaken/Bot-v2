@@ -56,6 +56,20 @@ function fixture(overrides: Partial<MissionHost> = {}, path = ":memory:") {
 }
 
 describe("reviewed research missions on the assignment runtime", () => {
+  it("reopens only missions owned by the requested folder and preserves creation retry identity", () => {
+    const f = fixture();
+    f.create();
+    const input = { ...f.input, id: randomUUID(), projectId: "work", conversationId: "thread", plan: shortlist };
+    f.service.create(f.bot, input);
+    expect(f.service.create(f.bot, input)).toMatchObject({ projectId: "work", conversationId: "thread" });
+    expect(() => f.service.create(f.bot, { ...input, conversationId: "different" })).toThrow("already belongs");
+    f.service.create(f.bot, { ...input, id: randomUUID(), projectId: "other", conversationId: undefined });
+    expect(f.service.list(f.bot, "work").map(m => m.id)).toEqual([input.id]);
+    expect(f.service.list(f.bot, "empty")).toEqual([]);
+    expect(f.service.list("another", "work")).toEqual([]);
+    expect(f.service.list(f.bot)).toHaveLength(3);
+  });
+
   it("rejects excess size, depth, repeated nodes, missing dependencies, cycles and model-selected tool arguments", () => {
     expect(() => checkedPlan(shortlist, { ...defaultLimits, maxSteps: 4 })).toThrow();
     expect(() => checkedPlan(shortlist, { ...defaultLimits, maxDepth: 2 })).toThrow();
@@ -89,7 +103,7 @@ describe("reviewed research missions on the assignment runtime", () => {
     } });
     f.create({ concurrency: 2 }); await f.start();
     await f.until(() => f.read().state === "completed");
-    const view = f.read(), report = await f.service.artifact(f.bot, f.id);
+    const view = f.read(), { text: report } = await f.service.verifiedReport(f.bot, f.id);
     expect(peak).toBe(2);
     expect(view.usage).toEqual({ toolCalls: 8, modelCalls: 0 });
     expect(report).toContain("**beta** ranks first");
@@ -102,7 +116,31 @@ describe("reviewed research missions on the assignment runtime", () => {
     expect(view.artifact?.assignmentId).toBe(write.id);
     expect(f.runtime.prune(Date.now() + 100_000)).toBe(0);
     files.set(f.store.get(f.id)!.mission!.artifactId, Buffer.from("changed"));
-    await expect(f.service.artifact(f.bot, f.id)).rejects.toThrow("verification receipt");
+    await expect(f.service.verifiedReport(f.bot, f.id)).rejects.toThrow("verification receipt");
+  });
+
+  it("lets a ready sibling finish while another source is held and shows verification until the saved bytes pass", async () => {
+    let releaseSource!: () => void, releaseVerifier!: () => void;
+    const source = new Promise<void>(ready => { releaseSource = ready; });
+    const verification = new Promise<void>(ready => { releaseVerifier = ready; });
+    const f = fixture({ readPackage: async name => {
+      if (name === "alpha") await source;
+      return observation(name);
+    }, read: async id => { await verification; return files.get(id)!; } });
+    try {
+      f.create({ concurrency: 3 }); await f.start();
+      await f.until(() => f.read().steps.find(step => step.key === "npm:beta")?.status === "verified");
+      expect(f.read().steps.find(step => step.key === "npm:alpha")?.status).toBe("running");
+      expect(f.host.save).not.toHaveBeenCalled();
+      releaseSource();
+      await f.until(() => f.read().state === "verifying");
+      expect(f.service.list(f.bot)[0]?.state).toBe("verifying");
+      expect(f.read().artifact).toBeUndefined();
+      releaseVerifier();
+      await f.until(() => f.read().state === "completed");
+      expect(f.service.list(f.bot)[0]?.state).toBe("completed");
+      expect(f.read().artifact?.sha256).toMatch(/^[a-f0-9]{64}$/);
+    } finally { releaseSource(); releaseVerifier(); }
   });
 
   it("pauses admission, resumes once, limits retries and preserves successful reads", async () => {
@@ -265,7 +303,7 @@ describe("reviewed research missions on the assignment runtime", () => {
     const restored = statSync(join(ATTACHMENTS_DIR, name), { bigint: true });
     expect([restored.ino, restored.mtimeNs, restored.size]).toEqual([first.ino, first.mtimeNs, first.size]);
     expect(g.read(f.id).steps.map(s => s.attempts)).toEqual([1, 1, 1, 2, 1]);
-    expect(await g.service.artifact(g.bot, f.id)).toContain("Registry sources");
+    expect((await g.service.verifiedReport(g.bot, f.id)).text).toContain("Registry sources");
     expect(g.host.readPackage).not.toHaveBeenCalled();
   });
 });

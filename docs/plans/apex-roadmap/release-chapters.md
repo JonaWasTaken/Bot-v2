@@ -2,6 +2,10 @@
 
 The release directive defines ten programs with five chapters each. Every chapter below lists its twenty missions in release order. A range is inclusive and links to the source section containing its editable records. The numbers in stable mission IDs identify their original sprint source book and row. Query a release chapter with `node docs/plans/apex-roadmap/ledger.mjs --chapter NN`. [Ledger and evidence policy](README.md)
 
+For each chapter, the sentence under its heading defines the objective. The linked source sections identify the architecture boundary, current behavior, files, dependencies, risks and test procedures for those twenty scenarios. Each mission exports its current status, evidence and responsible workstream. The [system map](systems.md) identifies the existing components and the next integration exercise for the affected systems.
+
+To close a chapter, verify all twenty acceptance criteria through their intended entry points, record the revision and environment for every result, and integrate the reviewed changes into the named fork branch. For a chapter that handles private data, permissions or effects, include the unauthorized case for that boundary and inspect the actual resulting data or effect. For release chapters, use the installed desktop and the recorded upgrade and recovery inputs.
+
 ## Program I · Architecture and infrastructure
 
 ### 01 Repository audit

@@ -35,7 +35,7 @@ const planningUrl = "https://github.com/JonaWasTaken/Bot-v2/pull/7";
 const issueOrPull = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/(?:issues|pull)\/[1-9]\d*$/;
 const statuses = new Set([
   "Not started", "Blocked", "In progress", "Implemented",
-  "Verified", "Integrated", "Failed or requires rework",
+  "Verified", "Integrated", "Requires rework",
 ]);
 const fields = [
   "Current state", "Sources", "Dependencies", "Risk", "Risk level", "Automated verification",
@@ -183,6 +183,30 @@ function readChapter(file, number, sprintTitle) {
   });
 }
 
+function chapterCoverage() {
+  const file = resolve(home, "systems.md"), source = read(file);
+  checkLinks(file, source);
+  const expected = new Set("A B C AI MISSION TEAM MODEL MEM CTX DESKTOP BROWSER RESEARCH CODE PROJECT ARTIFACT AUTO FLOW CONNECT SKILL UX VOICE SEARCH VERIFY RELIABILITY PERF SEC EVAL RELEASE".split(" "));
+  const chapters = releaseTitles.map(() => ({ workstream: "", related_systems: [] }));
+  for (const line of source.split(/\r?\n/)) {
+    const [, code, name, numbers] = line.split("|").map(cell => cell.trim());
+    if (!code || !/^[A-Z]+$/.test(code)) continue;
+    requireThat(expected.delete(code), `Unknown or repeated system or workstream: ${code}`);
+    const listed = numbers.split(", ").map(Number);
+    requireThat(new Set(listed).size === listed.length, `Repeated chapter for ${code}`);
+    for (const number of listed) {
+      const chapter = chapters[number - 1];
+      requireThat(chapter, `Unknown chapter ${number} for ${code}`);
+      if (code.length === 1) {
+        requireThat(!chapter.workstream, `Multiple leads for chapter ${number}`);
+        chapter.workstream = name;
+      } else chapter.related_systems.push(code);
+    }
+  }
+  requireThat(!expected.size && chapters.every(c => c.workstream && c.related_systems.length), "Incomplete product-system coverage or chapter ownership");
+  return chapters;
+}
+
 function mapReleaseChapters(missions, index) {
   const manifest = resolve(home, "release-chapters.md");
   const source = read(manifest);
@@ -190,6 +214,7 @@ function mapReleaseChapters(missions, index) {
   const indexLinks = new Set(markdownLinks(index).map(({ target }) => target));
   const byId = new Map(missions.map((m) => [m.id, m]));
   const membership = new Map();
+  const coverage = chapterCoverage();
   const counts = [];
   let program = -1;
   let chapter = 0;
@@ -221,6 +246,7 @@ function mapReleaseChapters(missions, index) {
         requireThat(!membership.has(id), `${id} appears in more than one release range`);
         const title = releaseTitles[chapter - 1];
         membership.set(id, {
+          ...coverage[chapter - 1],
           program: programNames[program], chapter, chapter_title: title, release_position: ++counts[chapter - 1],
           release_view: `${repoPath(manifest)}#${anchor(pad(chapter) + " " + title)}`,
         });
@@ -261,6 +287,7 @@ function main(args) {
     const sources = new Set(missions.flatMap((m) => m.source_files));
     console.log(`Validated ${programNames.length} programs, 50 release chapters of 20 missions, ${missions.length} stable IDs and ${sources.size} source files.`);
     console.log("Validated unique objectives, plans and acceptance criteria, dependency order, risk levels and typed GitHub references.");
+    console.log("Validated 25 product systems and one responsible workstream per release chapter.");
     for (const status of statuses) console.log(`${status}: ${missions.filter((m) => m.status === status).length}`);
   } else if (args.length === 2 && args[0] === "--chapter") {
     const selection = missions.filter((m) => pad(m.chapter) === args[1]);

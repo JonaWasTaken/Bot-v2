@@ -1,0 +1,44 @@
+{
+  "revision": "21435b724f3f9d3d864256999c90e6efb9f593b8",
+  "model": "qwen3:8b-omb-40k",
+  "metric": "size",
+  "objective": "Compare zod, valibot and superstruct for a TypeScript application by unpacked package size. Check current registry sources and save a Markdown report.",
+  "toolScope": {
+    "allow": [
+      "mcp:agents:coordinate_bots",
+      "mcp:agents:wait_until",
+      "mcp:agents:attach_file"
+    ]
+  },
+  "startedAt": "2026-11-22T10:45:22.866Z",
+  "readerScope": {
+    "allow": [
+      "mcp:agents:wait_until"
+    ]
+  },
+  "elapsedMs": 121238,
+  "turnStatus": "timed-out",
+  "messages": [
+    "bot",
+    "user",
+    "bot",
+    "bot",
+    "bot"
+  ],
+  "toolRows": 2,
+  "attachments": 0,
+  "verifiedReport": false,
+  "usage": {
+    "key": "total",
+    "label": "total",
+    "turns": 0,
+    "input": 0,
+    "output": 0,
+    "cachedInput": 0,
+    "costUsd": null,
+    "estimatedUsd": null,
+    "unpriced": 0,
+    "billableUsd": null,
+    "barTokens": 0
+  }
+}

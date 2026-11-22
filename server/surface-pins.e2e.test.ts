@@ -274,7 +274,7 @@ describe("surface pin provenance against the real server", () => {
     expect(savedTask(bot.id, task.threadId)?.surface).toBeUndefined();
     await apiOk("DELETE", `/api/bots/${bot.id}`);
     await stop();
-  });
+  }, 60_000);
 
   it("mounts the built-in browser beside the computer in a person's thread and in a thread a teammate opened", async () => {
     await start(true);

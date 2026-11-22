@@ -84,9 +84,14 @@ export class Mouse {
   }
 
   /** Moves, then presses and releases `clickCount` times (a double click is two clicks counted 1 and 2). */
-  async click(x: number, y: number, { button = "left", clickCount = 1 }: { button?: MouseButton; clickCount?: number } = {}): Promise<void> {
+  async click(x: number, y: number, { button = "left", clickCount = 1, beforePress }: {
+    button?: MouseButton;
+    clickCount?: number;
+    beforePress?: () => Promise<void>;
+  } = {}): Promise<void> {
     await this.move(x, y);
     for (let count = 1; count <= clickCount; count++) {
+      if (beforePress) await beforePress();
       await this.down({ button, clickCount: count });
       await this.up({ button, clickCount: count });
     }

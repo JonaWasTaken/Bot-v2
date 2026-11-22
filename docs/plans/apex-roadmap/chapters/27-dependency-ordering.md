@@ -32,6 +32,20 @@
 | APEX-27-04 | Represent a failed prerequisite on its dependent | Fail an input-producing child before it yields a document. | Its dependent records an unavailable input and starts zero provider turns. |
 | APEX-27-05 | Restore a partially completed dependency graph | Restart after the first of three child results is accepted. | The finished child stays finished and only outstanding eligible work dispatches. |
 
+**APEX-27-02 Status** Verified
+
+**APEX-27-02 Current state** The bounded research graph admits independent reads. A dependent report waits for all three accepted observations.
+
+**APEX-27-02 Sources** [server/missions/assignments.ts](../../../../server/missions/assignments.ts) · [server/missions/assignments.test.ts](../../../../server/missions/assignments.test.ts)
+
+**APEX-27-02 Automated verification** Run `pnpm exec vitest run server/missions/assignments.test.ts`. The held-source case waits for beta to finish, checks that alpha is still running and checks that the writer has received no call.
+
+**APEX-27-02 Manual verification** Open the three source assignments in the desktop fixture and compare their start and finish timestamps with the dependent report start in the saved mission record.
+
+**APEX-27-02 Completion evidence** The controlled sibling test passed on `c62fe3eb1`. Both macOS Electron runs recorded overlapping source assignments and all three completed before the writer started. [Sprint and regression results](../../2026-11-22-project-report-sprint.md) · [Timestamped assignments](../../../verification/evidence/project-reports/dependencies/mission.json)
+
+**APEX-27-02 GitHub** [Project report PR #13](https://github.com/JonaWasTaken/Bot-v2/pull/13)
+
 ## Concurrent handoff inputs
 
 **Current state** Recipient filenames derive from sender and assignment identity. The file handoff path also controls aggregate limits when deliveries overlap.

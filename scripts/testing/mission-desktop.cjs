@@ -12,6 +12,7 @@ for (const key of ["home", "appData", "userData", "sessionData", "temp", "downlo
 }
 app.setAppLogsPath(join(profile, "logs"));
 app.disableHardwareAcceleration();
+process.once("message", message => { if (message === "quit") app.quit(); });
 shell.showItemInFolder = () => {};
 app.on("browser-window-created", (_event, win) => {
   win.setSkipTaskbar(true);

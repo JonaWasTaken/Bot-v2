@@ -66,7 +66,7 @@ export function missionView(root: MissionRoot, children: Assignment[], events: A
     actions.push("cancel");
   }
   return { id: root.id, botId: root.assignee.botId, owner: record.owner, researcherId: record.researcherId, name: record.name,
-    objective: record.objective ?? root.brief, memoryTopic: record.memoryTopic, originalObjective: root.brief, history: (record.history ?? []).map(({ artifactId: _artifact, ...plan }) => plan), projectId: record.projectId, state, version: record.version, revision: record.revision, plan: record.plan,
+    objective: record.objective ?? root.brief, memoryTopic: record.memoryTopic, originalObjective: root.brief, history: (record.history ?? []).map(({ artifactId: _artifact, ...plan }) => plan), projectId: record.projectId, conversationId: record.conversationId, state, version: record.version, revision: record.revision, plan: record.plan,
     limits: record.limits, steps, actions, retryKeys, createdAt: root.createdAt, updatedAt: root.lastActivityAt,
     finishedAt: root.finishedAt, issue: record.issue ?? (root.status === "failed" ? root.result : undefined), usage, artifact,
     activity: events.filter(e => e.kind === "progress" || e.kind === "restart_reconciled" || e.kind === "settled" || e.kind === "cancelled")
