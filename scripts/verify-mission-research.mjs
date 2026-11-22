@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { removeTempDir, waitForExit } from "../server/testing/cleanup.ts";
 import { openHeadlessChrome } from "./testing/headless-chrome.ts";
+import { captureReportSkins, checkConversationReport, checkDamagedReportRefusal, checkReportFollowUp, conversationReports } from "./testing/mission-conversation.mjs";
 import { fixtureApi, mountPreview } from "./testing/preview-fixture.ts";
 
 const { values } = parseArgs({ options: { baseline: { type: "string" }, project: { type: "boolean" }, endpoint: { type: "string" },
@@ -193,6 +194,16 @@ try {
       verifiedReport: true, mission: verified, usage: (await api("GET", "/api/usage")).total });
     await writeFile(join(out, "report.md"), bytes);
     await capture("completed.png");
+    const postPath = path + "/" + verified.id + "/conversation-report";
+    if (project) {
+      assert.equal(verified.conversationReport, "ready");
+      result.damagedReportStatus = await checkDamagedReportRefusal(fixture, postPath, verified.revision, bytes);
+      assert.deepEqual(await conversationReports(api, conversation.threadId), []);
+      if (!values["no-screenshots"]) await captureReportSkins(page, capture);
+      await click("Add report to Package decision");
+      await page.until("document.querySelector('[aria-labelledby=mission-control-title] article')?.innerText.includes('Report added to Package decision.')");
+      result.postedReport = await checkConversationReport(api, base, conversation.threadId, bytes);
+    }
     if (desktop) {
       page.close();
       assert(await page.exited(10_000), "The first Electron process must exit before the relaunch.");
@@ -209,7 +220,7 @@ try {
     await click("Preview report");
     await page.until("document.querySelector('#mission-report')?.innerText.includes('Registry sources')");
     const restored = await current(path);
-    assert.deepEqual(restored, verified);
+    assert.deepEqual(restored, project ? { ...verified, conversationReport: "posted" } : verified);
     assert.deepEqual(await download(), bytes);
     if (desktop) {
       await page.evaluate("document.querySelector('#mission-report').scrollIntoView({block:'center'})");
@@ -229,6 +240,8 @@ try {
     assert((await api("GET", noteUrl)).text.includes(restored.artifact.sha256));
     result.noteSavedByOwner = true;
     if (project) {
+      await api("POST", postPath, { revision: restored.revision });
+      assert.deepEqual(await checkConversationReport(api, base, conversation.threadId, bytes), result.postedReport);
       assert.deepEqual((await api("GET", path + "?projectId=" + project.id)).missions.map(m => m.id), [restored.id]);
       const savedBot = (await api("GET", "/api/bots")).bots.find(b => b.id === bot.id);
       assert.deepEqual(savedBot.projects.find(p => p.id === emptyProject.id), emptyProject);
@@ -241,6 +254,13 @@ try {
       await click("Open conversation · Package decision");
       await page.until("!document.querySelector('#mission-control-title')");
       await page.until("document.querySelector('[aria-current=page][data-sidebar-thread-row=" + JSON.stringify(conversation.threadId) + "]')");
+      await click("report.md");
+      await page.until("document.querySelector('[data-markdown-file]')?.innerText.includes('Registry sources')");
+      for (const step of verified.steps.filter(s => s.kind === "source"))
+        assert(await page.evaluate("Boolean(document.querySelector('[data-markdown-file] a[href=" + JSON.stringify(step.observation.source) + "]'))"));
+      await capture("conversation-report.png");
+      result.reopenedConversationReport = true;
+      result.followUp = await checkReportFollowUp(cli, api, bot.id, conversation.threadId, verified.steps.find(s => s.kind === "source").observation);
       result.projectId = project.id;
       result.conversationId = conversation.threadId;
     }

@@ -40,8 +40,10 @@ export class MissionControl {
   }
 
   list(botId: string, projectId?: string) {
-    return this.store.all({ missions: true, botId, projectId }).filter(hasMission).reverse().map(root => ({ id: root.id, name: root.mission.name,
-      state: missionState(root, root.mission.phase === "blocked" ? this.store.children(root.id) : []) }));
+    return this.store.all({ missions: true, botId, projectId }).filter(hasMission).reverse().map(root => {
+      const needsSteps = !terminal(root.status) && (root.mission.phase === "active" || root.mission.phase === "blocked");
+      return { id: root.id, name: root.mission.name, state: missionState(root, needsSteps ? this.children(root) : []) };
+    });
   }
 
   keptArtifacts(): string[] {
@@ -135,12 +137,14 @@ export class MissionControl {
     return this.get(botId, id);
   }
 
-  async artifact(botId: string, id: string): Promise<string> {
+  async verifiedReport(botId: string, id: string) {
     const view = this.get(botId, id);
     if (!view.artifact) throw conflict("A verified report is not available.");
-    const bytes = await this.host.read(this.root(botId, id).mission.artifactId);
-    if (sha256(bytes) !== view.artifact.sha256) throw conflict("The stored report no longer matches its verification receipt.");
-    return bytes.toString("utf8");
+    const attachmentId = this.root(botId, id).mission.artifactId;
+    const bytes = await this.host.read(attachmentId);
+    if (bytes.length !== view.artifact.bytes || sha256(bytes) !== view.artifact.sha256)
+      throw conflict("The stored report no longer matches its verification receipt.");
+    return { attachmentId, text: bytes.toString("utf8") };
   }
 
   protected children(root: Assignment) { return this.store.children(root.rootId); }

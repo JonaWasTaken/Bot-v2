@@ -1,13 +1,29 @@
 // The receipt is written in the same SQLite transaction as the command's own rows, so only synchronous writes to this
 // database belong in `apply`. Files, provider calls, caches and broadcasts are not transactional: prepare replay-safe files
 // before and publish after. A receipt does not make external side effects exactly-once.
-import { readCommandReceipt, withCommandReceipt } from "./message-db.ts";
+import { appendMessage, readMessage, readCommandReceipt, withCommandReceipt } from "./message-db.ts";
+import type { Message } from "./store.ts";
 
 export interface Command {
   /** Stable, dotted name of the mutation: "digest.append", "hook.ingest". */
   kind: string;
   /** Idempotency key within the kind — a turn id, a tool_use_id, a ticket. */
   key: string;
+}
+
+export type MessageCommand = Command & { receipt?: "message-id" };
+
+export function persistMessage(threadId: string, message: Message, command?: MessageCommand): Message {
+  const write = () => {
+    appendMessage(threadId, message);
+    return command?.receipt === "message-id" ? message.id : message;
+  };
+  const result = command ? runCommand(command, write) : write();
+  if (typeof result !== "string") return result;
+  if (result === message.id) return message;
+  const original = readMessage(threadId, result);
+  if (!original) throw new Error("The posted message is no longer available.");
+  return original;
 }
 
 export interface CommandReceipt<T = unknown> {

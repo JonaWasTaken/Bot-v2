@@ -1,5 +1,9 @@
 # Mission Control for TypeScript package research
 
+From a bot's project folder, open the actions menu and choose **Mission Control**. Select a project conversation while preparing the mission. After approval, the source specialist reads the selected releases and the coordinator writes and verifies the report. Choose **Add report to** the named conversation to save its findings and file together. **Open conversation** takes you to the transcript, where the report opens as Markdown and its sources are available to follow-up questions.
+
+Adding a report is an owner action on a completed mission. The server checks the saved revision, current project and conversation, reads the attachment and compares its byte length and SHA-256 with the verification receipt. It checks authority and membership again before appending. The message and its ID-only delivery receipt commit together in the conversation database. A retry reuses the original post. Removing the posted message leaves the mission's own report accessible in Mission Control. Archived or moved conversations cannot receive a new post from their former project.
+
 Open a personal workspace, select a bot, open its profile, and choose **Details → Mission Control**. Enter an objective and choose **Prepare plan**. The planner can choose a shortlist, or the owner can enter package names explicitly. Review the packages, criterion, specialist and tool budget before choosing **Approve and start**. A bot can handle the complete mission itself.
 
 The first workflow compares public npm releases for a TypeScript application, produces a Markdown recommendation, reads the attachment back, and checks the evidence. The two supported criteria are direct runtime dependency count and published unpacked size. Each candidate needs bundled type declarations and an eligible declared license to win. Ties stay visible.

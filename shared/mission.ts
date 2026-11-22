@@ -50,6 +50,8 @@ export interface MissionView {
   history: Array<{ version: number; objective: string; plan: ResearchPlan | null; limits: MissionLimits; replacedAt: number }>;
   projectId?: string;
   conversationId?: string;
+  /** The owner's delivery of this verified revision to its linked project conversation. */
+  conversationReport?: "ready" | "posted" | "removed";
   state: MissionState;
   version: number;
   revision: number;

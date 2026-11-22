@@ -9,8 +9,9 @@ import { MarkdownFileView } from "../MarkdownFilePreview";
 import type { MissionAction, MissionStepView, MissionView } from "../../../shared/mission";
 
 const btn = "ui-button ui-button-sm";
-export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path }: {
+export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path, conversationName, onPostReport }: {
   mission: MissionView; bots: Bot[]; busy: boolean; onAction: (action: MissionAction, step?: string) => void; onRevise: () => void; path: string;
+  conversationName?: string; onPostReport: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [opening, setOpening] = useState(false), [error, setError] = useState("");
@@ -52,7 +53,11 @@ export function MissionDetail({ mission: m, bots, busy, onAction, onRevise, path
       <h3 className="text-[15px] font-semibold">{m.artifact.name}</h3></div>
       <p className="my-2 text-[12px] text-ink-secondary">{t("mission.artifactReceipt", { bytes: m.artifact.bytes, date: new Date(m.artifact.verifiedAt).toLocaleString() })}</p>
       <div className="flex flex-wrap gap-2"><button type="button" className={btn} aria-expanded={preview !== null} aria-controls="mission-report" disabled={opening} onClick={() => void showReport()}>{t(preview === null ? "mission.preview" : "mission.hide")}</button>
-      <a className={btn} download="report.md" href={path + "/export"}><Download size={14} aria-hidden="true" />{t("mission.download")}</a></div>
+      <a className={btn} download="report.md" href={path + "/export"}><Download size={14} aria-hidden="true" />{t("mission.download")}</a>
+      {conversationName && m.conversationReport === "ready" && <button type="button" className={btn} disabled={busy}
+        onClick={onPostReport}>{t("mission.addToConversation", { name: conversationName })}</button>}</div>
+      {conversationName && (m.conversationReport === "posted" || m.conversationReport === "removed") &&
+        <p role="status" className="mt-2 text-[13px] text-ink-secondary">{t(m.conversationReport === "posted" ? "mission.postedToConversation" : "mission.removedFromConversation", { name: conversationName })}</p>}
       {error && <p role="alert" className="text-danger">{error}</p>}
       <div id="mission-report" hidden={preview === null} className="mt-3">{preview !== null && <MarkdownFileView source={preview} showSource={false} />}</div><MissionMemory mission={m} /></section>}
     {!!m.steps.length && <section><div className="flex items-center justify-between gap-3"><h3 className="text-[15px] font-semibold">{t("mission.execution")}</h3>

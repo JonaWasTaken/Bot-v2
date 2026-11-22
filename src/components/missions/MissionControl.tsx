@@ -63,7 +63,7 @@ export function MissionControl({ bot, project, onClose }: { bot: Bot; project?: 
   }, [base, listPath, selected, reload]);
   const current = detail?.id === selected ? detail : null;
   const conversation = current?.conversationId && bot.tasks?.find(task =>
-    task.threadId === current.conversationId && task.projectId === current.projectId);
+    task.threadId === current.conversationId && task.projectId === current.projectId && task.archivedAt === undefined);
   async function write(path: string, body: unknown) {
     if (writing.current) return;
     writing.current = true; setBusy(true); setError("");
@@ -108,6 +108,8 @@ export function MissionControl({ bot, project, onClose }: { bot: Bot; project?: 
                 dispatch({ type: "switchTask", botId: bot.id, threadId: conversation.threadId }); onClose();
               }}>{t("mission.openConversation", { name: conversation.title || t("task.newShort") })}</button>}
               <MissionDetail key={current.id + ":" + current.version} mission={current} bots={bots} busy={busy}
+                conversationName={conversation ? conversation.title || t("task.newShort") : undefined}
+                onPostReport={() => void write(base + "/" + current.id + "/conversation-report", { revision: current.revision })}
                 path={base + "/" + current.id} onAction={action} onRevise={() => setForm("revise")} /></>
             : !error && <p role="status" className="text-[13px] text-ink-secondary">{t("mission.loading")}</p>}
         </main>

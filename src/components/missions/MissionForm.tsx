@@ -29,7 +29,7 @@ export function MissionForm({ bot, bots, previous, fixedProjectId, busy, onSave,
   const [researcherId, setResearcher] = useState(previous?.researcherId ?? bot.id);
   const [projectId, setProject] = useState(fixedProjectId ?? previous?.projectId ?? "");
   const [conversationId, setConversation] = useState("");
-  const conversations = projectId ? bot.tasks?.filter(task => task.projectId === projectId) ?? [] : [];
+  const conversations = projectId ? bot.tasks?.filter(task => task.projectId === projectId && task.archivedAt === undefined) ?? [] : [];
   const [concurrency, setConcurrency] = useState(previous?.limits.concurrency ?? 3);
   const [toolCalls, setToolCalls] = useState(previous?.limits.toolCalls ?? 12);
   async function submit(event: FormEvent) {

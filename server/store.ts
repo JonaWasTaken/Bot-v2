@@ -13,7 +13,7 @@ import type { BotProfilePatch } from "./bot-profile.ts";
 import { DATA_DIR, EVENTS_DIR, NATIVE_DIR, loadBrowserProfileIdAliases } from "./config.ts";
 import * as mdb from "./message-db.ts";
 import { forgetBotMemoryJournal, journalFile } from "./memory-journal.ts";
-import { runCommand, type Command } from "./commands.ts";
+import { persistMessage, runCommand, type Command, type MessageCommand } from "./commands.ts";
 import { workspaceDir } from "./workspace.ts";
 import type { Destination } from "./surface.ts";
 import { newId, type ModelSelection } from "./contracts.ts";
@@ -1128,11 +1128,10 @@ export class Store {
     return null;
   }
 
-  appendMessage(threadId: string, message: Omit<Message, "id" | "at"> & { at?: number }, command?: Command): Message {
+  appendMessage(threadId: string, message: Omit<Message, "id" | "at"> & { at?: number }, command?: MessageCommand): Message {
     const t = this.thread(threadId);
     const full: Message = { id: newId(), at: Date.now(), parentId: t.activeLeafId, ...redactBotAuthored(message) };
-    const persist = () => { mdb.appendMessage(threadId, full); return full; };
-    const committed = command ? runCommand(command, persist) : persist();
+    const committed = persistMessage(threadId, full, command);
     if (committed.id !== full.id) return committed;
     t.messages.push(full); this.threads.grew(threadId, full);
     t.activeLeafId = full.id;

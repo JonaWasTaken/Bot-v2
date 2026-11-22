@@ -32,7 +32,6 @@ import { ImportDialog, ShareDepartmentDialog, TeamDialog, TeamLibraryPanel, Team
 import { SidebarNewChatPanel } from "./SidebarNewChatPanel";
 import { openCommandPalette } from "./CommandPalette";
 import { RenameTitle } from "./RenameTitle";
-import { MissionControl } from "./missions/MissionControl";
 import { BotProjectDialog, FolderActions, FolderIcon, navigateThreadMenu } from "./BotProjects";
 import { NewTaskFolderDialog } from "./NewTaskFolderDialog";
 import { GroupThreadList } from "./SidebarGroupThreadList";
@@ -459,8 +458,6 @@ export function BotThreadList({ bot, selected, drafting, missionsEnabled, query,
     .map((task) => ({ ...task, queued: Boolean(pendingQueued[task.threadId]?.length) }));
   const projects = bot.projects ?? NO_FOLDERS;
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [missionProjectId, setMissionProjectId] = useState<string | null>(null);
-  const missionProject = projects.find(project => project.id === missionProjectId);
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [folderMenu, setFolderMenu] = useState<{ projectId: string; left: number; top: number } | null>(null);
   const [markingRead, setMarkingRead] = useState(false);
@@ -607,7 +604,7 @@ export function BotThreadList({ bot, selected, drafting, missionsEnabled, query,
             </button>
             <button type="button" title={t("task.newIn", { name: project.name })} aria-label={t("task.newIn", { name: project.name })} onClick={() => dispatch({ type: "newTask", botId: bot.id, projectId: project.id })}
               className="flex size-6 items-center justify-center rounded opacity-0 hover:bg-raised hover:text-ink focus-visible:opacity-100 group-hover/folder:opacity-100 max-md:opacity-70 touch:opacity-70"><Plus size={12} /></button>
-            <FolderActions onMissions={missionsEnabled ? () => setMissionProjectId(project.id) : undefined} project={project} canMoveUp={index > 0} canMoveDown={index < projects.length - 1} canMarkRead={folderUnreadThreadIds(bot, project.id).length > 0} saving={reordering || markingRead}
+            <FolderActions missionBot={missionsEnabled ? bot : undefined} project={project} canMoveUp={index > 0} canMoveDown={index < projects.length - 1} canMarkRead={folderUnreadThreadIds(bot, project.id).length > 0} saving={reordering || markingRead}
               menu={folderMenu?.projectId === project.id ? folderMenu : null} onMenuChange={(menu) => setFolderMenu(menu ? { ...menu, projectId: project.id } : null)}
               onEdit={() => setEditingProject(project.id)} onMove={(direction, onSaved) => saveOrder(moveFolder(projectIds, project.id, direction), onSaved)}
               onMarkRead={(onSaved) => { void readFolder(project.id, onSaved); }} />
@@ -640,8 +637,6 @@ export function BotThreadList({ bot, selected, drafting, missionsEnabled, query,
           if (threadId) dispatch({ type: "refreshTaskPermissions", botId: bot.id, threadId, acknowledgeLocalAuto: true });
         }}
       />
-      {missionsEnabled && missionProject && createPortal(
-        <MissionControl key={bot.id + missionProject.id} bot={bot} project={missionProject} onClose={() => setMissionProjectId(null)} />, document.body)}
       {projectToEdit && <BotProjectDialog bot={bot} project={projectToEdit} onClose={() => setEditingProject(null)} />}
       </>}
     </div>

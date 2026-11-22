@@ -118,6 +118,8 @@ and a decision guide in five questions: [Which AI agent should I use?](https://w
 
 ## Features
 
+In a personal workspace, a project folder's **Mission Control** can compare public npm releases for a TypeScript app. Review the plan, follow the specialists' work, then add the verified Markdown report to the project conversation for follow-up questions. [Project research workflow](docs/verification/mission-research.md)
+
 <table>
 <tr>
 <td width="50%" valign="top">
