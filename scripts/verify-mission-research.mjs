@@ -9,12 +9,15 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 import { removeTempDir, waitForExit } from "../server/testing/cleanup.ts";
 import { openHeadlessChrome } from "./testing/headless-chrome.ts";
-import { captureReportSkins, checkConversationReport, checkDamagedReportRefusal, checkReportFollowUp, conversationReports } from "./testing/mission-conversation.mjs";
+import { captureReportSkins, checkConversationReport, checkDamagedReportRefusal, checkReportFollowUp, conversationReports, projectBrief, selectProjectBrief } from "./testing/mission-conversation.mjs";
 import { fixtureApi, mountPreview } from "./testing/preview-fixture.ts";
 
 const { values } = parseArgs({ options: { baseline: { type: "string" }, project: { type: "boolean" }, endpoint: { type: "string" },
-  model: { type: "string" }, out: { type: "string" }, metric: { type: "string" }, electron: { type: "string" }, "no-screenshots": { type: "boolean" } } });
+  model: { type: "string" }, out: { type: "string" }, metric: { type: "string" }, electron: { type: "string" },
+  "project-brief": { type: "boolean" }, "no-screenshots": { type: "boolean" } } });
 assert(!(values.project && values.baseline), "Project qualification requires the mission implementation.");
+const useBrief = values["project-brief"];
+assert(!useBrief || (values.project && !values.metric), "Use --project-brief with --project. The project brief supplies its own criterion.");
 const endpoint = new URL(values.endpoint ?? "");
 assert(endpoint.protocol === "http:" && ["127.0.0.1", "[::1]"].includes(endpoint.hostname) && !endpoint.username && !endpoint.password,
   "Provide a dedicated local OpenAI-compatible verification model.");
@@ -24,10 +27,10 @@ const { launchVerificationServer, runControlOmb, verificationServerEnvironment, 
   await import(pathToFileURL(join(root, "scripts/control-omb.ts")).href);
 const out = resolve(values.out);
 await mkdir(out, { recursive: true });
-const metric = values.metric ?? "dependencies";
+const metric = useBrief ? "size" : values.metric ?? "dependencies";
 assert(["dependencies", "size"].includes(metric));
 const criterion = metric === "size" ? "unpacked package size" : "direct runtime dependency count";
-const objective = "Compare zod, valibot and superstruct for a TypeScript application by " + criterion + ". Check current registry sources and save a Markdown report.";
+const objective = useBrief ? projectBrief.objective : "Compare zod, valibot and superstruct for a TypeScript application by " + criterion + ". Check current registry sources and save a Markdown report.";
 const toolScope = { allow: ["mcp:agents:coordinate_bots", "mcp:agents:wait_until", "mcp:agents:attach_file"] };
 const result = { revision: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(),
   model: values.model, metric, objective, toolScope, startedAt: new Date().toISOString() };
@@ -141,13 +144,21 @@ try {
       + "Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(e," + JSON.stringify(reader.id) + ");e.dispatchEvent(new Event('change',{bubbles:true})); })()");
     if (project) await page.evaluate("(() => {const e = [...document.querySelectorAll('form select')].find(s => [...s.options].some(o => o.value === "
       + JSON.stringify(conversation.threadId) + ")); e.value = " + JSON.stringify(conversation.threadId) + "; e.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    if (useBrief) {
+      await selectProjectBrief(api, botPath, page);
+      result.projectBrief = { topic: projectBrief.topic, text: projectBrief.text };
+    }
     const start = performance.now();
     await click("Prepare plan");
     await page.until(byText("Approve and start") + "?.disabled === false || document.querySelector('[role=dialog] [role=alert]') || document.querySelector('[role=dialog] article [role=status]')", 100_000);
     const path = botPath + "/missions";
     const reviewed = await current(path);
     assert.equal(reviewed.state, "review", reviewed.issue);
-    assert.deepEqual([...reviewed.plan.packages].sort(), ["superstruct", "valibot", "zod"]);
+    assert.equal(reviewed.originalObjective, objective);
+    if (useBrief) {
+      assert.equal(reviewed.memoryTopic, projectBrief.topic);
+      assert.equal(new Set(reviewed.plan.packages).size, 3);
+    } else assert.deepEqual([...reviewed.plan.packages].sort(), ["superstruct", "valibot", "zod"]);
     assert.equal(reviewed.plan.metric, metric);
     if (project) {
       assert.equal(reviewed.projectId, project.id);

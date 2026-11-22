@@ -3,6 +3,24 @@ import { createHash } from "node:crypto";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
+export const projectBrief = {
+  objective: "Research three suitable open-source tools for a TypeScript application, compare their strengths, choose an appropriate option, create a report, and save the findings to my project.",
+  topic: "validation-requirements.md",
+  text: "This project needs a runtime schema validator for untrusted JSON in a TypeScript application. Choose three comparable npm libraries with bundled type declarations and permissive licenses. We distribute the full package with the app, so minimize published unpacked size.",
+};
+
+export async function selectProjectBrief(api, botPath, page) {
+  const path = "memory/" + projectBrief.topic;
+  const url = botPath + "/memory/file";
+  const current = await api("GET", url + "?path=" + encodeURIComponent(path));
+  assert.equal(current.exists, false);
+  await api("PUT", url, { path, text: projectBrief.text, expectedHash: current.hash });
+  await page.evaluate("document.querySelector('form details summary').click()");
+  await page.evaluate("(() => {const e = document.querySelector('form input[placeholder=\"architecture.md\"]');"
+    + "Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e," + JSON.stringify(projectBrief.topic)
+    + "); e.dispatchEvent(new Event('input',{bubbles:true}));})()");
+}
+
 export async function conversationReports(api, threadId) {
   const { messages } = await api("GET", "/api/threads/" + threadId + "/messages");
   return messages.flatMap(message => (message.attachments ?? [])
