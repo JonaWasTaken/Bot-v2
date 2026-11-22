@@ -81,7 +81,7 @@ export function MissionControl({ bot, project, onClose }: { bot: Bot; project?: 
     if (form === "revise" && current) await write(base + "/" + current.id, { action: "revise", revision: current.revision, objective: data.objective, plan: data.plan, limits: data.limits });
     else await write(base, data);
   };
-  return <div className="ui-scrim fixed inset-0 z-[100] grid place-items-center p-2 sm:p-5">
+  return <div className="ui-scrim fixed inset-0 z-[90] grid place-items-center p-2 sm:p-5">
     <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="mission-control-title" tabIndex={-1}
       className="ui-modal flex h-[min(820px,94dvh)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-panel text-ink">
       <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6"><div className="flex min-w-0 items-center gap-2">

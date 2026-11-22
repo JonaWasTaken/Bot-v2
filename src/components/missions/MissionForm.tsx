@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Select } from "../Select";
 import { t } from "@/lib/i18n";
+import { randomUuid } from "@/lib/random-uuid";
 import type { Bot } from "@/state/store";
 import type { MissionLimits, MissionView, ResearchPlan } from "../../../shared/mission";
 
@@ -20,7 +21,7 @@ export interface FormData {
 export function MissionForm({ bot, bots, previous, fixedProjectId, busy, onSave, onBack }: {
   bot: Bot; bots: Bot[]; previous?: MissionView; fixedProjectId?: string; busy: boolean; onSave: (data: FormData) => Promise<void>; onBack: () => void;
 }) {
-  const [id] = useState(() => crypto.randomUUID());
+  const [id] = useState(randomUuid);
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [objective, setObjective] = useState(previous?.objective ?? "");
