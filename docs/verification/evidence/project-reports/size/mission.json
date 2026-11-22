@@ -1,0 +1,234 @@
+{
+  "revision": "c62fe3eb1403fed508103b313c6eaa3a4d1b5d22",
+  "model": "qwen3:8b-omb-40k",
+  "metric": "size",
+  "objective": "Compare zod, valibot and superstruct for a TypeScript application by unpacked package size. Check current registry sources and save a Markdown report.",
+  "toolScope": {
+    "allow": [
+      "mcp:agents:coordinate_bots",
+      "mcp:agents:wait_until",
+      "mcp:agents:attach_file"
+    ]
+  },
+  "startedAt": "2026-11-22T10:41:53.734Z",
+  "readerScope": {
+    "allow": [
+      "mcp:agents:wait_until"
+    ]
+  },
+  "electron": "43.7.9",
+  "planMs": 17199,
+  "nativeDownload": true,
+  "executionMs": 1894,
+  "elapsedMs": 19169,
+  "verifiedReport": true,
+  "mission": {
+    "id": "d3f37088-e0ad-497b-b6bb-989a2a4bb808",
+    "botId": "a01212ea-d79f-4757-9a8d-ce482a5521bf",
+    "owner": "workspace-owner",
+    "researcherId": "58ab9b2c-273f-465b-bb5b-f32cee023801",
+    "name": "TypeScript package comparison",
+    "objective": "Compare zod, valibot and superstruct for a TypeScript application by unpacked package size. Check current registry sources and save a Markdown report.",
+    "originalObjective": "Compare zod, valibot and superstruct for a TypeScript application by unpacked package size. Check current registry sources and save a Markdown report.",
+    "history": [],
+    "projectId": "eb9eb9f5-d343-49e3-bb90-38b6659ffa68",
+    "conversationId": "9b08128f-50c8-49e7-bceb-0ed58d7d2634",
+    "state": "completed",
+    "version": 1,
+    "revision": 4,
+    "plan": {
+      "packages": [
+        "zod",
+        "valibot",
+        "superstruct"
+      ],
+      "metric": "size"
+    },
+    "limits": {
+      "maxSpecialists": 2,
+      "maxSteps": 8,
+      "maxDepth": 3,
+      "concurrency": 3,
+      "retries": 1,
+      "toolCalls": 12,
+      "modelCalls": 1,
+      "timeoutMs": 60000
+    },
+    "steps": [
+      {
+        "key": "npm:zod",
+        "kind": "source",
+        "name": "zod",
+        "dependsOn": [],
+        "botId": "58ab9b2c-273f-465b-bb5b-f32cee023801",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "b79104f4-654e-4988-8e69-d4dadc5ddfac",
+        "startedAt": 1795344138591,
+        "finishedAt": 1795344138697,
+        "observation": {
+          "name": "zod",
+          "version": "4.6.7",
+          "source": "https://registry.npmjs.org/zod/4.6.7",
+          "readAt": 1795344138697,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 6148944,
+          "types": true
+        }
+      },
+      {
+        "key": "npm:valibot",
+        "kind": "source",
+        "name": "valibot",
+        "dependsOn": [],
+        "botId": "58ab9b2c-273f-465b-bb5b-f32cee023801",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "6ec652da-7930-4388-9c4e-b0f68ecd83f0",
+        "startedAt": 1795344138592,
+        "finishedAt": 1795344138705,
+        "observation": {
+          "name": "valibot",
+          "version": "1.5.0",
+          "source": "https://registry.npmjs.org/valibot/1.5.0",
+          "readAt": 1795344138704,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 1865457,
+          "types": true
+        }
+      },
+      {
+        "key": "npm:superstruct",
+        "kind": "source",
+        "name": "superstruct",
+        "dependsOn": [],
+        "botId": "58ab9b2c-273f-465b-bb5b-f32cee023801",
+        "status": "verified",
+        "toolCalls": 2,
+        "attempts": 1,
+        "assignmentId": "fdbfa965-be1e-4d0c-ad13-a6d1441e539e",
+        "startedAt": 1795344138593,
+        "finishedAt": 1795344138699,
+        "observation": {
+          "name": "superstruct",
+          "version": "2.0.2",
+          "source": "https://registry.npmjs.org/superstruct/2.0.2",
+          "readAt": 1795344138699,
+          "license": "MIT",
+          "dependencies": 0,
+          "bytes": 182337,
+          "types": true
+        }
+      },
+      {
+        "key": "report:1",
+        "kind": "report",
+        "name": "report.md",
+        "dependsOn": [
+          "npm:zod",
+          "npm:valibot",
+          "npm:superstruct"
+        ],
+        "botId": "a01212ea-d79f-4757-9a8d-ce482a5521bf",
+        "status": "verified",
+        "toolCalls": 1,
+        "attempts": 1,
+        "assignmentId": "a2e2b946-edfa-48c1-8500-e75332ad05c5",
+        "startedAt": 1795344139100,
+        "finishedAt": 1795344139106
+      },
+      {
+        "key": "verify:1",
+        "kind": "verify",
+        "name": "report.md",
+        "dependsOn": [
+          "report:1"
+        ],
+        "botId": "a01212ea-d79f-4757-9a8d-ce482a5521bf",
+        "status": "verified",
+        "toolCalls": 1,
+        "attempts": 1,
+        "assignmentId": "c49859a1-3af8-445f-b0c8-4d32f1266c79",
+        "startedAt": 1795344139609,
+        "finishedAt": 1795344139612
+      }
+    ],
+    "actions": [],
+    "retryKeys": [],
+    "createdAt": 1795344121059,
+    "updatedAt": 1795344139865,
+    "finishedAt": 1795344139865,
+    "usage": {
+      "toolCalls": 8,
+      "modelCalls": 1,
+      "input": 174,
+      "output": 556
+    },
+    "artifact": {
+      "name": "report.md",
+      "bytes": 1074,
+      "sha256": "ef5a5004898c97f8a73597ffe9bf09ead309eee202c0c2b5c6110c2840b794c3",
+      "assignmentId": "a2e2b946-edfa-48c1-8500-e75332ad05c5",
+      "verifiedAt": 1795344139612
+    },
+    "activity": [
+      {
+        "at": 1795344121065,
+        "text": "Planning call attempted"
+      },
+      {
+        "at": 1795344138015,
+        "text": "Plan ready for review"
+      },
+      {
+        "at": 1795344138334,
+        "text": "start"
+      },
+      {
+        "at": 1795344139865,
+        "text": "completed: done"
+      }
+    ],
+    "conversationReport": "ready"
+  },
+  "usage": {
+    "key": "total",
+    "label": "total",
+    "turns": 1,
+    "input": 174,
+    "output": 556,
+    "cachedInput": 0,
+    "costUsd": null,
+    "estimatedUsd": null,
+    "unpriced": 1,
+    "billableUsd": null,
+    "barTokens": 730
+  },
+  "damagedReportStatus": 409,
+  "postedReport": {
+    "messageId": "abd945f5-fdcb-4a81-bab2-9f13500afa6c",
+    "bytes": 1074,
+    "sha256": "ef5a5004898c97f8a73597ffe9bf09ead309eee202c0c2b5c6110c2840b794c3"
+  },
+  "electronRelaunched": true,
+  "reopenedAfterRestart": true,
+  "noteSavedByOwner": true,
+  "reopenedEmptyProject": {
+    "id": "936b2614-46c0-4e39-be80-cc4df21b3a88",
+    "name": "Later",
+    "emoji": "📚",
+    "firstThreadId": "7f9f38e8-e7e6-474a-a8c4-340b78f5a42f"
+  },
+  "reopenedConversationReport": true,
+  "followUp": {
+    "source": "https://registry.npmjs.org/zod/4.6.7",
+    "bytes": 6148944,
+    "matched": true
+  },
+  "projectId": "eb9eb9f5-d343-49e3-bb90-38b6659ffa68",
+  "conversationId": "9b08128f-50c8-49e7-bceb-0ed58d7d2634"
+}

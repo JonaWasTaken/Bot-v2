@@ -8,6 +8,8 @@ Open a personal workspace, select a bot, open its profile, and choose **Details 
 
 The first workflow compares public npm releases for a TypeScript application, produces a Markdown recommendation, reads the attachment back, and checks the evidence. The two supported criteria are direct runtime dependency count and published unpacked size. Each candidate needs bundled type declarations and an eligible declared license to win. Ties stay visible.
 
+On November 22 the original project objective ran with an owner-selected requirements note and a model-proposed shortlist. Two further trials compared measured outcomes with the fork's ordinary chat. All three native project runs reopened the exact report in the conversation and answered a cited follow-up after restart. To reproduce the original objective, pass `--project --project-brief` to the native fixture. [Sprint measurements, checks and reproduction](../plans/2026-11-22-project-report-sprint.md)
+
 ## What landed in the fork
 
 The baseline was the unchanged fork at `f0bf6f7cd2a85d0e25270be73dd69bef1799ebc1`, including its earlier reliability and desktop changes. Upstream's consolidation issue includes a September triage, later integration reports and unresolved proposals. We checked PR merge state, commit ancestry and the actual files in this checkout. [Upstream consolidation issue](https://github.com/milind-soni/OpenMausBot/issues/1559)
