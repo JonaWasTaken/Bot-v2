@@ -175,6 +175,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm check:electron
       - name: production UI build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm exec vite build
 
   vitest:
