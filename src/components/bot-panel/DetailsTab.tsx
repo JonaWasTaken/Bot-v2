@@ -8,6 +8,7 @@ import { EffortRow, ModelPicker } from "../ModelPicker";
 import type { SidebarMenuItem } from "../SidebarPopoverMenu";
 import type { useBotSettingsDerived } from "../bot-settings/useBotSettingsDerived";
 import { BotConversations } from "./Conversations";
+import { MissionControlRow } from "../missions/MissionControl";
 import type { SimplePageId } from "./page-registry";
 import { TryAsking } from "./TryAsking";
 import { Card, CardLabel, LabelAction, panelActionCls, NavRow, RowIcon, rowCls, RowText } from "./rows";
@@ -80,6 +81,7 @@ export function DetailsTab({ bot, derived, onOpen }: {
       </section>
 
       <BotConversations bot={bot} />
+      <MissionControlRow bot={bot} />
 
       <TryAsking bot={bot} />
 

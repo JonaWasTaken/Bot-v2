@@ -1,4 +1,6 @@
 import { RuntimeCoordinator } from "./runtime-coordinator.ts";
+import type { MissionAssignments } from "./missions/assignments.ts";
+import type { MissionHost } from "./missions/control.ts";
 import type { WorkOrigin } from "./peer-provenance.ts";
 import type { LegacyThreadResolver } from "./runtime/import-legacy.ts";
 import type { Answerer, Assignment, EnvelopeNames, Level, Limits, Mode, Origin, Outcome, Owner, Reply, Requester, RestartEffects, StatusView, TurnEvidence } from "./runtime/types.ts";
@@ -181,6 +183,7 @@ export interface CoordinatorHost {
 }
 
 export interface Coordinator {
+  readonly missions?: MissionAssignments;
   node(id: string): HandoffView | undefined;
   /** The conversation the running assignment `id` may answer with a one-way notice: its requester, when it was handed
    * with reply none outside rooms. */
@@ -255,6 +258,7 @@ export interface HandoffLimit {
 }
 
 export interface CoordinatorOptions {
+  missionHost?: MissionHost;
   dataDir: string;
   host: CoordinatorHost;
   handoffLimit?: HandoffLimit;

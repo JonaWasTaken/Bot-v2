@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { MissionAssignments, missionRunner } from "./missions/assignments.ts";
 
 import type { BeginTurnRequest, Coordinator, CoordinatorHost, CoordinatorOptions, HandoffLimit, HandoffOptions, HandoffView, HostTurnResult, LiveHandoffEdge, RoomAddress } from "./coordinator.ts";
 import type { WorkOrigin } from "./peer-provenance.ts";
@@ -148,6 +149,7 @@ const JOIN_POLL_MS = 1_000;
 const JOINED_NOTE = "Another teammate asked this a moment ago, so it was answered once, for both of you:";
 
 export class RuntimeCoordinator implements Coordinator {
+  readonly missions?: MissionAssignments;
   private readonly host: CoordinatorHost;
   private readonly handoffLimit: HandoffLimit | undefined;
   private readonly store: RuntimeStore;
@@ -174,11 +176,12 @@ export class RuntimeCoordinator implements Coordinator {
     this.log = options.log ?? ((line) => console.error("coordinator:", line));
     const store = openRuntimeStore(options.dataDir === ":memory:" ? ":memory:" : join(options.dataDir, "runtime.db"));
     this.store = options.wrote ? announcingWrites(store, options.wrote) : store;
-    this.runtime = new Runtime(this.store, this.runner(), {
+    this.runtime = new Runtime(this.store, missionRunner(this.runner(), () => this.missions), {
       clock: { now: () => this.now(), monotonic: () => performance.now() },
       limits: { depth: 4, requests: REQUESTS_PER_ROOT, executions: EXECUTIONS_PER_ROOT, turnStallMs: TURN_STALL_MS, inputWaitMs: PARKED_LIMIT_MS, inputRemindMs: PARKED_REMIND_MS, ...handoffLimits(), ...options.runtimeLimits },
       ...(options.log ? { log: options.log } : {}),
     });
+    if (options.missionHost) this.missions = new MissionAssignments(this.store, this.runtime, options.missionHost);
   }
 
   /** Not at construction: reconciling calls the host, which is still initialising then. */
@@ -225,7 +228,7 @@ export class RuntimeCoordinator implements Coordinator {
 
   all(): HandoffView[] {
     this.ready();
-    const rows = this.store.all();
+    const rows = this.store.all().filter(a => !a.mission && !a.missionStep);
     const byId = new Map(rows.map(row => [row.id, row]));
     return rows.map(row => view(row, row.parentId ? byId.get(row.parentId) : undefined));
   }
@@ -683,7 +686,7 @@ export class RuntimeCoordinator implements Coordinator {
   }
 
   private live(): Assignment[] {
-    return this.store.all({ nonTerminal: true });
+    return this.store.all({ nonTerminal: true }).filter(a => !a.mission && !a.missionStep);
   }
 
   /** The same request to the same bot from another requester (same words, mode, approval level and finish line), asked
